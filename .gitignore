@@ -8,5 +8,5 @@ update/*pyc
 update/.idea
 data/*
 data/!.gitkeep
-logs/*
-logs/!.gitkeep
+log/*
+log/!.gitkeep
