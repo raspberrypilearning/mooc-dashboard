@@ -1,2 +1,5 @@
 webapp/config.R
-
+update/config.json
+update/fail
+update/*pyc
+update/.idea
