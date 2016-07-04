@@ -1,15 +1,12 @@
 library(reshape2)
-#set the working directory
-#setwd("/Users/Lubo/Documents/MOOC-Viz-Scripts/R scripts/")
 
 #import pre-course survey csv data
 getPreCourseData <- function (filename) {
   #load the pre-course survey data using nrows=0 to include the second row header
   pre_course_data <- read.csv(filename, nrows = 0,
-                              na.strings = c("?", "NA", ""),  sep = ";")
+                              na.strings = c("Unknown", ""),  sep = ",")
   return (pre_course_data)
 }
-
 #check whether the survey has data for how the learners found out about the course
 checkHasHowFoundCourse <- function (data) {
   if (data[1,1] == "TRUE") {
@@ -142,7 +139,7 @@ getLearnersByCountry <- function (data) {
 
 #filter learners by age group
 getLearnersByAge <- function (data) {
-  stripped <- cbind(data.frame(data$age), data.frame(data$learner_id))[-1,]
+  stripped <- cbind(data.frame(data$age_range), data.frame(data$learner_id))[-1,]
   colnames(stripped) <- c("age", "learner_id")
   mdata <- melt(stripped, id = c("learner_id"), na.rm = TRUE)
   mdata <- cbind(mdata[1], mdata[3])
@@ -191,8 +188,8 @@ getLearnersByEmploymentArea <- function (data) {
 
 #filter learners based on level of education
 getLearnersByDegreeLevel <- function (data) {
-  stripped <- cbind(data.frame(data$degree), data.frame(data$learner_id))[-1,]
-  colnames(stripped) <- c("degree_level", "learner_id")
+  stripped <- cbind(data.frame(data$highest_education_level), data.frame(data$learner_id))[-1,]
+  colnames(stripped) <- c("highest_education_level", "learner_id")
   mdata <- melt(stripped, id = c("learner_id"), na.rm = TRUE)
   mdata <- cbind(mdata[1], mdata[3])
   pivot <- dcast(mdata, value ~ ., length)

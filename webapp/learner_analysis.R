@@ -1,10 +1,9 @@
+
+
 library(reshape2)
 library(RMySQL)
 library(xts)
 library(networkD3)
-#set working directory
-#setwd("/Users/Lubo/Documents/MOOC-Viz-Scripts/R scripts/")
-
 
 getRawData <- function (filename, type) {
   if (type == "step" || type == "comments") {
@@ -27,17 +26,9 @@ getRawData <- function (filename, type) {
 #gets the list of all learners
 getAllLearners <- function (data) {
   learners <- as.vector(data$learner_id)
+  print(paste("number of learners: ", length(learners)))
   return (learners)
 }
-
-# comments_data <- getRawData("web-science3_comments.csv", "comments")
-# step_data <- getRawData("web-science3_step-activity.csv", "step")
-# assignments_data <- getRawData("web-science3_peer-review-assignments.csv", "quiz")
-# reviews_data <- getRawData("web-science3_peer-review-reviews.csv", "quiz")
-# startDate <- "2014-10-06"
-# endDate <- "2014-11-17"
-# enrolment_data <- getRawData("web-science3_enrolments.csv", "enrolments")
-# learners <- getAllLearners(enrolment_data)
 
 #gets the number of enroled students during the specified period
 getEnrolmentCount <- function (learners, startDate, endDate, data) {
@@ -240,10 +231,24 @@ getEnrolmentTime <- function (learners, startDate, endDate, data){
 
 #date-time series of quiz answers submitted by the specified learners
 getNumberOfResponsesByDateTime <- function (learners, startDate, endDate, data){
+  
+  print(data)
+  
+  
   mdata <- melt(data, id = c("learner_id", "quiz_question"))
   mdata <- subset(mdata, variable == "submitted_at")
   mdata$value <- as.POSIXct(mdata$value, format = "%Y-%m-%d %H", tz= "GMT")
+  
+  #HERE
+  
+  print(paste("getNumberOfResponsesByDateTime Start date: ",startDate))
+  print(paste("getNumberOfResponsesByDateTime End date: ",endDate))
+  
+  
   mdata <- subset(mdata, value >= as.POSIXct(startDate))
+  
+  
+  
   pivot <- dcast(mdata, value + learner_id ~ ., length)
   colnames(pivot)[c(1,3)] <- c("timestamp", "submits")
   count <- subset(pivot, learner_id %in% learners)
@@ -351,12 +356,6 @@ getFunnelOfParticipation <- function (enrolment_data, step_data, comments_data, 
   funnel$count <- as.numeric(as.character(funnel$count))
   return (funnel)
 }
-
-
-
-
-
-
 
 ##NETWORK LIN CODE
 

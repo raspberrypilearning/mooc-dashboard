@@ -9,12 +9,17 @@ require(plyr)
 require(googleVis)
 require(networkD3)
 require(shinyjs)
+source("config.R")
 source("learner_analysis.R")
 source("learner_filters.R")
 source("courses.R")
 
 function(input, output, session) { 
-
+  
+  output$institution <- renderText({"soton"})
+  output$pageTitle <- renderText("Welcome to MOOC Dashboard")
+  output$updatedTime <- renderText(paste("Data last updated  -  ",getUpdatedTime()))
+  
   # Make the text inputs of the active filters read-only and hide the dummy inputs
   shinyjs::disable("gender") 
   shinyjs::disable("age")
@@ -34,159 +39,64 @@ function(input, output, session) {
   
   # Load the raw csv files for the selected course and assign them to global variables
   # Executes after user has clicked the "chooseCourseButton"
-  observeEvent(input$chooseCourseButton, {
-    if (input$course == "dyrp" && input$run == "1") {
-      assign("step_data", getRawData("research-project-jul-2014_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("research-project-jul-2014_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("research-project-jul-2014_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("research-project-jul-2014_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("research-project-jul-2014_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("research-project-jul-2014_enrolments.csv", ""), envir = .GlobalEnv) 
-      assign("pre_course_data", getPreCourseData("DYRP-1-pre-course-survey.csv"), envir = .GlobalEnv)
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "dyrp" && input$run == "2") {
-      assign("step_data", getRawData("research-project-sep-2014_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("research-project-sep-2014_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("research-project-sep-2014_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("research-project-sep-2014_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("research-project-sep-2014_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("research-project-sep-2014_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "portus" && input$run == "1") {
-      assign("step_data", getRawData("portus_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("moocdashboard/portus_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("moocdashboard/portus_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("moocdashboard/portus_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("moocdashboard/portus_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("moocdashboard/portus_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "portus" && input$run == "2") {
-      assign("step_data", getRawData("moocdashboard/portus-2_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("moocdashboard/portus-2_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("moocdashboard/portus-2_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("research-project-sep-2014_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("moocdashboard/portus-2_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("moocdashboard/portus-2_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "oceans" && input$run == "1") {
-      assign("step_data", getRawData("exploring-our-oceans_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("exploring-our-oceans_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("exploring-our-oceans_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("exploring-our-oceans_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "oceans" && input$run == "2") {
-      assign("step_data", getRawData("exploring-our-oceans-2014_2-step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("exploring-our-oceans-2_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("exploring-our-oceans-2_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("exploring-our-oceans-2_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "marketing" && input$run == "1") {
-      assign("step_data", getRawData("digital-marketing_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("digital-marketing_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("digital-marketing_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("digital-marketing_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "language" && input$run == "1") {
-      assign("step_data", getRawData("understanding-language_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("understanding-language_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("understanding-language_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("understanding-language_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "language" && input$run == "2") {
-      assign("step_data", getRawData("understanding-language-2_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("understanding-language-2_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("understanding-language-2_question-response.csv", ""), envir = .GlobalEnv)      
-      assign("enrolment_data", getRawData("understanding-language-2_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "contract" && input$run == "1") {
-      assign("step_data", getRawData("contract-management_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("contract-management_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("contract-management_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("contract-management_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("contract-management_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("contract-management_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "shipwrecks" && input$run == "1") {
-      assign("step_data", getRawData("shipwrecks_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("shipwrecks_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("shipwrecks_question-response.csv", ""), envir = .GlobalEnv)              
-      assign("enrolment_data", getRawData("shipwrecks_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "ws" && input$run == "1") {
-      assign("step_data", getRawData("moocdashboard/web-science1_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("moocdashboard/web-science1_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("moocdashboard/web-science1_question-response.csv", ""), envir = .GlobalEnv)           
-      assign("enrolment_data", getRawData("moocdashboard/web-science1_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "ws" && input$run == "2") {
-      assign("step_data", getRawData("web-science2_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("web-science2_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("moocdashboard/web-science2_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("web-science2_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("web-science2_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("moocdashboard/web-science2_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "ws" && input$run == "3") {
-      assign("step_data", getRawData("web-science3_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("web-science3_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("moocdashboard/web-science3_question-response.csv", ""), envir = .GlobalEnv)       
-      assign("assignments_data", getRawData("web-science3_peer-review-assignments.csv", ""), envir = .GlobalEnv)       
-      assign("reviews_data", getRawData("moocdashboard/web-science3_peer-review-reviews.csv", ""), envir = .GlobalEnv)       
-      assign("enrolment_data", getRawData("web-science3_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-    else if (input$course == "watloo" && input$run == "1") {
-      assign("step_data", getRawData("wellington-and-waterloo_step-activity.csv", "step"), envir = .GlobalEnv)       
-      assign("comments_data", getRawData("wellington-and-waterloo_comments.csv", "comments"), envir = .GlobalEnv)       
-      assign("quiz_data", getRawData("wellington-and-waterloo_question-response.csv", ""), envir = .GlobalEnv)        
-      assign("enrolment_data", getRawData("wellington-and-waterloo_enrolments.csv", ""), envir = .GlobalEnv)       
-      assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-      assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-      updateTextInput(session, "filteredLearners", value = allLearners)
-    }
-  })
   
   observeEvent(input$chooseCourseButton, {
+    
+    output$pageTitle <- renderText(paste(input$course, "- [", input$run, "]"))
+    
+    updateTabsetPanel(session, "tabs", selected = "demographics")
+    
+    #FixMe - this could all go into a function - but check scope
+    
+    stepDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"step-activity.csv")
+    print(stepDataFile)
+    assign("step_data", getRawData(stepDataFile, "step"), envir = .GlobalEnv)  
+    
+    commentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv")
+    print(commentsDataFile)
+    assign("comments_data", getRawData(commentsDataFile, "comments"), envir = .GlobalEnv)    
+    
+    quizDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"question-response.csv")
+    print(quizDataFile)
+    assign("quiz_data", getRawData(quizDataFile, ""), envir = .GlobalEnv)
+    
+    assignmentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"peer-review-assignments.csv")
+    print(assignmentsDataFile)
+    if(file.exists(assignmentsDataFile))
+    {
+      assign("assignments_data", getRawData(assignmentsDataFile, ""), envir = .GlobalEnv)
+    }
+    else print("...No such File")
+    
+    reviewsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"peer-review-reviews.csv")
+    print(reviewsDataFile)
+    if(file.exists(reviewsDataFile))
+    {
+      assign("reviews_data", getRawData(assignmentsDataFile, ""), envir = .GlobalEnv)
+    }
+    else print("...No such File")
+    
+    
+    enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
+    print(enrolmentDataFile)
+    assign("enrolment_data", getRawData(enrolmentDataFile, ""), envir = .GlobalEnv)
+    
+    enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
+    print(enrolmentDataFile)
+    assign("pre_course_data", getPreCourseData(enrolmentDataFile), envir = .GlobalEnv)
+    
+    assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
+    assign("filtersEnabled", FALSE, envir = .GlobalEnv)
+    updateTextInput(session, "filteredLearners", value = allLearners)
+    
+  }, priority = 10)
+  
+  observeEvent(input$chooseCourseButton, {
+    range <- getCourseDates(input$course, input$run)
+    assign("courseDates", range, envir = .GlobalEnv)
+    assign("startDate", as.POSIXct(range[[1]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
+    assign("endDate", as.POSIXct(range[[2]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
+    
     courseWeeks <- courseDates[[3]]
     courseStart <- courseDates[[1]]
     weeks <- c(courseStart)
@@ -198,11 +108,11 @@ function(input, output, session) {
       assign("weekCat", c("Week 1"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 2) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 3) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 4) {
@@ -210,38 +120,38 @@ function(input, output, session) {
              c("Week 1", "Week 2", "Week 3", "Week 4"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 5) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 6) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 7) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 8) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 9) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 10) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 11) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11"), envir = .GlobalEnv)
     }
     else if (courseWeeks == 12) {
-      assign("weekCat", 
+      assign("weekCat",
              c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"), envir = .GlobalEnv)
     }
-  })
+  }, priority = 4)
   
   categoriseWeek <- function (x) {
     
@@ -261,58 +171,35 @@ function(input, output, session) {
   chartDependency <- eventReactive(input$chooseCourseButton, {})
   
   #START: COURSE SELECTION UI AND VALUE BOXES
-  output$course <- renderUI({
-    if (input$university != "prompt") {
-      courses <- getListOfCourses(input$university)
-      selectInput("course", label = "Course", width = "350px", choices = courses, selected = "prompt")
-    }
+  
+  print("About to assemble runs")
+  output$runs <-renderUI({
+    print(input$course)
+    runs <- getRuns(input$course)
+    selectInput("run", label = "Run", width = "450px", choices = runs)
   })
   
-  output$run <- renderUI({
-    if (input$course != "prompt") {
-      runs <-  getNumberOfRuns(input$course)
-      selectInput("run", label = "Run", width = "50px", choices = runs, selected = runs[1])
-    }
-  })
-  
-  output$startDate <- renderUI({
-    if (length(input$run) != 0) {
-      course <- input$course
-      run <- input$run
-      range <- getCourseDates(course, run)
-      dateInput("startDate", label = "From", width = "100px", 
-                value = as.POSIXct(range[[1]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"))
-    }
-  })
-  
-  output$endDate <- renderUI({
-    if (length(input$run) != 0) {
-      course <- input$course
-      run <- input$run
-      range <- getCourseDates(course, run)
-      assign("courseDates", range, envir = .GlobalEnv)
-      dateInput("endDate", label = "To", width = "100px", 
-                value = as.POSIXct(range[[2]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"))
+  output$courseNameAndRun <- renderUI({
+    if (!is.null(input$course)) {
+      tags$h2(paste(input$course, " - ", input$run))
     }
   })
   
   output$chooseCourse <- renderUI({
-    if (length(input$endDate) != 0) {
-      actionButton("chooseCourseButton", label = "Go")
-    }
+    actionButton("chooseCourseButton", label = "Go")
   })
   
   output$enrolmentCount <- renderValueBox({
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    count <- getEnrolmentCount(learners, input$startDate, input$endDate, enrolment_data)   
+    count <- getEnrolmentCount(learners, startDate, endDate, enrolment_data)   
     valueBox("Enrolled", count, icon = icon("line-chart"), color = "blue")
   })
   
   output$completedCount <- renderValueBox({
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    count <- getCompletionCount(learners, input$startDate, input$endDate, step_data)
+    count <- getCompletionCount(learners, startDate, endDate, step_data)
     valueBox("Completed", count, icon = icon("list"), color = "purple")
   })
   
@@ -329,7 +216,7 @@ function(input, output, session) {
   output$totalComments <- renderValueBox({
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    comments <- getNumberOfCommentsByLearner(learners, input$startDate, input$endDate, comments_data)
+    comments <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
     comments <- sum(comments$comments)
     valueBox("Comments", paste(comments, "in total"), icon = icon("comment-o"), color = "red")
   })
@@ -337,7 +224,7 @@ function(input, output, session) {
   output$totalReplies <- renderValueBox({
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    replies <- getNumberOfRepliesByLearner(learners, input$startDate, input$endDate, comments_data)
+    replies <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
     replies <- sum(replies$replies)
     valueBox("Replies", paste(replies, "in total"), icon = icon("reply"), color = "yellow")
   })
@@ -345,7 +232,7 @@ function(input, output, session) {
   output$avgComments <- renderValueBox({
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    comments <- getNumberOfCommentsByLearner(learners, input$startDate, input$endDate, comments_data)
+    comments <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
     comments <- median(comments$comments)
     valueBox("Comments", paste(comments, "average per learner"), icon = icon("comment-o"), color = "green")
   })
@@ -354,7 +241,7 @@ function(input, output, session) {
   output$avgReplies <- renderValueBox({
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    replies <- getNumberOfRepliesByLearner(learners, input$startDate, input$endDate, comments_data)
+    replies <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
     replies <- median(replies$replies)
     valueBox("Replies", paste(replies, "average per learner"), icon = icon("reply"), color = "olive")
   })
@@ -374,7 +261,7 @@ function(input, output, session) {
       valueBox("Slope", input$scatterSlopeValue, icon = icon("line-chart"), color = "red")
     })
   })
-
+  
   
   #END: COURSE SELECTION UI AND VALUE BOXES
   
@@ -707,6 +594,10 @@ function(input, output, session) {
   output$learnersAge <- renderChart2({
     chartDependency()
     
+    #assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
+    assign("filtersEnabled", FALSE, envir = .GlobalEnv)
+    updateTextInput(session, "filteredLearners", value = allLearners)
+    
     data <- getLearnersByAge(pre_course_data)
     assign("fullAgeData", data[[1]], envir = .GlobalEnv)
     plotData <- data[[2]]
@@ -792,7 +683,7 @@ function(input, output, session) {
     plotData$employmentAreaFilter <- plotData$employment_area
     colnames(plotData)[c(1,2)] <- c("name", "y")
     pie <- Highcharts$new()
-    pie$chart (type = "pie", width = "380")
+    pie$chart (type = "pie", width = "800")
     pie$series(
       name = "learners",
       colorByPoint = "true",
@@ -831,7 +722,7 @@ function(input, output, session) {
     plotData$employment_status <- seq(from = 0, to = nrow(plotData) - 1)
     colnames(plotData)[c(1,2)] <- c("x", "y")
     histogram <- Highcharts$new()
-    histogram$chart (type = "column", width = "380")
+    histogram$chart (type = "column", width = "800")
     histogram$series(
       data = toJSONArray2(plotData, json = FALSE, names = TRUE),
       name = "learners"
@@ -840,7 +731,7 @@ function(input, output, session) {
       categories = catList,
       labels = list(
         style = list(
-          fontSize = 8
+          fontSize = 10
         )
       )
     )
@@ -871,7 +762,7 @@ function(input, output, session) {
     plotData$degree <- seq(from = 0, to = nrow(plotData) - 1)
     colnames(plotData)[c(1,2)] <- c("x", "y")
     histogram <- Highcharts$new()
-    histogram$chart (type = "column", width = "380")
+    histogram$chart (type = "column", width = "800")
     histogram$series(
       data = toJSONArray2(plotData, json = FALSE, names = TRUE),
       name = "learners"
@@ -880,7 +771,7 @@ function(input, output, session) {
       categories = catList,
       labels = list(
         style = list(
-          fontSize = 8
+          fontSize = 10
         )
       )
     )
@@ -972,11 +863,11 @@ function(input, output, session) {
     chartDependency()
     
     data <- getLearnersByHopeGetFromCourse(pre_course_data)
-    assign("fullHopeGetCourseData", data[[1]], envir = .GlobalEnv)
+    assign("fullHopeCourseData", data[[1]], envir = .GlobalEnv)
     plotData <- data[[2]]
-    catList <- plotData$how_found_course
-    plotData$hopeCourseFilter <- plotData$how_get_course
-    plotData$how_get_course <- seq(from = 0, to = nrow(plotData) - 1)
+    catList <- plotData$hope_get_course
+    plotData$hopeCourseFilter <- plotData$hope_get_course
+    plotData$hope_get_course <- seq(from = 0, to = nrow(plotData) - 1)
     colnames(plotData)[c(1,2)] <- c("x", "y")
     histogram <- Highcharts$new()
     histogram$chart (width = "380")
@@ -1225,7 +1116,7 @@ function(input, output, session) {
     # Draw the chart when the "chooseCourseButton" is pressed by the user
     chartDependency()
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    comments <- getNumberOfCommentsByDateStep(learners, input$startDate, input$endDate, comments_data)
+    comments <- getNumberOfCommentsByDateStep(learners, startDate, endDate, comments_data)
     comments <- as.matrix(comments)
     d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", colors = scales::col_quantile("Blues", NULL, 5), 
               scale = "column",
@@ -1239,8 +1130,8 @@ function(input, output, session) {
     chartDependency()
     # Get the comments and replies by date and combine them to a single data frame
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    comments <- getNumberOfCommentsByDate(learners, input$startDate, input$endDate, comments_data)
-    replies <- getNumberOfRepliesByDate(learners, input$startDate, input$endDate, comments_data)
+    comments <- getNumberOfCommentsByDate(learners, startDate, endDate, comments_data)
+    replies <- getNumberOfRepliesByDate(learners, startDate, endDate, comments_data)
     plotData <- merge (comments, replies, by = "timestamp")
     # Categorise the dates into course weeks
     weekList <- lapply(plotData$timestamp, function (x) categoriseWeek (x))
@@ -1325,8 +1216,10 @@ function(input, output, session) {
     chartDependency()
     # Get number of comments made and steps completed by learner
     learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    assign("startDate", input$courseDates[1], envir = .GlobalEnv)
-    assign("endDate", input$courseDates[2], envir = .GlobalEnv)
+    # JSR replaced
+    #assign("startDate", input$courseDates[1], envir = .GlobalEnv)
+    #assign("endDate", input$courseDates[2], envir = .GlobalEnv)
+    
     comments <- getNumberOfCommentsByLearner(learners, input$courseDates[1], input$courseDates[2], comments_data)
     steps <- getStepsCompleted(learners, input$courseDates[1], input$courseDates[2], step_data)
     # Round the percentage 
@@ -1368,72 +1261,72 @@ function(input, output, session) {
     )
     # Check selected input for x and get the according data
     if (isolate(input$scatterX) == "comments") {
-      x <- getNumberOfCommentsByLearner(learners, input$startDate, input$endDate, comments_data)
+      x <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
       xAxisTitle <- "Comments"
     }
     else if (isolate(input$scatterX) == "replies") {
-      x <- getNumberOfRepliesByLearner(learners, input$startDate, input$endDate, comments_data)
+      x <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
       xAxisTitle <- "Replies"
     }
     else if (isolate(input$scatterX) == "likes") {
-      x <- getNumberOfLikesByLearner(learners, input$startDate, input$endDate, comments_data)
+      x <- getNumberOfLikesByLearner(learners, startDate, endDate, comments_data)
       xAxisTitle <- "Likes"
     }
     else if (isolate(input$scatterX) == "answers") {
-      x <- getNumberOfResponsesByLearner(learners, input$startDate, input$endDate, quiz_data)
+      x <- getNumberOfResponsesByLearner(learners, startDate, endDate, quiz_data)
       xAxisTitle <- "Answers"
     }
     else if (isolate(input$scatterX) == "steps") {
-      x <- getStepsCompleted(learners, input$startDate, input$endDate, step_data)
+      x <- getStepsCompleted(learners, startDate, endDate, step_data)
       xAxisTitle <- "Completed (%)"
     }
     else if (isolate(input$scatterX) == "correct") {
-      x <- getResponsesPercentage(learners, input$startDate, input$endDate, quiz_data)
+      x <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
       x <- x[c("learner_id", "correct")]
       xAxisTitle <- "Correct (%)"
     }
     else if (isolate(input$scatterX) == "wrong") {
-      x <- getResponsesPercentage(learners, input$startDate, input$endDate, quiz_data)
+      x <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
       x <- x[c("learner_id", "wrong")]
       xAxisTitle <- "Wrong (%)"
     }
     else if (isolate(input$scatterX) == "questions") {
-      x <- getPercentageOfAnsweredQuestions(learners, input$startDate, input$endDate, quiz_data)
+      x <- getPercentageOfAnsweredQuestions(learners, startDate, endDate, quiz_data)
       xAxisTitle <- "Questions (%)"
     }
     # Check selected input for y and get the according data
     if (isolate(input$scatterY) == "comments") {
-      y <- getNumberOfCommentsByLearner(learners, input$startDate, input$endDate, comments_data)
+      y <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
       yAxisTitle <- "Comments"
     }
     else if (isolate(input$scatterY) == "replies") {
-      y <- getNumberOfRepliesByLearner(learners, input$startDate, input$endDate, comments_data)
+      y <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
       yAxisTitle <- "Replies"
     }
     else if (isolate(input$scatterY) == "likes") {
-      y <- getNumberOfLikesByLearner(learners, input$startDate, input$endDate, comments_data)
+      y <- getNumberOfLikesByLearner(learners, startDate, endDate, comments_data)
       yAxisTitle <- "Likes"
     }
     else if (isolate(input$scatterY) == "answers") {
-      y <- getNumberOfResponsesByLearner(learners, input$startDate, input$endDate, quiz_data)
+      y <- getNumberOfResponsesByLearner(learners, startDate, endDate, quiz_data)
       yAxisTitle <- "Answers"
     }
     else if (isolate(input$scatterY) == "steps") {
-      y <- getStepsCompleted(learners, input$startDate, input$endDate, step_data)
+      y <- getStepsCompleted(learners, startDate, endDate, step_data)
       yAxisTitle <- "Completed (%)"
     }
     else if (isolate(input$scatterY) == "correct") {
-      y <- getResponsesPercentage(learners, input$startDate, input$endDate, quiz_data)
+      y <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
       y <- y[c("learner_id", "correct")]
       yAxisTitle <- "Correct (%)"
     }
     else if (isolate(input$scatterY) == "wrong") {
-      y <- getResponsesPercentage(learners, input$startDate, input$endDate, quiz_data)
+      y <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
       y <- y[c("learner_id", "wrong")]
       yAxisTitle <- "Wrong (%)"
     }
     else if (isolate(input$scatterY) == "questions") {
-      y <- getPercentageOfAnsweredQuestions(learners, input$startDate, input$endDate, quiz_data)
+      y <- getPercentageOfAnsweredQuestions(learners, startDate, endDate, quiz_data)
       yAxisTitle <- "Questions (%)"
     }
     # Merge the x and y data frames together and rename the columns
@@ -1472,85 +1365,85 @@ function(input, output, session) {
     scatter$chart (zoomType = "xy")
     
     return (scatter)
-})
+  })
   
-output$dateTimeSeries <- renderDygraph({
-  chartDependency()
-  learners <- unlist(strsplit(input$filteredStreams, "[,]"))
-  #calculate the comments, like and replies by date
-  comments <- getNumberOfCommentsByDate(learners, input$startDate, input$endDate, comments_data)
-  likes <-  getNumberOfLikesByDate(learners, input$startDate, input$endDate, comments_data)
-  replies <- getNumberOfRepliesByDate(learners, input$startDate, input$endDate, comments_data)
-  answers <- getNumberOfResponsesByDateTime(learners, input$startDate, input$endDate, quiz_data)
-  enrolment <- getEnrolmentByDateTime(learners, input$startDate, input$endDate, enrolment_data)
-  
-  #convert them to time series objects so dygraph can plot them
-  commentsXts <- xts(as.matrix(comments[,-1]),as.POSIXct(comments[,1],format='%Y-%m-%d %H', tz= "GMT"))
-  likesXts <- xts(as.matrix(likes[,-1]),as.POSIXct(likes[,1],format='%Y-%m-%d %H', tz= "GMT"))
-  repliesXts <- xts(as.matrix(replies[,-1]),as.POSIXct(replies[,1],format='%Y-%m-%d %H', tz= "GMT"))
-  answersXts <- xts(as.matrix(answers[,-1]),as.POSIXct(answers[,1],format='%Y-%m-%d %H', tz= "GMT"))
-  enrolmentXts <- xts(as.matrix(enrolment[,-1]),as.POSIXct(enrolment[,1],format='%Y-%m-%d %H', tz= "GMT"))
-  #combine the series
-  plotData <- cbind(commentsXts, repliesXts, likesXts, answersXts, enrolmentXts)
-  plotData <- na.fill(plotData, 0)
-  for (i in 1:nrow(plotData)) {
-    if (plotData[i,5] == 0) {
-      plotData[i,5] = plotData[i-1,5]
+  output$dateTimeSeries <- renderDygraph({
+    chartDependency()
+    learners <- unlist(strsplit(input$filteredStreams, "[,]"))
+    #calculate the comments, like and replies by date
+    comments <- getNumberOfCommentsByDate(learners, startDate, endDate, comments_data)
+    likes <-  getNumberOfLikesByDate(learners, startDate, endDate, comments_data)
+    replies <- getNumberOfRepliesByDate(learners, startDate, endDate, comments_data)
+    answers <- getNumberOfResponsesByDateTime(learners, startDate, endDate, quiz_data)
+    enrolment <- getEnrolmentByDateTime(learners, startDate, endDate, enrolment_data)
+    
+    #convert them to time series objects so dygraph can plot them
+    commentsXts <- xts(as.matrix(comments[,-1]),as.POSIXct(comments[,1],format='%Y-%m-%d %H', tz= "GMT"))
+    likesXts <- xts(as.matrix(likes[,-1]),as.POSIXct(likes[,1],format='%Y-%m-%d %H', tz= "GMT"))
+    repliesXts <- xts(as.matrix(replies[,-1]),as.POSIXct(replies[,1],format='%Y-%m-%d %H', tz= "GMT"))
+    answersXts <- xts(as.matrix(answers[,-1]),as.POSIXct(answers[,1],format='%Y-%m-%d %H', tz= "GMT"))
+    enrolmentXts <- xts(as.matrix(enrolment[,-1]),as.POSIXct(enrolment[,1],format='%Y-%m-%d %H', tz= "GMT"))
+    #combine the series
+    plotData <- cbind(commentsXts, repliesXts, likesXts, answersXts, enrolmentXts)
+    plotData <- na.fill(plotData, 0)
+    for (i in 1:nrow(plotData)) {
+      if (plotData[i,5] == 0) {
+        plotData[i,5] = plotData[i-1,5]
+      }
     }
-  }
-  colnames(plotData) <- c("comments", "replies", "likes", "answers", "enrolment")
-  plotData$comments <- cumsum(plotData$comments)
-  plotData$replies <- cumsum(plotData$replies)
-  plotData$likes <- cumsum(plotData$likes)
-  plotData$answers <- cumsum(plotData$answers)
-  #plot all the series in one chart, passing it some options
-  dygraph(plotData) %>%
-    dySeries("comments", label = "Comments") %>%
-    dySeries("replies", label = "Likes") %>%
-    dySeries("likes", label = "Replies") %>%
-    dySeries("answers", label = "Answers") %>%
-    dySeries("enrolment", label = "Enrolment") %>%
-    #for some reason, useDataTimezone stopped working
-    dyOptions(stepPlot = FALSE, fillGraph = FALSE, drawGrid = FALSE, useDataTimezone = TRUE) %>%
-    dyLegend(show = "always", hideOnMouseOut = TRUE, width = 700) %>%
-    dyRangeSelector() %>%
-    dyRoller(rollPeriod  = 1) %>%
-    dyHighlight(highlightCircleSize = 5, 
-                highlightSeriesBackgroundAlpha = 0.2,
-                hideOnMouseOut = TRUE,
-                highlightSeriesOpts = list(strokeWidth = 2))
-})
-
-
-output$network <- renderForceNetwork({
-  chartDependency()
+    colnames(plotData) <- c("comments", "replies", "likes", "answers", "enrolment")
+    plotData$comments <- cumsum(plotData$comments)
+    plotData$replies <- cumsum(plotData$replies)
+    plotData$likes <- cumsum(plotData$likes)
+    plotData$answers <- cumsum(plotData$answers)
+    #plot all the series in one chart, passing it some options
+    dygraph(plotData) %>%
+      dySeries("comments", label = "Comments") %>%
+      dySeries("replies", label = "Likes") %>%
+      dySeries("likes", label = "Replies") %>%
+      dySeries("answers", label = "Answers") %>%
+      dySeries("enrolment", label = "Enrolment") %>%
+      #for some reason, useDataTimezone stopped working
+      dyOptions(stepPlot = FALSE, fillGraph = FALSE, drawGrid = FALSE, useDataTimezone = TRUE) %>%
+      dyLegend(show = "always", hideOnMouseOut = TRUE, width = 700) %>%
+      dyRangeSelector() %>%
+      dyRoller(rollPeriod  = 1) %>%
+      dyHighlight(highlightCircleSize = 5, 
+                  highlightSeriesBackgroundAlpha = 0.2,
+                  hideOnMouseOut = TRUE,
+                  highlightSeriesOpts = list(strokeWidth = 2))
+  })
   
-  com <- comments_data
-  input$resetButton
-  start <- input$startDate
-  end <- input$endDate
-  net <- getNetworkByLearner(com)
   
-  #net <- net[as.Date(net$Timestamp) >= start & as.Date(net$Timestamp) <= end,]
-  id <- unique(c(net$Givers,net$Receivers))
-  node <<- data.frame(id)
-  src <- apply(as.matrix(net$Givers),1,function(x) match(x,id)) 
-  tag <- apply(as.matrix(net$Receivers),1,function(x) match(x,id))
-  src <- src - 1
-  tag <- tag - 1
-  link <<- data.frame(src,tag)
-  link <- dcast(link,src + tag ~ 'value',length)
-  
-  giver <- unique(net$Givers)
-  receiver <- unique(net$Receivers)
-  group <- apply(as.matrix(id),1,function(x) if(!is.na(match(x,giver)) & !is.na(match(x,receiver))) 'both' else if (!is.na(match(x,giver))) 'giver' else 'receiver')
-  node$group <- group
-  node$size <- 5
-  forceNetwork(link,node,Source ='src',Target = 'tag', Nodesize = 'size',radiusCalculation = JS("d.nodesize"),
-               linkWidth = JS("function(d) { return d.value
+  output$network <- renderForceNetwork({
+    chartDependency()
+    
+    com <- comments_data
+    input$resetButton
+    start <- startDate
+    end <- endDate
+    net <- getNetworkByLearner(com)
+    
+    #net <- net[as.Date(net$Timestamp) >= start & as.Date(net$Timestamp) <= end,]
+    id <- unique(c(net$Givers,net$Receivers))
+    node <<- data.frame(id)
+    src <- apply(as.matrix(net$Givers),1,function(x) match(x,id)) 
+    tag <- apply(as.matrix(net$Receivers),1,function(x) match(x,id))
+    src <- src - 1
+    tag <- tag - 1
+    link <<- data.frame(src,tag)
+    link <- dcast(link,src + tag ~ 'value',length)
+    
+    giver <- unique(net$Givers)
+    receiver <- unique(net$Receivers)
+    group <- apply(as.matrix(id),1,function(x) if(!is.na(match(x,giver)) & !is.na(match(x,receiver))) 'both' else if (!is.na(match(x,giver))) 'giver' else 'receiver')
+    node$group <- group
+    node$size <- 5
+    forceNetwork(link,node,Source ='src',Target = 'tag', Nodesize = 'size',radiusCalculation = JS("d.nodesize"),
+                 linkWidth = JS("function(d) { return d.value
                             ; }"), linkColour = "#000000",opacity = 0.9,
-               Value = 'value',NodeID = 'id',Group = 'group',zoom =  T, legend = T,colourScale = 'd3.scale.category10()',
-               clickAction = 'var pos = d3.transform(d3.select(this).attr("transform")).translate;
+                 Value = 'value',NodeID = 'id',Group = 'group',zoom =  T, legend = T,colourScale = 'd3.scale.category10()',
+                 clickAction = 'var pos = d3.transform(d3.select(this).attr("transform")).translate;
                             var x = pos[0];
                             var y = pos[1];
                             var line = d3.selectAll("line");
@@ -1567,9 +1460,9 @@ output$network <- renderForceNetwork({
                                 }
                             }
                              '  
-               
-  )
-}) 
+                 
+    )
+  }) 
   
   output$densityAndReciprocity <- renderDygraph({
     chartDependency()
@@ -1606,13 +1499,49 @@ output$network <- renderForceNetwork({
       dyRangeSelector()
   })  
   
+  getPage<-function() {
+    return(includeHTML("funnel.html"))
+  }
   
+  #   output$funnel <- renderChart2({
+  #     chartDependency()
+  #     plotData <- getFunnelOfParticipation(enrolment_data, step_data, comments_data, assignments_data, 
+  #                                          input$startDate, input$endDate)
+  #     funnel <- Highcharts$new()
+  #     funnel$plotOptions (
+  #       funnel = list(
+  #         neckWidth = "23%",
+  #         neckHeight = "32%",
+  #         width = "68%",
+  #         dataLabels = list(
+  #           enabled = "true",
+  #           style = list(
+  #             fontSize = "8px"
+  #           )
+  #         )
+  #       )
+  #     )
+  #     funnel$series (
+  #       data = list(
+  #         list(plotData[1,1], plotData[1,2]),
+  #         list(plotData[2,1], plotData[2,2]),
+  #         list(plotData[3,1], plotData[3,2]),
+  #         list(plotData[4,1], plotData[4,2]),
+  #         list(plotData[5,1], plotData[5,2])
+  #       ),
+  #       type = "funnel",
+  #       name = "learners"
+  #     )
+  #     return(funnel)
+  #   })
+  # 
+  #   
   
   
   
   createFunnelChart <- function () {
-    plotData <- getFunnelOfParticipation(enrolment_data, step_data, comments_data, assignment_data, 
-                                         input$startDate, input$endDate)
+    plotData <- getFunnelOfParticipation(enrolment_data, step_data, comments_data, assignments_data, 
+                                         startDate, endDate)
     funnel <- Highcharts$new()
     funnel$plotOptions (
       funnel = list(
