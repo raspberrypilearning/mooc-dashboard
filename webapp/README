@@ -1,0 +1,104 @@
+MOOC Dashboard - Web Application
+================================
+Originator : Lyubomir Vasilev (lyubo.vasilev93@gmail.com)
+Last Updated : 1 July 2016 by J.S.Robinson@soton.ac.uk
+
+
+Overview
+--------
+
+Based on the [Shiny Dashboard](https://rstudio.github.io/shinydashboard/) Framework and running in [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/) this application analyses and plots the data fetched by the Data Retrieval script.
+
+
+Prerequisites / Installation
+-----------------------------
+
+(Developed / tested on Ubuntu Linux 14.04 LTS.)
+
+These instructions assume that you will run the Dashboard as user 'mooc' on a host called 'dashboard.vm' , and that the mooc-dashboard repository has been cloned into /home/mooc/mooc-dashboard
+
+
+1. Install OS package prerequisites:
+
+$ sudo apt-get install -y libcurl4-gnutls-dev libxml2-dev gfortran libblas-dev liblapack-dev libmariadbclient-dev libssl-dev
+
+
+2. Configure R-Studio repository and install latest R packages:
+
+$ sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list'
+$ gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
+$ gpg -a --export E084DAB9 | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get -y install r-base
+
+
+3. Install R packages:
+
+As the user who will own / run the dashboard, open the R prompt:
+
+$ R
+
+install.packages("reshape2")
+install.packages("devtools")
+devtools::install_github("rCharts", "ramnathv")
+install.packages("dygraphs")
+install.packages("d3heatmap")
+install.packages("shinyjs")
+devtools::install_github("shiny-gridster", "wch")
+install.packages("networkD3")
+install.packages("googleVis")
+install.packages("RMySQL")
+install.packages("shinydashboard")
+
+
+4. Install Shiny Server Open Source (system wide):
+
+$ sudo su - -c "R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
+$ sudo apt-get install gdebi-core
+$ wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.2.786-amd64.deb
+$ sudo gdebi shiny-server-1.4.2.786-amd64.deb
+
+
+5. Configure Shiny Server (edit /etc/shiny-server/shiny-server.conf as follows, assuming your username is 'mooc'):
+
+########## START /etc/shiny-server/shiny-server.conf #################
+
+# Instruct Shiny Server to run applications (NOT the server) as the user "mooc"
+run_as mooc;
+
+# Define a server that listens on port 3838
+server {
+  listen 3838;
+
+  # Define a location at the base URL
+  location / {
+
+    # Host the directory of Shiny Apps stored in this directory
+    site_dir /home/mooc/mooc-dashboard/webapp;
+
+    # Log all Shiny output to files in this directory
+    log_dir /home/mooc/mooc-dashboard/log;
+
+    # When a user visits the base URL rather than a particular application,
+    # an index of the applications available in this directory will be shown.
+    directory_index off;
+  }
+}
+########## END /etc/shiny-server/shiny-server.conf #################
+
+
+6. Configure the Dashboard:
+
+Copy / rename /home/mooc/mooc-dashboard/webpapp/config.R.template to config.R 
+Set variables therein as indicated.
+
+
+Usage
+-----
+
+(re)start the Shiny server to access the webapplication:
+$ sudo stop shiny-server
+$ sudo start shiny-server
+
+The Dashboard web application should be accessible at http://dashboard.vm:3838
+
