@@ -1,4 +1,7 @@
 webapp/config.R
+webapp/.Rproj.user
+webapp/.RData
+webapp/.RHistory
 update/config.json
 update/fail
 update/*pyc
