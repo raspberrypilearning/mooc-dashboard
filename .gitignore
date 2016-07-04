@@ -6,3 +6,7 @@ update/config.json
 update/fail
 update/*pyc
 update/.idea
+data/*
+data/!.gitkeep
+logs/*
+logs/!.gitkeep
