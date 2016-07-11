@@ -6,6 +6,7 @@ require(d3heatmap)
 require(shinyGridster)
 require(networkD3)
 require(shinyjs)
+require(DT)
 source("config.R")
 source("learner_filters.R")
 source("courses.R")
@@ -28,7 +29,9 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     id = "tabs", 
     menuItem("Home", tabName = "home", icon = icon("home")),
+    menuItem("Aggregate Enrolment Data", tabName = "enrolment", icon = icon("th")),
     menuItem("Demographics", tabName = "demographics", icon = icon("graduation-cap")),
+    menuItem("Step Completion", tabName = "step_completion", icon = icon("graduation-cap")),
     menuItem("Comments", tabName = "comments", icon = icon("commenting-o")),
     menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
     menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
@@ -51,16 +54,28 @@ body <- dashboardBody(
                 tags$div(uiOutput("chooseCourse", inline = TRUE)),
                 title = "Course selection",
                 status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
-              )#box
+              )
             )
+            
     ),
+    tabItem(tabName = "enrolment",
+            fluidRow(
+              box(
+                DT::dataTableOutput('aggregateEnrolmentData'),
+                title = "Aggregate Enrolment Data",
+                status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE),
+                valueBoxOutput("totalJoiners", width = 5),
+                valueBoxOutput("totalLearners", width = 5),
+                valueBoxOutput("totalStatementsSold", width = 5)
+              )
+      ),
     tabItem(tabName = "demographics",
             fluidRow(
               box(showOutput("learnersAge", "highcharts"),
                   title = "Age Distribution", 
                   status = "primary", solidHeader = TRUE, width = 5, collapsible = TRUE),
               box(showOutput("learnersGender", "highcharts"),
-                  title = "Male to Female Ratio", 
+                  title = "Gender Ratio", 
                   status = "primary", solidHeader = TRUE, width = 5, collapsible = TRUE)
             ),#fluidRow
             fluidRow(
@@ -78,6 +93,14 @@ body <- dashboardBody(
                   title = "Learners by country", 
                   status = "primary", solidHeader = TRUE, width = 10, height = 500,collapsible = TRUE)
             )#fluidRow
+    ),
+    tabItem(tabName = "step_completion",
+      fluidRow(box(plotOutput("stepsCompleted"),
+        textOutput("Test"),
+        title = "Steps marked as complete",
+        status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
+        )
+      )
     ),
     tabItem(tabName = "comments",
             fluidRow(

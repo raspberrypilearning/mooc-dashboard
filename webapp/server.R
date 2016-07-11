@@ -1371,6 +1371,7 @@ function(input, output, session) {
     chartDependency()
     learners <- unlist(strsplit(input$filteredStreams, "[,]"))
     #calculate the comments, like and replies by date
+
     comments <- getNumberOfCommentsByDate(learners, startDate, endDate, comments_data)
     likes <-  getNumberOfLikesByDate(learners, startDate, endDate, comments_data)
     replies <- getNumberOfRepliesByDate(learners, startDate, endDate, comments_data)
@@ -1498,7 +1499,51 @@ function(input, output, session) {
       dyLegend(show = 'onmouseover', hideOnMouseOut = T) %>%
       dyRangeSelector()
   })  
-  
+
+  aggregateEnrol = read.csv(file.path(getwd(),"../data",institution,"Enrolment Data","enrolmentData.csv"))
+  output$aggregateEnrolmentData <- DT::renderDataTable(
+    DT::datatable(
+      aggregateEnrol, class = 'cell-border stripe', filter = 'top', colnames = c('Start Date' = 3,
+      'Weeks' = 4,
+      'Active Learners' = 8,
+      'Returning Learners' = 9,
+      'Social Learners' = 10,
+      'Fully Participating Learners' = 11,
+      'Statements Sold' = 12),
+       options = list(
+        lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
+        pageLength = 15
+      )
+    )
+  )
+
+  output$totalJoiners <- renderValueBox({
+    valueBox("Total Joiners", subtitle = sum(aggregateEnrol$Joiners), icon = icon("group"), color = "red")
+  })
+  output$totalLearners <- renderValueBox({
+    learners <- subset(aggregateEnrol , Learners != "N/A")
+    learners2 <- sapply(learners$Learners, function(x) strsplit(toString(x), "-"))
+    learners3 <- sapply(learners2, function(x) as.numeric(x[[1]]))
+    # learners <- as.numeric(unlist(strsplit(toString(subset(aggregateEnrol$Learners, aggregateEnrol$Learners != "N/A")), "-")))
+    valueBox("Total Learners", subtitle = sum(learners3), icon = icon("group"), color = "red")
+  })
+  output$totalStatementsSold <- renderValueBox({
+    valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$Statements.Sold), icon = icon("certificate"), color = "red")
+  })
+
+  output$stepsCompleted <- renderPlot({
+    stepData <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"step-activity.csv"))
+    completedSteps <- subset(stepData, last_completed_at != "")
+    completedSteps$week_step <- paste0(completedSteps$week_number, sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
+    stepsCount <- count(completedSteps, 'week_step')
+    p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
+    geom_bar(stat = "identity",aes(fill = freq)) +
+    xlab("Step") +
+    ylab("Number of learners marked as complete") +
+    theme(axis.text.x = element_text(angle = 90))
+    print(p)
+    })
+
   getPage<-function() {
     return(includeHTML("funnel.html"))
   }
@@ -1570,8 +1615,4 @@ function(input, output, session) {
     funnel$addAssets(js = "http://code.highcharts.com/modules/funnel.js")
     funnel$save("funnel.html", cdn = FALSE)
   }
-  
-  
-  
-  
 }

@@ -49,6 +49,7 @@ install.packages("networkD3")
 install.packages("googleVis")
 install.packages("RMySQL")
 install.packages("shinydashboard")
+install.packages("DT")
 
 
 4. Install Shiny Server Open Source (system wide):
@@ -101,4 +102,5 @@ $ sudo stop shiny-server
 $ sudo start shiny-server
 
 The Dashboard web application should be accessible at http://dashboard.vm:3838
+It is also accessible via the vm's web browser at http://localhost:3838
 

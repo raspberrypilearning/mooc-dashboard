@@ -1,11 +1,11 @@
-
 getListOfCourses <- function() {
   #print("Getting list of courses")
   outputPath <- file.path(getwd(),"../data",institution)
   #print(outputPath)
   courses <- list.dirs(path = outputPath, full.names = FALSE, recursive = FALSE)
-  #print(courses)
-  return(courses)
+  # print(courses)
+  coursesupdated <- courses[which(courses != "Enrolment Data")]
+  return(coursesupdated)
 }
 
 getRuns <- function (course) {
@@ -33,19 +33,3 @@ getUpdatedTime <- function() {
   updated_time = readChar(updatedPath, file.info(updatedPath)$size)
   return (updated_time)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

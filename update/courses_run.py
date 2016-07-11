@@ -1,4 +1,4 @@
-import requests,os,datetime
+import requests,os,datetime,unicodedata
 from bs4 import BeautifulSoup
 
 class FLCourses:
@@ -69,7 +69,7 @@ class FLCourses:
 							end_date = start_date + datetime.timedelta(weeks=int(run_duration_weeks))
 							print "...end date: %s" %end_date
 
-							run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path)}
+							run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path)}
 							course_info[str(run_count)] = run_data
 					
 						run_count-=1
@@ -108,7 +108,61 @@ class FLCourses:
 					data[link] = filename
 			return data
 
+	def getEnrolmentData(self, stats_dashboard_url):
+		""" Assemble CSV file of enrolment data for the run
 
+		"""
+		print "Looking up enrolment data: %s" % stats_dashboard_url
+
+		enrolmentData = {}
+		monthToNum = {
+			'Jan' : '01',
+			'Feb' : '02',
+			'Mar' : '03',
+			'Apr' : '04',
+			'May' : '05',
+			'Jun' : '06',
+			'Jul' : '07',
+			'Aug' : '08',
+			'Sep' : '09',
+			'Oct' : '10',
+			'Nov' : '11',
+			'Dec' : '12',
+		}
+
+
+		if(self.__isAdmin):
+			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
+			table = soup.find('table', class_ = "table table-condensed table-striped table-fixed run-stats-dashboard-table")
+
+			enrolmentData["Course"] = " - ".join([stats_dashboard_url.split("/")[-3], stats_dashboard_url.split("/")[-2]]).encode('ascii','ignore')
+			startDate = soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
+			
+			if len(startDate[1]) == 1:
+				day = ''.join(['0',startDate[1]])
+			else:
+				day = startDate[1]
+
+
+			startDateFormatted = '-'.join([startDate[3],monthToNum[startDate[2]], day])
+			enrolmentData["Start Date"] =  startDateFormatted
+
+			if(table):
+				trs = table.find_all('tr')
+
+				for tr in trs:
+					rowName = tr.find('th').get_text().strip().encode('ascii','ignore')
+					tds = tr.find_all('td')
+					numeric = tds[0].get_text().strip().replace("," , "").encode('ascii','ignore')
+					percent = tds[1].get_text().strip().encode('ascii','ignore')
+					if rowName in ['Statements Sold', 'Joiners','Certificates Sold']:
+						enrolmentData[rowName] = numeric
+					else:
+						enrolmentData[rowName] = ' - '.join((numeric,percent))
+						
+
+			print enrolmentData
+			return enrolmentData
 
 	def getRunDuration(self, _run_details_url):
 		""" Find the duration of the course, in weeks
