@@ -1124,7 +1124,7 @@ function(input, output, session) {
 		comments <- getNumberOfCommentsByDateStep(learners, startDate, endDate, comments_data)
 		comments <- as.matrix(comments)
 		d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
-							color = "Blues",, 
+							color = "Blues",
 							scale = "column",
 							labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
 							labCol = colnames(comments)[-1])
