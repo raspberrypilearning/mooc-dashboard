@@ -1123,8 +1123,12 @@ function(input, output, session) {
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
 		comments <- getNumberOfCommentsByDateStep(learners, startDate, endDate, comments_data)
 		comments <- as.matrix(comments)
+<<<<<<< HEAD
 		d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
 							color = "Blues",, 
+=======
+		d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", colors = scales::col_quantile("Blues", NULL, 5), 
+>>>>>>> 9a1c678f68f3332163c59d1f4e7847ce195e781e
 							scale = "column",
 							labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
 							labCol = colnames(comments)[-1])
