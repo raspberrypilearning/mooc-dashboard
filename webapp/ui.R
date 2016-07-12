@@ -30,7 +30,7 @@ sidebar <- dashboardSidebar(
     id = "tabs", 
     menuItem("Home", tabName = "home", icon = icon("home")),
     menuItem("Aggregate Enrolment Data", tabName = "enrolment", icon = icon("th")),
-    menuItem("Demographics", tabName = "demographics", icon = icon("graduation-cap")),
+    menuItem("Demographics", tabName = "demographics", icon = icon("pie-chart")),
     menuItem("Step Completion", tabName = "step_completion", icon = icon("graduation-cap")),
     menuItem("Comments", tabName = "comments", icon = icon("commenting-o")),
     menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
@@ -61,9 +61,9 @@ body <- dashboardBody(
     tabItem(tabName = "enrolment",
             fluidRow(
               box(
-                DT::dataTableOutput('aggregateEnrolmentData'),
                 title = "Aggregate Enrolment Data",
-                status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE),
+                status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE,
+                DT::dataTableOutput('aggregateEnrolmentData')),
                 valueBoxOutput("totalJoiners", width = 5),
                 valueBoxOutput("totalLearners", width = 5),
                 valueBoxOutput("totalStatementsSold", width = 5)
@@ -95,10 +95,16 @@ body <- dashboardBody(
             )#fluidRow
     ),
     tabItem(tabName = "step_completion",
-      fluidRow(box(plotOutput("stepsCompleted"),
+      fluidRow(
+        box(plotOutput("stepsCompleted"),
         textOutput("Test"),
         title = "Steps marked as complete",
         status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
+        ),
+        box(
+          d3heatmapOutput("stepCompletionHeat"),
+          title = "Steps marked as complete by step and date",
+          status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
         )
       )
     ),
