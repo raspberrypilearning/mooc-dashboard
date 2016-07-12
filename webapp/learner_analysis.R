@@ -126,6 +126,7 @@ getNumberOfCommentsByDateStep <- function (learners, startDate, endDate, data){
   pivot <- dcast(mdata, timestamp ~ step, length)
   pivot[,1] <- as.numeric(pivot[,1])
   pivot[,2:length(pivot)] <- apply(pivot[,2:length(pivot)], c(1, 2), function (x) as.numeric(as.character(x)))
+  print(pivot)
   return (pivot)
 }
 
