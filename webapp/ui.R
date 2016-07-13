@@ -98,12 +98,17 @@ body <- dashboardBody(
       fluidRow(
         box(plotOutput("stepsCompleted"),
         textOutput("Test"),
-        title = "Steps marked as complete",
+        title = "Steps Marked As Complete",
         status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
         ),
         box(
+          d3heatmapOutput("firstVisitedHeat"),
+          title = "Steps First Visited By Step And Date",
+          status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
+        ),
+        box(
           d3heatmapOutput("stepCompletionHeat"),
-          title = "Steps marked as complete by step and date",
+          title = "Steps Marked As Complete By Step And Date",
           status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
         )
       )
@@ -111,6 +116,9 @@ body <- dashboardBody(
     tabItem(tabName = "comments",
             fluidRow(
               textInput("filteredLearners", ""),
+              box(plotOutput("commentsBarChart"),
+                  title = "Number of Comments by Step", 
+                  status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE),
               box(d3heatmapOutput("stepDateCommentsHeat"),
                   title = "Number of Comments by Step and Date", 
                   status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE)

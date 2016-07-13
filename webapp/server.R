@@ -58,7 +58,10 @@ function(input, output, session) {
 		
 		commentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv")
 		print(commentsDataFile)
-		assign("comments_data", getRawData(commentsDataFile, "comments"), envir = .GlobalEnv)    
+		assign("comments_data", getRawData(commentsDataFile, "comments"), envir = .GlobalEnv)
+
+		comments <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv"))
+		assign("comments", comments, envir = .GlobalEnv)      
 		
 		quizDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"question-response.csv")
 		print(quizDataFile)
@@ -79,7 +82,6 @@ function(input, output, session) {
 			assign("reviews_data", getRawData(assignmentsDataFile, ""), envir = .GlobalEnv)
 		}
 		else print("...No such File")
-		
 		
 		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
 		print(enrolmentDataFile)
@@ -1553,12 +1555,14 @@ function(input, output, session) {
 	output$stepCompletionHeat <- renderD3heatmap({
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
+		startDate <- input$run
 		completedSteps <- subset(stepData, last_completed_at != "")
 		completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
 		data <- completedSteps[,c("week_step", "last_completed_at")]
 		data$last_completed_at <- unlist(lapply(data$last_completed_at, function(x) substr(x,1,10)))
 		data$count <- 1
 		aggregateData <- aggregate(count ~., data, FUN = sum)
+		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$last_completed_at)) >= as.numeric(gsub("-","",substr(startDate,5,14))))
 		pivot <- dcast(aggregateData, last_completed_at ~ week_step)
 		pivot[is.na(pivot)] <- 0
 		map <- as.data.frame(pivot)
@@ -1566,8 +1570,45 @@ function(input, output, session) {
 			dendrogram = "none",
 			scale = "column",
 			color = "Blues",
-			labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")))
+			labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
+			)
+		)
 	})
+
+	output$firstVisitedHeat <- renderD3heatmap({
+		# Draw the chart when the "chooseCourseButton" is pressed by the user
+		chartDependency()
+		startDate <- input$run
+		stepData$week_step <- paste0(stepData$week_number,".", sprintf("%02d",as.integer(stepData$step_number)), sep = "")
+		data <- stepData[,c("week_step", "first_visited_at")]
+		data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
+		data$count <- 1
+		aggregateData <- aggregate(count ~., data, FUN = sum)
+		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= as.numeric(gsub("-","",substr(startDate,5,14))))
+		pivot <- dcast(aggregateData, first_visited_at ~ week_step)
+		pivot[is.na(pivot)] <- 0
+		map <- as.data.frame(pivot)
+		print(d3heatmap(map[,2:ncol(map)],
+			dendrogram = "none",
+			scale = "column",
+			color = "Blues",
+			labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
+			)
+		)
+	})
+
+	output$commentsBarChart <- renderPlot({
+		chartDependency()
+		comments$week_step <- paste0(comments$week_number,".", sprintf("%02d",as.integer(comments$step_number)), sep = "")
+		stepsCount <- count(comments, 'week_step')
+		p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
+		geom_bar(stat = "identity",aes(fill = freq)) +
+		xlab("Step") +
+		ylab("Number Of Comments") +
+		theme(axis.text.x = element_text(angle = 90))
+		print(p)
+	})
+
 
 	getPage<-function() {
 		return(includeHTML("funnel.html"))
