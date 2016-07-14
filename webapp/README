@@ -50,6 +50,8 @@ install.packages("googleVis")
 install.packages("RMySQL")
 install.packages("shinydashboard")
 install.packages("DT")
+install.packages("tm")
+install.packages("wordcloud")
 
 
 4. Install Shiny Server Open Source (system wide):

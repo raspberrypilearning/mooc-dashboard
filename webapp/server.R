@@ -9,6 +9,8 @@ require(plyr)
 require(googleVis)
 require(networkD3)
 require(shinyjs)
+require(tm)
+require(wordcloud)
 source("config.R")
 source("learner_analysis.R")
 source("learner_filters.R")
@@ -1555,14 +1557,14 @@ function(input, output, session) {
 	output$stepCompletionHeat <- renderD3heatmap({
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
-		startDate <- input$run
+		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
 		completedSteps <- subset(stepData, last_completed_at != "")
 		completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
 		data <- completedSteps[,c("week_step", "last_completed_at")]
 		data$last_completed_at <- unlist(lapply(data$last_completed_at, function(x) substr(x,1,10)))
 		data$count <- 1
 		aggregateData <- aggregate(count ~., data, FUN = sum)
-		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$last_completed_at)) >= as.numeric(gsub("-","",substr(startDate,5,14))))
+		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$last_completed_at)) >= startDate)
 		pivot <- dcast(aggregateData, last_completed_at ~ week_step)
 		pivot[is.na(pivot)] <- 0
 		map <- as.data.frame(pivot)
@@ -1578,13 +1580,13 @@ function(input, output, session) {
 	output$firstVisitedHeat <- renderD3heatmap({
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
-		startDate <- input$run
+		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
 		stepData$week_step <- paste0(stepData$week_number,".", sprintf("%02d",as.integer(stepData$step_number)), sep = "")
 		data <- stepData[,c("week_step", "first_visited_at")]
 		data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
 		data$count <- 1
 		aggregateData <- aggregate(count ~., data, FUN = sum)
-		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= as.numeric(gsub("-","",substr(startDate,5,14))))
+		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
 		pivot <- dcast(aggregateData, first_visited_at ~ week_step)
 		pivot[is.na(pivot)] <- 0
 		map <- as.data.frame(pivot)
@@ -1597,17 +1599,104 @@ function(input, output, session) {
 		)
 	})
 
-	output$commentsBarChart <- renderPlot({
+	output$commentsBarChart <- renderChart2({
 		chartDependency()
-		comments$week_step <- paste0(comments$week_number,".", sprintf("%02d",as.integer(comments$step_number)), sep = "")
-		stepsCount <- count(comments, 'week_step')
-		p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
-		geom_bar(stat = "identity",aes(fill = freq)) +
-		xlab("Step") +
-		ylab("Number Of Comments") +
-		theme(axis.text.x = element_text(angle = 90))
-		print(p)
+		data <- comments
+		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+		data <- data[,c("week_step", "parent_id")]
+		posts <- subset(data, is.na(data$parent_id))
+		replies <- subset(data, !is.na(data$parent_id))$week_step
+		postCount <- count(posts)
+		replyCount <- count(replies)
+		plotData <- data.frame(week_step =postCount$week_step,replies = replyCount$freq,comments = postCount$freq)
+		histogram <- Highcharts$new()
+		histogram$chart(type = "column")
+		histogram$data(plotData[,c("replies","comments")])
+		histogram$xAxis (categories = plotData$week_step)
+		histogram$yAxis (
+			title = list(
+				text = "Total comments made"
+			))
+		histogram$plotOptions (
+  		column = list(
+    	stacking = "normal"
+  		)
+		)
+		return(histogram)
 	})
+
+	output$runSteps <- renderUI({
+		chartDependency()
+		steps <- getRunSteps(input$course,input$run)
+		print(selectInput("stepChoice", label = "Steps", choices = c(steps), width = "450px"))
+	})
+
+	output$viewButton <- renderUI({
+		chartDependency()
+			print(actionButton("viewButton","View"))
+	})
+
+	viewPressed <- eventReactive(input$viewButton, {
+		return(input$stepChoice)
+	})
+
+	output$commentViewer <- renderDataTable({
+		data <- comments
+		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+
+		stepcomments <- subset(data, data$week_step == viewPressed())
+		sorted <- stepcomments[order(-stepcomments$likes),]
+		print(paste(sorted[1:10,]$text), sep = "\n")
+
+		DT::datatable(
+			sorted[,c("text","likes")], class = 'cell-border stripe', filter = 'top',
+			 options = list(
+				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
+				pageLength = 15
+			)
+		)
+	})
+
+	wordcloud_rep <- repeatable(wordcloud)
+
+	terms <- eventReactive(input$loadCloud,{
+		isolate({
+			withProgress({
+				setProgress(message = "Processing Word Cloud...")
+				data <- comments
+				data <- data[c("text","likes")]
+				data <- data[order(-data$likes),]
+				text <- unlist(strsplit(toString(data$text),"[\n]"))
+				myCorpus = Corpus(VectorSource(head(text,2000)))
+				myCorpus = tm_map(myCorpus, content_transformer(tolower))
+				myCorpus = tm_map(myCorpus, removePunctuation)
+				myCorpus = tm_map(myCorpus, removeNumbers)
+				myCorpus = tm_map(myCorpus, removeWords,
+				                  c(stopwords("SMART")))
+				myDTM = TermDocumentMatrix(myCorpus,
+				                           control = list(minWordLength = 1))
+				m = as.matrix(myDTM)
+				m <- sort(rowSums(m), decreasing = TRUE)
+			})
+		})
+	})
+
+	output$commentWordCloud <- renderPlot({
+		chartDependency()
+		input$loadCloud
+		if(input$loadCloud == 0){
+			return()
+		}
+
+		m <- terms()
+		wordcloud_rep(names(m), m, scale = c(4,0.5),
+			min.freq = input$commentCloudFreq,
+			max.words = input$commentCloudMax,
+			colors = brewer.pal(8,"Dark2"),
+			rot.per = 0)
+	})
+
+
 
 
 	getPage<-function() {

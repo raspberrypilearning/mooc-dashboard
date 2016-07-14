@@ -33,3 +33,12 @@ getUpdatedTime <- function() {
   updated_time = readChar(updatedPath, file.info(updatedPath)$size)
   return (updated_time)
 }
+
+
+getRunSteps <- function(course, run) {
+  file_path <- file.path(getwd(),"../data",institution,course,run,"step-activity.csv")
+  stepData <- read.csv(file = file_path, header = TRUE, sep = ",")
+  stepData$week_step <- paste0(stepData$week_number,".", sprintf("%02d",as.integer(stepData$step_number)), sep = "")
+  steps <- levels(as.factor(stepData$week_step))
+  return(steps)
+}
