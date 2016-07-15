@@ -134,13 +134,11 @@ body <- dashboardBody(
 						),#fluidRow
 						fluidRow(
 							box(
-								sidebarPanel(
-									sliderInput("commentCloudFreq", "Minimum Frequency of Words:",
-										min = 1, max = 50, value = 25),
-									sliderInput("commentCloudMax", "Maximum Number of Words:",
-										min = 1, max = 50, value = 25),
-									actionButton("loadCloud", label = "Load Word Cloud")
-									),
+								sliderInput("commentCloudFreq", "Minimum Frequency of Words:",
+									min = 1, max = 100, value = 50),
+								sliderInput("commentCloudMax", "Maximum Number of Words:",
+									min = 1, max = 100, value = 50),
+								actionButton("loadCloud", label = "Load Word Cloud"),
 								title = "Comment Word Cloud Panel", 
 								status = "primary", solidHeader = TRUE, width = 3, collapsible = TRUE
 								),

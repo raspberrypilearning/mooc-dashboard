@@ -1601,26 +1601,39 @@ function(input, output, session) {
 
 	output$commentsBarChart <- renderChart2({
 		chartDependency()
+
+		steps <- stepData
 		data <- comments
+		stepLevels <- unique(paste0(steps$week_number,".", sprintf("%02d",as.integer(steps$step_number)), sep = ""))
+
+		plotData <-data.frame(week_step = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+		
 		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
 		data <- data[,c("week_step", "parent_id")]
 		posts <- subset(data, is.na(data$parent_id))
-		replies <- subset(data, !is.na(data$parent_id))$week_step
+		replies <- subset(data, !is.na(data$parent_id))[,c("week_step")]
 		postCount <- count(posts)
 		replyCount <- count(replies)
-		plotData <- data.frame(week_step =postCount$week_step,replies = replyCount$freq,comments = postCount$freq)
+		replyCount$week_step <- as.character(replyCount$x)
+
+		for(x in c(1:length(postCount$freq))){
+		  
+		  plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
+		  
+		}
+
+		for(x in c(1:length(replyCount$freq))){
+		  
+		  plotData[plotData$week_step == replyCount$week_step[x],]$reply <- replyCount$freq[x]
+		}
 		histogram <- Highcharts$new()
 		histogram$chart(type = "column")
-		histogram$data(plotData[,c("replies","comments")])
+		histogram$data(plotData[,c("reply","post")])
 		histogram$xAxis (categories = plotData$week_step)
-		histogram$yAxis (
-			title = list(
-				text = "Total comments made"
-			))
 		histogram$plotOptions (
-  		column = list(
-    	stacking = "normal"
-  		)
+		  column = list(
+		    stacking = "normal"
+		  )
 		)
 		return(histogram)
 	})
@@ -1667,7 +1680,7 @@ function(input, output, session) {
 				data <- data[c("text","likes")]
 				data <- data[order(-data$likes),]
 				text <- unlist(strsplit(toString(data$text),"[\n]"))
-				myCorpus = Corpus(VectorSource(head(text,2000)))
+				myCorpus = Corpus(VectorSource(head(text,1000)))
 				myCorpus = tm_map(myCorpus, content_transformer(tolower))
 				myCorpus = tm_map(myCorpus, removePunctuation)
 				myCorpus = tm_map(myCorpus, removeNumbers)
