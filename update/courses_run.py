@@ -175,7 +175,7 @@ class FLCourses:
 		duration = 0
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(_run_details_url).content, 'html.parser')
-			run_data = soup.findAll('p',class_ = 'run-data')
+			run_data = soup.findAll('span',class_ = 'm-key-info__data')
 			if(run_data):
 				for run_datum in run_data:
 					if("Duration" in run_datum.string):
