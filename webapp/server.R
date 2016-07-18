@@ -640,7 +640,7 @@ function(input, output, session) {
 
 output$learnersAgeBar <- renderChart2({
 	chartDependency()
-	ageCount <- getLearnerAgeCount(enrolments)
+	ageCount <- getLearnerAgeCount(enrolment_data)
 	a <- rCharts:::Highcharts$new()
 	a$chart(type = "bar")
 	a$data(ageCount[c("percentage")])
