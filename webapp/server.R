@@ -672,6 +672,24 @@ output$learnersGender <- renderChart2({
 
 	return(a)
 })
+
+output$employmentBar <-renderChart2({
+	chartDependency()
+	employmentCount <- getEmploymentAreaCount(enrolment_data)
+	a <- rCharts:::Highcharts$new()
+	a$chart(type = "bar")
+	a$data(employmentCount[c("percentage")])
+	a$xAxis(categories = gsub( "_"," ",unlist(employmentCount[c("employment")])))
+	a$plotOptions(
+		bar = list(
+			dataLabels = list(
+				enabled = "true"
+			)
+		)
+	)
+
+	return(a)
+	})
 	
 	
 	# output$learnersGender <- renderChart2({

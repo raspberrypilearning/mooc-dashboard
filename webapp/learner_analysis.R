@@ -685,3 +685,15 @@ getLearnerAgeCount <- function(enrolmentData){
   ageCount$percentage <- round(ageCount$percentage,2)
   return(ageCount)
 }
+
+getEmploymentAreaCount <- function(enrolmentData){
+  enrolments <- enrolmentData
+  employment <- as.character(enrolments$employment_area)
+  employment <- employment[employment!="Unknown"]
+  employmentCount <- count(employment)
+  names(employmentCount)[names(employmentCount)=="x"] <- "employment"
+  employmentCount$percentage <- employmentCount$freq / sum(employmentCount$freq) * 100
+  employmentCount$percentage <- round(employmentCount$percentage,2)
+  employmentCount <- employmentCount[order(-employmentCount$percentage),]
+  return(employmentCount)
+}

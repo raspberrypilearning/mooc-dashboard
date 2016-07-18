@@ -87,7 +87,7 @@ body <- dashboardBody(
 								title = "Employment and Education",
 								id = "employmentTabBox",
 								width = 10,
-								tabPanel("Area", showOutput("employmentArea", "highcharts")),
+								tabPanel("Area", showOutput("employmentBar", "highcharts")),
 								tabPanel("Status", showOutput("employmentStatus", "highcharts")),
 								tabPanel("Degree", showOutput("degreeLevel", "highcharts"))
 							)
