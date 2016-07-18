@@ -142,13 +142,10 @@ body <- dashboardBody(
 								sliderInput("commentCloudMax", "Maximum Number of Words:",
 									min = 1, max = 100, value = 50),
 								actionButton("loadCloud", label = "Load Word Cloud"),
-								title = "Comment Word Cloud Panel", 
-								status = "primary", solidHeader = TRUE, width = 3, collapsible = TRUE
-								),
-							box(
 								plotOutput("commentWordCloud"),
-								title = "Word Cloud", 
-								status = "primary", solidHeader = TRUE, width = 7, collapsible = TRUE)
+								title = "Comment Word Cloud Panel", 
+								status = "primary", solidHeader = TRUE, width = 10, collapsible = TRUE
+								)
 						)
 		),
 		tabItem(tabName = "commentsViewer",

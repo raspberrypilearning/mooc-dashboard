@@ -641,3 +641,24 @@ getFirstVisitedHeatMap <- function(stepData, startDate){
   map <- as.data.frame(pivot)
   return(map)
 }
+
+getCommentsBarChart <- function(stepData,comments){
+  steps <- stepData
+  data <- comments
+  stepLevels <- unique(paste0(steps$week_number,".", sprintf("%02d",as.integer(steps$step_number)), sep = ""))
+  plotData <-data.frame(week_step = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+  data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+  data <- data[,c("week_step", "parent_id")]
+  posts <- subset(data, is.na(data$parent_id))
+  replies <- subset(data, !is.na(data$parent_id))[,c("week_step")]
+  postCount <- count(posts)
+  replyCount <- count(replies)
+  replyCount$week_step <- as.character(replyCount$x)
+  for(x in c(1:length(postCount$freq))){
+    plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
+  }
+  for(x in c(1:length(replyCount$freq))){
+    plotData[plotData$week_step == replyCount$week_step[x],]$reply <- replyCount$freq[x]
+  }
+  return(plotData)
+}

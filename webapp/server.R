@@ -58,8 +58,8 @@ function(input, output, session) {
 		print(commentsDataFile)
 		assign("comments_data", getRawData(commentsDataFile, "comments"), envir = .GlobalEnv)
 
-		comments <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv"))
-		assign("comments", comments, envir = .GlobalEnv)      
+		# comments <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv"))
+		# assign("comments", comments, envir = .GlobalEnv)      
 		
 		quizDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"question-response.csv")
 		print(quizDataFile)
@@ -1637,31 +1637,7 @@ output$learnersGender <- renderChart2({
 
 	output$commentsBarChart <- renderChart2({
 		chartDependency()
-
-		steps <- stepData
-		data <- comments
-		stepLevels <- unique(paste0(steps$week_number,".", sprintf("%02d",as.integer(steps$step_number)), sep = ""))
-
-		plotData <-data.frame(week_step = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
-		
-		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
-		data <- data[,c("week_step", "parent_id")]
-		posts <- subset(data, is.na(data$parent_id))
-		replies <- subset(data, !is.na(data$parent_id))[,c("week_step")]
-		postCount <- count(posts)
-		replyCount <- count(replies)
-		replyCount$week_step <- as.character(replyCount$x)
-
-		for(x in c(1:length(postCount$freq))){
-			
-			plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
-			
-		}
-
-		for(x in c(1:length(replyCount$freq))){
-			
-			plotData[plotData$week_step == replyCount$week_step[x],]$reply <- replyCount$freq[x]
-		}
+		plotData <- getCommentsBarChart(step_data,comments_data)
 		histogram <- Highcharts$new()
 		histogram$chart(type = "column")
 		histogram$data(plotData[,c("reply","post")])
@@ -1691,12 +1667,12 @@ output$learnersGender <- renderChart2({
 
 	output$commentViewer <- renderDataTable({
 		chartDependency()
-		data <- comments
+		data <- comments_data
 		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
 
-		stepcomments <- subset(data, data$week_step == viewPressed())
-		sorted <- stepcomments[order(-stepcomments$likes),]
-		print(paste(sorted[1:10,]$text), sep = "\n")
+		stepComments <- subset(data, data$week_step == viewPressed())
+		stepComments$likes <- as.numeric(stepComments$likes)
+		sorted <- stepComments[order(-stepComments$likes),]
 
 		DT::datatable(
 			sorted[,c("text","likes")], class = 'cell-border stripe', filter = 'top',
@@ -1714,8 +1690,9 @@ output$learnersGender <- renderChart2({
 		isolate({
 			withProgress({
 				setProgress(message = "Processing Word Cloud...")
-				data <- comments
+				data <- comments_data
 				data <- data[c("text","likes")]
+				data$likes <- as.numeric(data$likes)
 				data <- data[order(-data$likes),]
 				text <- unlist(strsplit(toString(data$text),"[\n]"))
 				myCorpus = Corpus(VectorSource(head(text,1000)))
