@@ -662,3 +662,26 @@ getCommentsBarChart <- function(stepData,comments){
   }
   return(plotData)
 }
+
+getGenderCount <- function(enrolmentData){
+  data <- enrolmentData
+  gender <- as.character(data$gender)
+  gender <- gender[gender!="Unknown"]
+  genderCount <- count(gender)
+  names(genderCount)[names(genderCount)=="x"] <- "gender"
+  genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
+  genderCount$percentage <- round(genderCount$percentage,2)
+  return(genderCount)
+}
+
+getLearnerAgeCount <- function(enrolmentData){
+  data <- enrolmentData
+  age <- as.character(data$age_range)
+  age <- age[age!="Unknown"]
+  ageCount <- count(age)
+  ageCount <- ageCount[order(-ageCount$freq),]
+  names(ageCount)[names(ageCount)=="x"] <- "age_group"
+  ageCount$percentage <- ageCount$freq / sum(ageCount$freq) * 100
+  ageCount$percentage <- round(ageCount$percentage,2)
+  return(ageCount)
+}

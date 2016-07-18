@@ -57,9 +57,6 @@ function(input, output, session) {
 		commentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv")
 		print(commentsDataFile)
 		assign("comments_data", getRawData(commentsDataFile, "comments"), envir = .GlobalEnv)
-
-		# comments <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv"))
-		# assign("comments", comments, envir = .GlobalEnv)      
 		
 		quizDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"question-response.csv")
 		print(quizDataFile)
@@ -84,9 +81,6 @@ function(input, output, session) {
 		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
 		print(enrolmentDataFile)
 		assign("enrolment_data", getRawData(enrolmentDataFile, ""), envir = .GlobalEnv)
-
-		enrolments <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv"))
-		assign("enrolments", enrolments, envir = .GlobalEnv)  
 		
 		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
 		print(enrolmentDataFile)
@@ -646,14 +640,7 @@ function(input, output, session) {
 
 output$learnersAgeBar <- renderChart2({
 	chartDependency()
-	age <- as.character(enrolments$age_range)
-	age <- age[age!="Unknown"]
-	ageCount <- count(age)
-	ageCount <- ageCount[order(-ageCount$freq),]
-	names(ageCount)[names(ageCount)=="x"] <- "age_group"
-	ageCount$percentage <- ageCount$freq / sum(ageCount$freq) * 100
-	ageCount$percentage <- round(ageCount$percentage,2)
-
+	ageCount <- getLearnerAgeCount(enrolments)
 	a <- rCharts:::Highcharts$new()
 	a$chart(type = "bar")
 	a$data(ageCount[c("percentage")])
@@ -670,15 +657,7 @@ output$learnersAgeBar <- renderChart2({
 
 output$learnersGender <- renderChart2({
 	chartDependency()
-
-	gender <- as.character(enrolments$gender)
-	gender <- gender[gender!="Unknown"]
-	genderCount <- count(gender)
-	names(genderCount)[names(genderCount)=="x"] <- "gender"
-	# genderCount <- genderCount[genderCount$gender == "male" | genderCount$gender == "female" , ]
-	genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
-	genderCount$percentage <- round(genderCount$percentage,2)
-
+	genderCount <- getGenderCount(enrolment_data)
 	a <- rCharts:::Highcharts$new()
 	a$chart(type = "column", width = "300")
 	a$data(genderCount[c("percentage")])
