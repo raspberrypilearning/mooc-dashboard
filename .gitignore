@@ -4,7 +4,7 @@ webapp/.RData
 webapp/.RHistory
 update/config.json
 update/fail
-update/*pyc
+update/*.pyc
 update/.idea
 data/*
 data/!.gitkeep
