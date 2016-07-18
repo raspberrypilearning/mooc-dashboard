@@ -53,10 +53,6 @@ function(input, output, session) {
 		stepDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"step-activity.csv")
 		print(stepDataFile)
 		assign("step_data", getRawData(stepDataFile, "step"), envir = .GlobalEnv)
-
-
-		stepData <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"step-activity.csv"))
-		assign("stepData", stepData, envir = .GlobalEnv)  
 		
 		commentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv")
 		print(commentsDataFile)
@@ -88,16 +84,24 @@ function(input, output, session) {
 		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
 		print(enrolmentDataFile)
 		assign("enrolment_data", getRawData(enrolmentDataFile, ""), envir = .GlobalEnv)
+
+		enrolments <- read.csv(file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv"))
+		assign("enrolments", enrolments, envir = .GlobalEnv)  
 		
 		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
 		print(enrolmentDataFile)
 		assign("pre_course_data", getPreCourseData(enrolmentDataFile), envir = .GlobalEnv)
+
+		
 		
 		assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
 		assign("filtersEnabled", FALSE, envir = .GlobalEnv)
 		updateTextInput(session, "filteredLearners", value = allLearners)
 		
 	}, priority = 10)
+
+	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Enrolment Data","enrolmentData.csv"))
+		assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
 	observeEvent(input$chooseCourseButton, {
 		range <- getCourseDates(input$course, input$run)
@@ -599,89 +603,139 @@ function(input, output, session) {
 		}
 	})
 	
-	#START: LEARNER FILTERS - CHARTS
-	output$learnersAge <- renderChart2({
-		chartDependency()
+	# #START: LEARNER FILTERS - CHARTS
+	# output$learnersAge <- renderChart2({
+	# 	chartDependency()
 		
-		#assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-		assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-		updateTextInput(session, "filteredLearners", value = allLearners)
+	# 	#assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
+	# 	assign("filtersEnabled", FALSE, envir = .GlobalEnv)
+	# 	updateTextInput(session, "filteredLearners", value = allLearners)
 		
-		data <- getLearnersByAge(pre_course_data)
-		assign("fullAgeData", data[[1]], envir = .GlobalEnv)
-		plotData <- data[[2]]
-		plotData$ageFilter <- plotData$age
-		colnames(plotData)[c(1,2)] <- c("name", "y")
-		pie <- Highcharts$new()
-		pie$chart (type = "pie", width = "190")
-		pie$series(
-			name = "learners",
-			colorByPoint = "true",
-			data = toJSONArray2(plotData, json = FALSE, names = TRUE)
-		)
-		pie$plotOptions(
-			pie = list(
-				dataLabels = list(
-					enabled = "false",
-					connectorWidth = "0",
-					color = "white"
-				),
-				showInLegend = "true",
-				allowPointSelect = "true",
-				size = "100%",
-				cursor = "pointer",
-				point = list(
-					events = list(
-						click = "#! function() { Shiny.onInputChange('click', {ageFilter: this.ageFilter})} !#"
-					)
-				)
-			) 
-		)
-		return (pie)
-	})
-	
-	
-	output$learnersGender <- renderChart2({
-		chartDependency()
-		
-		data <- getLearnersByGender(pre_course_data)
-		assign("fullGenderData", data[[1]], envir = .GlobalEnv)
-		plotData <- data[[2]]
-		
-		plotData$genderFilter <- plotData$gender
-		colnames(plotData)[c(1,2)] <- c("x", "y")
-		plotData <- plotData[1:2,]
-		plotData[1,1] <- 0
-		plotData[2,1] <- 1
-		histogram <- Highcharts$new()
-		histogram$chart (type = "column", width = "190")
-		histogram$series(
-			data = toJSONArray2(plotData, json = FALSE, names = TRUE),
-			name = "learners"
-		)
-		histogram$xAxis (
-			categories = c("Female", "Male"),
-			labels = list(
-				style = list(
-					fontSize = 8
-				)
+	# 	data <- getLearnersByAge(pre_course_data)
+	# 	assign("fullAgeData", data[[1]], envir = .GlobalEnv)
+	# 	plotData <- data[[2]]
+	# 	plotData$ageFilter <- plotData$age
+	# 	colnames(plotData)[c(1,2)] <- c("name", "y")
+	# 	pie <- Highcharts$new()
+	# 	pie$chart (type = "pie", width = "190")
+	# 	pie$series(
+	# 		name = "learners",
+	# 		colorByPoint = "true",
+	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE)
+	# 	)
+	# 	pie$plotOptions(
+	# 		pie = list(
+	# 			dataLabels = list(
+	# 				enabled = "false",
+	# 				connectorWidth = "0",
+	# 				color = "white"
+	# 			),
+	# 			showInLegend = "true",
+	# 			allowPointSelect = "true",
+	# 			size = "100%",
+	# 			cursor = "pointer",
+	# 			point = list(
+	# 				events = list(
+	# 					click = "#! function() { Shiny.onInputChange('click', {ageFilter: this.ageFilter})} !#"
+	# 				)
+	# 			)
+	# 		) 
+	# 	)
+	# 	return (pie)
+	# })
+
+output$learnersAgeBar <- renderChart2({
+	chartDependency()
+	age <- as.character(enrolments$age_range)
+	age <- age[age!="Unknown"]
+	ageCount <- count(age)
+	ageCount <- ageCount[order(-ageCount$freq),]
+	names(ageCount)[names(ageCount)=="x"] <- "age_group"
+	ageCount$percentage <- ageCount$freq / sum(ageCount$freq) * 100
+	ageCount$percentage <- round(ageCount$percentage,2)
+
+	a <- rCharts:::Highcharts$new()
+	a$chart(type = "bar")
+	a$data(ageCount[c("percentage")])
+	a$xAxis(categories = unlist(ageCount[c("age_group")]))
+	a$plotOptions(
+		bar = list(
+			dataLabels = list(
+				enabled = "true"
 			)
 		)
-		histogram$plotOptions(
-			column = list(
-				dataLabels = list(
-					enabled = "true"
-				),
-				cursor = "pointer",
-				point = list(
-					events = list(
-						click = "#! function() { Shiny.onInputChange('click', {genderFilter: this.genderFilter})} !#"
-					)
-				)
+	)
+	return(a)
+})
+
+output$learnersGender <- renderChart2({
+	chartDependency()
+
+	gender <- as.character(enrolments$gender)
+	gender <- gender[gender!="Unknown"]
+	genderCount <- count(gender)
+	names(genderCount)[names(genderCount)=="x"] <- "gender"
+	# genderCount <- genderCount[genderCount$gender == "male" | genderCount$gender == "female" , ]
+	genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
+	genderCount$percentage <- round(genderCount$percentage,2)
+
+	a <- rCharts:::Highcharts$new()
+	a$chart(type = "column", width = "300")
+	a$data(genderCount[c("percentage")])
+	a$xAxis(categories = unlist(genderCount[c("gender")]))
+	a$plotOptions(
+		column = list(
+			dataLabels = list(
+				enabled = "true"
 			)
 		)
-		return (histogram)
-	})
+	)
+
+	return(a)
+})
+	
+	
+	# output$learnersGender <- renderChart2({
+	# 	chartDependency()
+		
+	# 	data <- getLearnersByGender(pre_course_data)
+	# 	assign("fullGenderData", data[[1]], envir = .GlobalEnv)
+	# 	plotData <- data[[2]]
+		
+	# 	plotData$genderFilter <- plotData$gender
+	# 	colnames(plotData)[c(1,2)] <- c("x", "y")
+	# 	plotData <- plotData[1:2,]
+	# 	plotData[1,1] <- 0
+	# 	plotData[2,1] <- 1
+	# 	histogram <- Highcharts$new()
+	# 	histogram$chart (type = "column", width = "190")
+	# 	histogram$series(
+	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE),
+	# 		name = "learners"
+	# 	)
+	# 	histogram$xAxis (
+	# 		categories = c("Female", "Male"),
+	# 		labels = list(
+	# 			style = list(
+	# 				fontSize = 8
+	# 			)
+	# 		)
+	# 	)
+	# 	histogram$plotOptions(
+	# 		column = list(
+	# 			dataLabels = list(
+	# 				enabled = "true"
+	# 			),
+	# 			cursor = "pointer",
+	# 			point = list(
+	# 				events = list(
+	# 					click = "#! function() { Shiny.onInputChange('click', {genderFilter: this.genderFilter})} !#"
+	# 				)
+	# 			)
+	# 		)
+	# 	)
+	# 	return (histogram)
+	# })
 	
 	output$employmentArea <- renderChart2({
 		chartDependency()
@@ -1510,7 +1564,6 @@ function(input, output, session) {
 			dyRangeSelector()
 	})  
 
-	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Enrolment Data","enrolmentData.csv"))
 	output$aggregateEnrolmentData <- DT::renderDataTable(
 		DT::datatable(
 			aggregateEnrol, class = 'cell-border stripe', filter = 'top', colnames = c('Start Date' = 3,
@@ -1543,9 +1596,7 @@ function(input, output, session) {
 
 	output$stepsCompleted <- renderPlot({
 		chartDependency()
-		completedSteps <- subset(stepData, last_completed_at != "")
-		completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
-		stepsCount <- count(completedSteps, 'week_step')
+		stepsCount <- getStepsCompletedData(step_data)
 		p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
 		geom_bar(stat = "identity",aes(fill = freq)) +
 		xlab("Step") +
@@ -1558,16 +1609,7 @@ function(input, output, session) {
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
 		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
-		completedSteps <- subset(stepData, last_completed_at != "")
-		completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
-		data <- completedSteps[,c("week_step", "last_completed_at")]
-		data$last_completed_at <- unlist(lapply(data$last_completed_at, function(x) substr(x,1,10)))
-		data$count <- 1
-		aggregateData <- aggregate(count ~., data, FUN = sum)
-		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$last_completed_at)) >= startDate)
-		pivot <- dcast(aggregateData, last_completed_at ~ week_step)
-		pivot[is.na(pivot)] <- 0
-		map <- as.data.frame(pivot)
+		map <- getStepCompletionHeatMap(step_data, startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
 			scale = "column",
@@ -1581,15 +1623,9 @@ function(input, output, session) {
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
 		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
-		stepData$week_step <- paste0(stepData$week_number,".", sprintf("%02d",as.integer(stepData$step_number)), sep = "")
-		data <- stepData[,c("week_step", "first_visited_at")]
-		data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
-		data$count <- 1
-		aggregateData <- aggregate(count ~., data, FUN = sum)
-		aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
-		pivot <- dcast(aggregateData, first_visited_at ~ week_step)
-		pivot[is.na(pivot)] <- 0
-		map <- as.data.frame(pivot)
+		# map <- getFirstVisitedHeatMap(step_data,startDate)
+
+		map <- getFirstVisitedHeatMap(step_data,startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
 			scale = "column",
@@ -1617,23 +1653,23 @@ function(input, output, session) {
 		replyCount$week_step <- as.character(replyCount$x)
 
 		for(x in c(1:length(postCount$freq))){
-		  
-		  plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
-		  
+			
+			plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
+			
 		}
 
 		for(x in c(1:length(replyCount$freq))){
-		  
-		  plotData[plotData$week_step == replyCount$week_step[x],]$reply <- replyCount$freq[x]
+			
+			plotData[plotData$week_step == replyCount$week_step[x],]$reply <- replyCount$freq[x]
 		}
 		histogram <- Highcharts$new()
 		histogram$chart(type = "column")
 		histogram$data(plotData[,c("reply","post")])
 		histogram$xAxis (categories = plotData$week_step)
 		histogram$plotOptions (
-		  column = list(
-		    stacking = "normal"
-		  )
+			column = list(
+				stacking = "normal"
+			)
 		)
 		return(histogram)
 	})
@@ -1654,6 +1690,7 @@ function(input, output, session) {
 	})
 
 	output$commentViewer <- renderDataTable({
+		chartDependency()
 		data <- comments
 		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
 
@@ -1665,7 +1702,8 @@ function(input, output, session) {
 			sorted[,c("text","likes")], class = 'cell-border stripe', filter = 'top',
 			 options = list(
 				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
-				pageLength = 15
+				pageLength = 15,
+				rownames = FALSE
 			)
 		)
 	})
@@ -1685,9 +1723,9 @@ function(input, output, session) {
 				myCorpus = tm_map(myCorpus, removePunctuation)
 				myCorpus = tm_map(myCorpus, removeNumbers)
 				myCorpus = tm_map(myCorpus, removeWords,
-				                  c(stopwords("SMART")))
+													c(stopwords("SMART")))
 				myDTM = TermDocumentMatrix(myCorpus,
-				                           control = list(minWordLength = 1))
+																	 control = list(minWordLength = 1))
 				m = as.matrix(myDTM)
 				m <- sort(rowSums(m), decreasing = TRUE)
 			})

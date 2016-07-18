@@ -7,6 +7,7 @@ require(shinyGridster)
 require(networkD3)
 require(shinyjs)
 require(DT)
+require(rjson)
 source("config.R")
 source("learner_filters.R")
 source("courses.R")
@@ -72,13 +73,15 @@ body <- dashboardBody(
 			),
 		tabItem(tabName = "demographics",
 						fluidRow(
-							box(showOutput("learnersAge", "highcharts"),
+							box(
+								showOutput("learnersAgeBar", "highcharts"),
 									title = "Age Distribution", 
-									status = "primary", solidHeader = TRUE, width = 5, collapsible = TRUE),
-							box(showOutput("learnersGender", "highcharts"),
-									title = "Gender Ratio", 
-									status = "primary", solidHeader = TRUE, width = 5, collapsible = TRUE)
-						),#fluidRow
+									status = "primary", solidHeader = TRUE, width = 7, collapsible = TRUE),
+							box(
+								showOutput("learnersGender", "highcharts"),
+								title = "Gender",
+								status = "primary", solidHeader = TRUE, width = 3, collapsible = TRUE)
+						),
 						fluidRow(
 							tabBox(
 								title = "Employment and Education",
@@ -152,8 +155,8 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					fluidRow(
-						tags$div(style="display:inline-block; margin-right:15px", uiOutput("runSteps")),
-						tags$div(style="display:inline-block; margin-right:15px", uiOutput("viewButton", inline = TRUE))
+						uiOutput("runSteps"),
+						uiOutput("viewButton")
 						),
 					title = "Selector", 
 					status = "primary", solidHeader = TRUE, width = 10, height = 200 ,collapsible = TRUE	

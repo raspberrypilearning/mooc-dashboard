@@ -1,5 +1,3 @@
-
-
 library(reshape2)
 library(RMySQL)
 library(xts)
@@ -604,4 +602,42 @@ getSetOfLearnersByDate <- function(courseDuration, startDate, enrolment){
   return(e)
   
 
+}
+
+getStepsCompletedData <- function(stepData){
+  data <- stepData
+  completedSteps <- subset(data, last_completed_at != "")
+  completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
+  stepsCount <- count(completedSteps, 'week_step')
+  return (stepsCount)
+}
+
+getStepCompletionHeatMap <- function(stepData, startDate){
+  data <-stepData
+  completedSteps <- subset(data, last_completed_at != "")
+  completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
+  data <- completedSteps[,c("week_step", "last_completed_at")]
+  data$last_completed_at <- unlist(lapply(data$last_completed_at, function(x) substr(x,1,10)))
+  data$count <- 1
+  aggregateData <- aggregate(count ~., data, FUN = sum)
+  aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$last_completed_at)) >= startDate)
+  pivot <- dcast(aggregateData, last_completed_at ~ week_step)
+  pivot[is.na(pivot)] <- 0
+  map <- as.data.frame(pivot)
+  return(map)
+}
+
+getFirstVisitedHeatMap <- function(stepData, startDate){
+  data <- step_data
+  print(data)
+  data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+  data <- data[,c("week_step", "first_visited_at")]
+  data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
+  data$count <- 1
+  aggregateData <- aggregate(count ~., data, FUN = sum)
+  aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
+  pivot <- dcast(aggregateData, first_visited_at ~ week_step)
+  pivot[is.na(pivot)] <- 0
+  map <- as.data.frame(pivot)
+  return(map)
 }
