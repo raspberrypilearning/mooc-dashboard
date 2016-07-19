@@ -11,6 +11,7 @@ require(networkD3)
 require(shinyjs)
 require(tm)
 require(wordcloud)
+require(DT)
 source("config.R")
 source("learner_analysis.R")
 source("learner_filters.R")
@@ -1581,7 +1582,7 @@ output$employmentBar <-renderChart2({
 
 	output$aggregateEnrolmentData <- renderDataTable({
 		DT::datatable(
-			aggregateEnrol, class = 'cell-border stripe', filter = 'top',
+			aggregateEnrol, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 			colnames = c('Start Date' = 2,
 			'Weeks' = 3,
 			'Joiners' = 4,
@@ -1592,8 +1593,11 @@ output$employmentBar <-renderChart2({
 			'Fully Participating Learners' = 10,
 			'Statements Sold' = 11),
 			options = list(
-				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
-				pageLength = 15
+				paging = FALSE,
+				dom = 'Bfrtip',
+				buttons = list("print", list(
+						extend = 'collection',
+						buttons = list(list(extend = 'pdf', filename = 'AggregateEnrolment')), text = 'Download'))
 			),
 			rownames = FALSE
 		)

@@ -1,7 +1,7 @@
 MOOC Dashboard - Web Application
 ================================
 Originator : Lyubomir Vasilev (lyubo.vasilev93@gmail.com)
-Last Updated : 1 July 2016 by J.S.Robinson@soton.ac.uk
+Last Updated : 19 July 2016 by tangdarron@gmail.com
 
 
 Overview
@@ -49,7 +49,7 @@ install.packages("networkD3")
 install.packages("googleVis")
 install.packages("RMySQL")
 install.packages("shinydashboard")
-install.packages("DT")
+devtools::install_github("rstudio/DT")
 install.packages("tm")
 install.packages("wordcloud")
 
@@ -103,6 +103,5 @@ Usage
 $ sudo stop shiny-server
 $ sudo start shiny-server
 
-The Dashboard web application should be accessible at http://dashboard.vm:3838
-It is also accessible via the vm's web browser at http://localhost:3838
+The Dashboard web application should be accessible at http://dashboard.vm:3838 or http://localhost:3838
 
