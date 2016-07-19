@@ -1754,8 +1754,7 @@ output$runSteps <- renderUI({
 				scrollY = "750px",
 				dom = 'Bfrtip',
 				buttons = list("print", list(
-						extend = 'collection',
-						buttons = list(list(extend = 'pdf', filename = 'AggregateEnrolment')), text = 'Download'))
+						extend = 'pdf', filename = 'Comments', text = 'Download pdf'))
 			),
 			rownames = FALSE
 		)
