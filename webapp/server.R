@@ -1595,9 +1595,10 @@ output$employmentBar <-renderChart2({
 			options = list(
 				paging = FALSE,
 				dom = 'Bfrtip',
-				buttons = list("print", list(
-						extend = 'collection',
-						buttons = list(list(extend = 'pdf', filename = 'AggregateEnrolment')), text = 'Download'))
+				buttons = list(
+					"print",
+					list(
+						extend = 'pdf', filename = paste(institution,'Mooc Enrolment Data'), orientation = 'landscape', text = 'Download PDF'))
 			),
 			rownames = FALSE
 		)
