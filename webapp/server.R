@@ -771,45 +771,63 @@ output$employmentBar <-renderChart2({
 		return (pie)
 	})
 	
+
 	output$employmentStatus <- renderChart2({
 		chartDependency()
-		
-		data <- getLearnersByEmploymentStatus(pre_course_data)
-		assign("fullEmplStatusData", data[[1]], envir = .GlobalEnv)
-		plotData <- data[[2]]
-		catList <- plotData$employment_status
-		plotData$employmentStatusFilter <- plotData$employment_status
-		plotData$employment_status <- seq(from = 0, to = nrow(plotData) - 1)
-		colnames(plotData)[c(1,2)] <- c("x", "y")
-		histogram <- Highcharts$new()
-		histogram$chart (type = "column", width = "800")
-		histogram$series(
-			data = toJSONArray2(plotData, json = FALSE, names = TRUE),
-			name = "learners"
-		)
-		histogram$xAxis (
-			categories = catList,
-			labels = list(
-				style = list(
-					fontSize = 10
+		statusCount <- getEmploymentStatusCount(enrolment_data)
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "bar")
+		a$data(statusCount[c("percentage")])
+		a$xAxis(categories = gsub( "_"," ",unlist(statusCount[c("status")])))
+		a$plotOptions(
+			bar = list(
+				dataLabels = list(
+					enabled = "true"
 				)
 			)
 		)
-		histogram$plotOptions(
-			column = list(
-				dataLabels = list(
-					enabled = "true"
-				),
-				cursor = "pointer",
-				point = list(
-					events = list(
-						click = "#! function() { Shiny.onInputChange('click', {employmentStatusFilter: this.employmentStatusFilter})} !#"
-					)
-				)  
-			)
-		)
-		return (histogram)
-	})
+		return(a)
+		})
+	
+	# output$employmentStatus <- renderChart2({
+	# 	chartDependency()
+		
+	# 	data <- getLearnersByEmploymentStatus(pre_course_data)
+	# 	assign("fullEmplStatusData", data[[1]], envir = .GlobalEnv)
+	# 	plotData <- data[[2]]
+	# 	catList <- plotData$employment_status
+	# 	plotData$employmentStatusFilter <- plotData$employment_status
+	# 	plotData$employment_status <- seq(from = 0, to = nrow(plotData) - 1)
+	# 	colnames(plotData)[c(1,2)] <- c("x", "y")
+	# 	histogram <- Highcharts$new()
+	# 	histogram$chart (type = "column", width = "800")
+	# 	histogram$series(
+	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE),
+	# 		name = "learners"
+	# 	)
+	# 	histogram$xAxis (
+	# 		categories = catList,
+	# 		labels = list(
+	# 			style = list(
+	# 				fontSize = 10
+	# 			)
+	# 		)
+	# 	)
+	# 	histogram$plotOptions(
+	# 		column = list(
+	# 			dataLabels = list(
+	# 				enabled = "true"
+	# 			),
+	# 			cursor = "pointer",
+	# 			point = list(
+	# 				events = list(
+	# 					click = "#! function() { Shiny.onInputChange('click', {employmentStatusFilter: this.employmentStatusFilter})} !#"
+	# 				)
+	# 			)  
+	# 		)
+	# 	)
+	# 	return (histogram)
+	# })
 	
 	output$degreeLevel <- renderChart2({
 		chartDependency()
