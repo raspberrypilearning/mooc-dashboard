@@ -659,7 +659,7 @@ output$learnersGender <- renderChart2({
 	chartDependency()
 	genderCount <- getGenderCount(enrolment_data)
 	a <- rCharts:::Highcharts$new()
-	a$chart(type = "column", width = "300")
+	a$chart(type = "column", width = "350")
 	a$data(genderCount[c("percentage")])
 	a$xAxis(categories = unlist(genderCount[c("gender")]))
 	a$plotOptions(
@@ -677,7 +677,7 @@ output$employmentBar <-renderChart2({
 	chartDependency()
 	employmentCount <- getEmploymentAreaCount(enrolment_data)
 	a <- rCharts:::Highcharts$new()
-	a$chart(type = "bar")
+	a$chart(type = "bar", width = "1100")
 	a$data(employmentCount[c("percentage")])
 	a$xAxis(categories = gsub( "_"," ",unlist(employmentCount[c("employment")])))
 	a$plotOptions(
@@ -734,49 +734,49 @@ output$employmentBar <-renderChart2({
 	# 	return (histogram)
 	# })
 	
-	output$employmentArea <- renderChart2({
-		chartDependency()
+	# output$employmentArea <- renderChart2({
+	# 	chartDependency()
 		
-		data <- getLearnersByEmploymentArea(pre_course_data)
-		assign("fullEmplAreaData", data[[1]], envir = .GlobalEnv)
-		plotData <- data[[2]]
-		plotData$employmentAreaFilter <- plotData$employment_area
-		colnames(plotData)[c(1,2)] <- c("name", "y")
-		pie <- Highcharts$new()
-		pie$chart (type = "pie", width = "800")
-		pie$series(
-			name = "learners",
-			colorByPoint = "true",
-			data = toJSONArray2(plotData, json = FALSE, names = TRUE)
-		)
-		pie$plotOptions(
-			pie = list(
-				allowPointSelect = "true",
-				cursor = "pointer", 
-				point = list(
-					events = list(
-						click = "#! function() { Shiny.onInputChange('click', {employmentAreaFilter: this.employmentAreaFilter})} !#"
-					)
-				),
-				dataLabels = list(
-					enabled = "true",
-					connectorPadding = 1,
-					crop = "false",
-					distance = 10
-				),
-				size = "25%",
-				startAngle = 300
-			)
-		)
-		return (pie)
-	})
+	# 	data <- getLearnersByEmploymentArea(pre_course_data)
+	# 	assign("fullEmplAreaData", data[[1]], envir = .GlobalEnv)
+	# 	plotData <- data[[2]]
+	# 	plotData$employmentAreaFilter <- plotData$employment_area
+	# 	colnames(plotData)[c(1,2)] <- c("name", "y")
+	# 	pie <- Highcharts$new()
+	# 	pie$chart (type = "pie", width = "800")
+	# 	pie$series(
+	# 		name = "learners",
+	# 		colorByPoint = "true",
+	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE)
+	# 	)
+	# 	pie$plotOptions(
+	# 		pie = list(
+	# 			allowPointSelect = "true",
+	# 			cursor = "pointer", 
+	# 			point = list(
+	# 				events = list(
+	# 					click = "#! function() { Shiny.onInputChange('click', {employmentAreaFilter: this.employmentAreaFilter})} !#"
+	# 				)
+	# 			),
+	# 			dataLabels = list(
+	# 				enabled = "true",
+	# 				connectorPadding = 1,
+	# 				crop = "false",
+	# 				distance = 10
+	# 			),
+	# 			size = "25%",
+	# 			startAngle = 300
+	# 		)
+	# 	)
+	# 	return (pie)
+	# })
 	
 
 	output$employmentStatus <- renderChart2({
 		chartDependency()
 		statusCount <- getEmploymentStatusCount(enrolment_data)
 		a <- rCharts:::Highcharts$new()
-		a$chart(type = "bar")
+		a$chart(type = "bar", width = "1100")
 		a$data(statusCount[c("percentage")])
 		a$xAxis(categories = gsub( "_"," ",unlist(statusCount[c("status")])))
 		a$plotOptions(
@@ -884,8 +884,8 @@ output$employmentBar <-renderChart2({
 		map <- gvisGeoChart(plotData, locationvar = "country", colorvar = "learners",
 												options = list(
 													gvis.listener.jscode = jscode,
-													width = 900,
-													height = 440,
+													width = 1100,
+													height = 600,
 													keepAspectRatio = "false",
 													colorAxis = "{colors:['#91BFDB', '#FC8D59']}"
 												)
@@ -1221,7 +1221,7 @@ output$employmentBar <-renderChart2({
 		plotData <- ddply(plotData, ~week, summarise, replies = sum(replies), comments = sum(comments))
 		# Create the histogram and pass in some options
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column",  width = "380")
+		histogram$chart (type = "column",  width = "550")
 		histogram$data (plotData)
 		histogram$xAxis (categories = weekCat)
 		histogram$yAxis (
@@ -1267,7 +1267,7 @@ output$employmentBar <-renderChart2({
 		authors <- ddply(authors, ~week, summarise, authors = sum(authors))
 		# Create the histogram and pass in some options
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column", width = "380")
+		histogram$chart (type = "column", width = "550")
 		histogram$data (authors)
 		histogram$xAxis (categories = weekCat)
 		histogram$yAxis (
@@ -1579,21 +1579,25 @@ output$employmentBar <-renderChart2({
 			dyRangeSelector()
 	})  
 
-	output$aggregateEnrolmentData <- DT::renderDataTable(
+	output$aggregateEnrolmentData <- renderDataTable({
 		DT::datatable(
-			aggregateEnrol, class = 'cell-border stripe', filter = 'top', colnames = c('Start Date' = 3,
-			'Weeks' = 4,
-			'Active Learners' = 8,
-			'Returning Learners' = 9,
-			'Social Learners' = 10,
-			'Fully Participating Learners' = 11,
-			'Statements Sold' = 12),
-			 options = list(
+			aggregateEnrol, class = 'cell-border stripe', filter = 'top',
+			colnames = c('Start Date' = 2,
+			'Weeks' = 3,
+			'Joiners' = 4,
+			'Leavers' = 5,
+			'Active Learners' = 7,
+			'Return Learners' = 8,
+			'Social Learners' = 9,
+			'Fully Participating Learners' = 10,
+			'Statements Sold' = 11),
+			options = list(
 				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
 				pageLength = 15
-			)
+			),
+			rownames = FALSE
 		)
-	)
+	})
 
 	output$totalJoiners <- renderValueBox({
 		valueBox("Total Joiners", subtitle = sum(aggregateEnrol$Joiners), icon = icon("group"), color = "red")
@@ -1609,16 +1613,22 @@ output$employmentBar <-renderChart2({
 		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$Statements.Sold), icon = icon("certificate"), color = "red")
 	})
 
-	output$stepsCompleted <- renderPlot({
+	output$stepsCompleted <- renderChart2({
 		chartDependency()
 		stepsCount <- getStepsCompletedData(step_data)
-		p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
-		geom_bar(stat = "identity",aes(fill = freq)) +
-		xlab("Step") +
-		ylab("Number of learners marked as complete") +
-		theme(axis.text.x = element_text(angle = 90))
-		print(p)
-		})
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = "1100")
+		a$data(stepsCount[c("freq")])
+		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
+		return(a)
+
+		# p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
+		# geom_bar(stat = "identity",aes(fill = freq)) +
+		# xlab("Step") +
+		# ylab("Number of learners marked as complete") +
+		# theme(axis.text.x = element_text(angle = 90))
+		# print(p)
+	})
 
 	output$stepCompletionHeat <- renderD3heatmap({
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
@@ -1654,7 +1664,7 @@ output$employmentBar <-renderChart2({
 		chartDependency()
 		plotData <- getCommentsBarChart(step_data,comments_data)
 		histogram <- Highcharts$new()
-		histogram$chart(type = "column")
+		histogram$chart(type = "column" , width = "1100")
 		histogram$data(plotData[,c("reply","post")])
 		histogram$xAxis (categories = plotData$week_step)
 		histogram$plotOptions (
@@ -1665,42 +1675,7 @@ output$employmentBar <-renderChart2({
 		return(histogram)
 	})
 
-	output$runSteps <- renderUI({
-		chartDependency()
-		steps <- getRunSteps(input$course,input$run)
-		print(selectInput("stepChoice", label = "Steps", choices = c(steps), width = "450px"))
-	})
-
-	output$viewButton <- renderUI({
-		chartDependency()
-			print(actionButton("viewButton","View"))
-	})
-
-	viewPressed <- eventReactive(input$viewButton, {
-		return(input$stepChoice)
-	})
-
-	output$commentViewer <- renderDataTable({
-		chartDependency()
-		data <- comments_data
-		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
-
-		stepComments <- subset(data, data$week_step == viewPressed())
-		stepComments$likes <- as.numeric(stepComments$likes)
-		sorted <- stepComments[order(-stepComments$likes),]
-
-		DT::datatable(
-			sorted[,c("text","likes")], class = 'cell-border stripe', filter = 'top',
-			 options = list(
-				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
-				pageLength = 15,
-				rownames = FALSE
-			)
-		)
-	})
-
 	wordcloud_rep <- repeatable(wordcloud)
-
 	terms <- eventReactive(input$loadCloud,{
 		isolate({
 			withProgress({
@@ -1724,23 +1699,55 @@ output$employmentBar <-renderChart2({
 		})
 	})
 
-	output$commentWordCloud <- renderPlot({
-		chartDependency()
-		input$loadCloud
-		if(input$loadCloud == 0){
-			return()
-		}
+output$commentWordCloud <- renderPlot({
+	chartDependency()
+	input$loadCloud
+	if(input$loadCloud == 0){
+		return()
+	}
 
-		m <- terms()
-		wordcloud_rep(names(m), m, scale = c(4,0.5),
-			min.freq = input$commentCloudFreq,
-			max.words = input$commentCloudMax,
-			colors = brewer.pal(8,"Dark2"),
-			rot.per = 0)
+	m <- terms()
+	wordcloud_rep(names(m), m, scale = c(4,0.5),
+		min.freq = input$commentCloudFreq,
+		max.words = input$commentCloudMax,
+		colors = brewer.pal(8,"Dark2"),
+		rot.per = 0)
+})
+
+
+output$runSteps <- renderUI({
+		chartDependency()
+		steps <- getRunSteps(input$course,input$run)
+		print(selectInput("stepChoice", label = "Steps", choices = c(steps), width = "450px"))
 	})
 
+	output$viewButton <- renderUI({
+		chartDependency()
+			print(actionButton("viewButton","View"))
+	})
 
+	viewPressed <- eventReactive(input$viewButton, {
+		return(input$stepChoice)
+	})
 
+	output$commentViewer <- renderDataTable({
+		chartDependency()
+		data <- comments_data
+		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+		stepComments <- subset(data, data$week_step == viewPressed())
+		stepComments$likes <- as.numeric(stepComments$likes)
+		sorted <- stepComments[order(-stepComments$likes),]
+
+		DT::datatable(
+			sorted[,c("text","likes")], class = 'cell-border stripe', filter = 'top',
+			options = list(
+				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
+				pageLength = 15,
+				scrollY = "750px"
+			),
+			rownames = FALSE
+		)
+	})
 
 	getPage<-function() {
 		return(includeHTML("funnel.html"))
