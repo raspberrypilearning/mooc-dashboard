@@ -1722,7 +1722,7 @@ output$commentWordCloud <- renderPlot({
 output$runSteps <- renderUI({
 		chartDependency()
 		steps <- getRunSteps(input$course,input$run)
-		print(selectInput("stepChoice", label = "Steps", choices = c(steps), width = "450px"))
+		print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "450px"))
 	})
 
 	output$viewButton <- renderUI({
@@ -1738,16 +1738,23 @@ output$runSteps <- renderUI({
 		chartDependency()
 		data <- comments_data
 		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+		if(viewPressed() == "All"){
+			stepComments <- data
+		} else {
 		stepComments <- subset(data, data$week_step == viewPressed())
+		}
 		stepComments$likes <- as.numeric(stepComments$likes)
 		sorted <- stepComments[order(-stepComments$likes),]
 
 		DT::datatable(
-			sorted[,c("text","likes")], class = 'cell-border stripe', filter = 'top',
+			sorted[,c("timestamp","text","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 			options = list(
-				lengthMenu = list(c(5,15,25,-1),c('5','15','25','ALL')),
 				pageLength = 15,
-				scrollY = "750px"
+				scrollY = "750px",
+				dom = 'Bfrtip',
+				buttons = list("print", list(
+						extend = 'collection',
+						buttons = list(list(extend = 'pdf', filename = 'AggregateEnrolment')), text = 'Download'))
 			),
 			rownames = FALSE
 		)
