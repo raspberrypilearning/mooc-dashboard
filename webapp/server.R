@@ -1607,6 +1607,7 @@ output$employmentBar <-renderChart2({
 	output$totalJoiners <- renderValueBox({
 		valueBox("Total Joiners", subtitle = sum(aggregateEnrol$Joiners), icon = icon("group"), color = "red")
 	})
+
 	output$totalLearners <- renderValueBox({
 		learners <- subset(aggregateEnrol , Learners != "N/A")
 		learners2 <- sapply(learners$Learners, function(x) strsplit(toString(x), "-"))
@@ -1614,6 +1615,7 @@ output$employmentBar <-renderChart2({
 		# learners <- as.numeric(unlist(strsplit(toString(subset(aggregateEnrol$Learners, aggregateEnrol$Learners != "N/A")), "-")))
 		valueBox("Total Learners", subtitle = sum(learners3), icon = icon("group"), color = "red")
 	})
+
 	output$totalStatementsSold <- renderValueBox({
 		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$Statements.Sold), icon = icon("certificate"), color = "red")
 	})
@@ -1626,17 +1628,9 @@ output$employmentBar <-renderChart2({
 		a$data(stepsCount[c("freq")])
 		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
 		return(a)
-
-		# p <- ggplot(stepsCount, aes(x = week_step,y = freq)) +
-		# geom_bar(stat = "identity",aes(fill = freq)) +
-		# xlab("Step") +
-		# ylab("Number of learners marked as complete") +
-		# theme(axis.text.x = element_text(angle = 90))
-		# print(p)
 	})
 
 	output$stepCompletionHeat <- renderD3heatmap({
-		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
 		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
 		map <- getStepCompletionHeatMap(step_data, startDate)
@@ -1650,10 +1644,8 @@ output$employmentBar <-renderChart2({
 	})
 
 	output$firstVisitedHeat <- renderD3heatmap({
-		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
 		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
-		# map <- getFirstVisitedHeatMap(step_data,startDate)
 
 		map <- getFirstVisitedHeatMap(step_data,startDate)
 		print(d3heatmap(map[,2:ncol(map)],
@@ -1680,17 +1672,69 @@ output$employmentBar <-renderChart2({
 		return(histogram)
 	})
 
+	
+	
+
+	output$runSteps <- renderUI({
+		chartDependency()
+		steps <- getRunSteps(input$course,input$run)
+		print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "450px"))
+	})
+
+	output$viewButton <- renderUI({
+		chartDependency()
+		print(actionButton("viewButton","View"))
+	})
+
+	viewPressed <- eventReactive(input$viewButton, {
+		return(input$stepChoice)
+	})
+
+	output$commentViewer <- renderDataTable({
+		chartDependency()
+		data <- comments_data
+		data$week_step <- getWeekStep(data)
+		if(viewPressed() == "All"){
+			stepComments <- data
+		} else {
+		stepComments <- subset(data, data$week_step == viewPressed())
+		}
+		stepComments$likes <- as.numeric(stepComments$likes)
+		sorted <- stepComments[order(-stepComments$likes),]
+
+		DT::datatable(
+			sorted[,c("timestamp","week_step","text","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+			options = list(
+				pageLength = 15,
+				scrollY = "750px",
+				dom = 'Bfrtip',
+				buttons = list("print", list(
+						extend = 'pdf', filename = 'Comments', text = 'Download pdf'))
+			),
+			rownames = FALSE
+		)
+	})
+
 	wordcloud_rep <- repeatable(wordcloud)
-	terms <- eventReactive(input$loadCloud,{
+
+	terms <- eventReactive(input$viewButton,{
 		isolate({
 			withProgress({
 				setProgress(message = "Processing Word Cloud...")
 				data <- comments_data
+				data$week_step <- getWeekStep(data)
+				if(viewPressed() != "All"){
+					data <- subset(data, data$week_step == viewPressed())
+				}
 				data <- data[c("text","likes")]
 				data$likes <- as.numeric(data$likes)
 				data <- data[order(-data$likes),]
 				text <- unlist(strsplit(toString(data$text),"[\n]"))
-				myCorpus = Corpus(VectorSource(head(text,1000)))
+				if(viewPressed() == "All"){
+					myCorpus = Corpus(VectorSource(head(text,1000)))
+				} else {
+					myCorpus = Corpus(VectorSource(text))
+				}
 				myCorpus = tm_map(myCorpus, content_transformer(tolower))
 				myCorpus = tm_map(myCorpus, removePunctuation)
 				myCorpus = tm_map(myCorpus, removeNumbers)
@@ -1704,60 +1748,18 @@ output$employmentBar <-renderChart2({
 		})
 	})
 
-output$commentWordCloud <- renderPlot({
-	chartDependency()
-	input$loadCloud
-	if(input$loadCloud == 0){
-		return()
-	}
-
-	m <- terms()
-	wordcloud_rep(names(m), m, scale = c(4,0.5),
-		min.freq = input$commentCloudFreq,
-		max.words = input$commentCloudMax,
-		colors = brewer.pal(8,"Dark2"),
-		rot.per = 0)
-})
-
-
-output$runSteps <- renderUI({
+	output$stepWordCloud <- renderPlot({
 		chartDependency()
-		steps <- getRunSteps(input$course,input$run)
-		print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "450px"))
-	})
-
-	output$viewButton <- renderUI({
-		chartDependency()
-			print(actionButton("viewButton","View"))
-	})
-
-	viewPressed <- eventReactive(input$viewButton, {
-		return(input$stepChoice)
-	})
-
-	output$commentViewer <- renderDataTable({
-		chartDependency()
-		data <- comments_data
-		data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
-		if(viewPressed() == "All"){
-			stepComments <- data
-		} else {
-		stepComments <- subset(data, data$week_step == viewPressed())
+		input$stepCloud
+		if(input$viewButton == 0){
+			return()
 		}
-		stepComments$likes <- as.numeric(stepComments$likes)
-		sorted <- stepComments[order(-stepComments$likes),]
-
-		DT::datatable(
-			sorted[,c("timestamp","text","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-			options = list(
-				pageLength = 15,
-				scrollY = "750px",
-				dom = 'Bfrtip',
-				buttons = list("print", list(
-						extend = 'pdf', filename = 'Comments', text = 'Download pdf'))
-			),
-			rownames = FALSE
-		)
+		m <- terms()
+		wordcloud_rep(names(m),m,scale = c(4,0.5),
+			min.freq = input$commentCloudFreq,
+			max.words = input$commentCloudMax,
+			colors = brewer.pal(8,"Dark2"),
+			rot.per = 0)
 	})
 
 	getPage<-function() {

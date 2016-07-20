@@ -18,7 +18,11 @@ getRawData <- function (filename, type) {
 		data <- read.csv(filename, na.strings=c("","NA"))
 		return (data)
 	}
-	
+}
+
+getWeekStep <- function(data){
+	weekStep <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+	return(weekStep)
 }
 
 #gets the list of all learners
@@ -607,7 +611,7 @@ getSetOfLearnersByDate <- function(courseDuration, startDate, enrolment){
 getStepsCompletedData <- function(stepData){
 	data <- stepData
 	completedSteps <- subset(data, last_completed_at != "")
-	completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
+	completedSteps$week_step <- getWeekStep(completedSteps)
 	stepsCount <- count(completedSteps, 'week_step')
 	return (stepsCount)
 }
@@ -615,7 +619,7 @@ getStepsCompletedData <- function(stepData){
 getStepCompletionHeatMap <- function(stepData, startDate){
 	data <-stepData
 	completedSteps <- subset(data, last_completed_at != "")
-	completedSteps$week_step <- paste0(completedSteps$week_number,".", sprintf("%02d",as.integer(completedSteps$step_number)), sep = "")
+	completedSteps$week_step <- getWeekStep(completedSteps)
 	data <- completedSteps[,c("week_step", "last_completed_at")]
 	data$last_completed_at <- unlist(lapply(data$last_completed_at, function(x) substr(x,1,10)))
 	data$count <- 1
@@ -629,8 +633,7 @@ getStepCompletionHeatMap <- function(stepData, startDate){
 
 getFirstVisitedHeatMap <- function(stepData, startDate){
 	data <- step_data
-	print(data)
-	data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+	data$week_step <- getWeekStep(data)
 	data <- data[,c("week_step", "first_visited_at")]
 	data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
 	data$count <- 1
@@ -645,9 +648,9 @@ getFirstVisitedHeatMap <- function(stepData, startDate){
 getCommentsBarChart <- function(stepData,comments){
 	steps <- stepData
 	data <- comments
-	stepLevels <- unique(paste0(steps$week_number,".", sprintf("%02d",as.integer(steps$step_number)), sep = ""))
+	stepLevels <- unique(getWeekStep(steps))
 	plotData <-data.frame(week_step = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
-	data$week_step <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
+	data$week_step <- getWeekStep(data)
 	data <- data[,c("week_step", "parent_id")]
 	posts <- subset(data, is.na(data$parent_id))
 	replies <- subset(data, !is.na(data$parent_id))[,c("week_step")]
