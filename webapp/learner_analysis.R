@@ -712,3 +712,22 @@ getEmploymentStatusCount <- function(enrolmentData){
 	statusCount <- statusCount[order(-statusCount$percentage),]
 	return(statusCount)
 }
+
+getCommentViewerData <- function(commentData, step, start, end){
+	data <- commentData
+	# data <- subset(data, as.Date(data$timestamp) >= start)
+	# data <- subset(data, as.Date(data$timestamp) <= end)
+	# data$timestamp <- substr(toString(data$timestamp), start = 1, stop = 10)
+	data$week_step <- getWeekStep(data)
+	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
+	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
+	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
+	if(step == "All"){
+		stepComments <- data
+	} else {
+	stepComments <- subset(data, data$week_step == step)
+	}
+	stepComments$likes <- as.numeric(stepComments$likes)
+	sorted <- stepComments[order(-stepComments$likes),]
+	return(sorted)
+}

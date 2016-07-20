@@ -1593,8 +1593,9 @@ output$employmentBar <-renderChart2({
 			'Fully Participating Learners' = 10,
 			'Statements Sold' = 11),
 			options = list(
-				paging = FALSE,
-				dom = 'Bfrtip',
+				lengthMenu = list(c(10,20,30,-1),c('10','20','30','All')),
+				pageLength = 20,
+				dom = 'lfrtBip',
 				buttons = list(
 					"print",
 					list(
@@ -1612,7 +1613,6 @@ output$employmentBar <-renderChart2({
 		learners <- subset(aggregateEnrol , Learners != "N/A")
 		learners2 <- sapply(learners$Learners, function(x) strsplit(toString(x), "-"))
 		learners3 <- sapply(learners2, function(x) as.numeric(x[[1]]))
-		# learners <- as.numeric(unlist(strsplit(toString(subset(aggregateEnrol$Learners, aggregateEnrol$Learners != "N/A")), "-")))
 		valueBox("Total Learners", subtitle = sum(learners3), icon = icon("group"), color = "red")
 	})
 
@@ -1672,9 +1672,6 @@ output$employmentBar <-renderChart2({
 		return(histogram)
 	})
 
-	
-	
-
 	output$runSteps <- renderUI({
 		chartDependency()
 		steps <- getRunSteps(input$course,input$run)
@@ -1683,7 +1680,12 @@ output$employmentBar <-renderChart2({
 
 	output$viewButton <- renderUI({
 		chartDependency()
-		print(actionButton("viewButton","View"))
+		print(actionButton("viewButton","View Comments"))
+	})
+
+	output$loadCloud <- renderUI({
+		chartDependency()
+		print(actionButton("loadCloud", "Load Cloud"))
 	})
 
 	viewPressed <- eventReactive(input$viewButton, {
@@ -1692,45 +1694,66 @@ output$employmentBar <-renderChart2({
 
 	output$commentViewer <- renderDataTable({
 		chartDependency()
-		data <- comments_data
-		data$week_step <- getWeekStep(data)
-		if(viewPressed() == "All"){
-			stepComments <- data
-		} else {
-		stepComments <- subset(data, data$week_step == viewPressed())
+		if(input$viewButton == 0){
+			return()
 		}
-		stepComments$likes <- as.numeric(stepComments$likes)
-		sorted <- stepComments[order(-stepComments$likes),]
-
+		data <- getCommentViewerData(comments_data, viewPressed(), input$commentDateRange[1],input$commentDateRange[2])
 		DT::datatable(
-			sorted[,c("timestamp","week_step","text","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+			data[,c("timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+			colnames = c(
+				"Date" = 1,
+				"Step" = 2,
+				"Comment" = 3,
+				"Part of a Thread?" = 4,
+				"Likes" = 5
+				),
 			options = list(
-				pageLength = 15,
-				scrollY = "750px",
-				dom = 'Bfrtip',
-				buttons = list("print", list(
-						extend = 'pdf', filename = 'Comments', text = 'Download pdf'))
+				scrollY = "700px",
+				lengthMenu = list(c(10,20,30),c('10','20','30')),
+				pageLength = 20,
+				dom = 'lfrtBip',
+				buttons = list(
+					"print", 
+					list(
+						extend = 'pdf',
+						filename = 'Comments',
+						text = 'Download pdf'
+						)
+					)
 			),
-			rownames = FALSE
+			rownames = FALSE,
+			selection = 'single'
 		)
 	})
 
+	output$debug <-renderText({
+		# print("Hello")
+		print(toString(input$commentViewer_rows_selected))
+	})
+
+	# output$threadViewer <- renderDataTable({
+	# 	data <- input$commentViewer_rows_selected
+
+
+	# })
+
 	wordcloud_rep <- repeatable(wordcloud)
 
-	terms <- eventReactive(input$viewButton,{
+	terms <- eventReactive(input$loadCloud,{
 		isolate({
 			withProgress({
 				setProgress(message = "Processing Word Cloud...")
 				data <- comments_data
 				data$week_step <- getWeekStep(data)
-				if(viewPressed() != "All"){
-					data <- subset(data, data$week_step == viewPressed())
+				stepChoice <- input$stepChoice
+				if(stepChoice != "All"){
+					data <- subset(data, data$week_step == stepChoice)
 				}
 				data <- data[c("text","likes")]
 				data$likes <- as.numeric(data$likes)
 				data <- data[order(-data$likes),]
 				text <- unlist(strsplit(toString(data$text),"[\n]"))
-				if(viewPressed() == "All"){
+				if(stepChoice == "All"){
 					myCorpus = Corpus(VectorSource(head(text,1000)))
 				} else {
 					myCorpus = Corpus(VectorSource(text))
@@ -1750,8 +1773,7 @@ output$employmentBar <-renderChart2({
 
 	output$stepWordCloud <- renderPlot({
 		chartDependency()
-		input$stepCloud
-		if(input$viewButton == 0){
+		if(input$loadCloud == 0){
 			return()
 		}
 		m <- terms()
@@ -1761,6 +1783,13 @@ output$employmentBar <-renderChart2({
 			colors = brewer.pal(8,"Dark2"),
 			rot.per = 0)
 	})
+
+	output$commentDateRange <- renderUI({
+		first = as.Date(comments_data$timestamp[1])
+		last = as.Date(tail(comments_data$timestamp, n=1))
+		dateRangeInput(inputId = "commentDateRange",label = 'Date Range:',start = first, min = first, end = last, max = last, weekstart = 1,format = "dd/mm/yy")
+	})
+
 
 	getPage<-function() {
 		return(includeHTML("funnel.html"))

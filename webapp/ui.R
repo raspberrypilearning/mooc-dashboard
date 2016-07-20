@@ -140,6 +140,7 @@ body <- dashboardBody(
 				box(
 					fluidRow(
 						tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runSteps", inline = TRUE)),
+						tags$div(style = "display:inline-block; margin-left:15px", uiOutput("commentDateRange")),
 						tags$div(style = "margin-left:15px", uiOutput("viewButton")),
 						tags$br(),
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudFreq", "Minimum Frequency of Words:",
@@ -147,6 +148,7 @@ body <- dashboardBody(
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudMax", "Maximum Number of Words:",
 							min = 1, max = 100, value = 50, width = "500px"))
 						),
+						tags$div(style = "margin-left:15px", uiOutput("loadCloud")),
 					title = "Selector", 
 					status = "primary", solidHeader = TRUE, width = 6, height = 500 ,collapsible = TRUE	
 					),
@@ -155,10 +157,17 @@ body <- dashboardBody(
 					title = "Word Cloud",
 					status = "primary", solidHeader = TRUE, width = 6, height = 500, collapsible = TRUE
 					),
-				box(DT::dataTableOutput("commentViewer"),
+				box(
+					DT::dataTableOutput("commentViewer"),
 					title = "Comments", 
 					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
-				)
+				),
+				box(
+
+					textOutput("debug"),
+					# DT::dataTableOutput("threadViewer"),
+					title = "Selected Comment Thread"),
+					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
 			)
 		),
 		tabItem(tabName = "total_measures",
