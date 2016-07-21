@@ -181,10 +181,8 @@ function(input, output, session) {
 	
 	print("About to assemble runs")
 	output$runs <-renderUI({
-		print("hello")
-		print(input$course)
 		runs <- getRuns(input$course)
-		selectInput("run", label = "Run", width = "450px", choices = runs)
+		selectInput("run", label = "Run", width = "550px", choices = runs)
 	})
 	
 	output$courseNameAndRun <- renderUI({
@@ -1731,11 +1729,57 @@ output$employmentBar <-renderChart2({
 		print(toString(input$commentViewer_rows_selected))
 	})
 
-	# output$threadViewer <- renderDataTable({
-	# 	data <- input$commentViewer_rows_selected
+	threadSelected <- eventReactive( input$commentViewer_rows_selected, {
+		runif(input$commentViewer_rows_selected)
+	})
 
+	output$threadViewer <- renderDataTable({
+		chartDependency()
+		threadSelected()
+		data <- getCommentViewerData(comments_data, viewPressed())
+		selectedRow <- data[input$commentViewer_rows_selected,]
+		if(selectedRow$thread != "Yes"){
+			return()
+		}
+		reply = TRUE
+		parent = FALSE
+		if(is.na(selectedRow$parent_id)){
+			reply = FALSE
+			parent = TRUE
+		}
+		if(parent){
+  			rows <- data[c(which(data$id == selectedRow$id), which(data$parent_id == selectedRow$id)),]
+		} else {
+			rows <- data[c(which(data$id == selectedRow$parent_id), which(data$parent_id == selectedRow$parent_id),  which(data$id == selectedRow$id)),]
+		}
 
-	# })
+		rows <- rows[order(rows$timestamp),]
+
+		DT::datatable(
+			rows[,c("timestamp","week_step","text","likes")], class = 'cell-border stripe', extensions = 'Buttons',
+			colnames = c(
+				"Date" = 1,
+				"Step" = 2,
+				"Comment" = 3,
+				"Likes" = 4
+			),
+			options = list(
+				scrollY = "700px",
+				lengthMenu = list(c(10,20,30),c('10','20','30')),
+				pageLength = 20,
+				dom = 'lfrtBip',
+				buttons = list(
+					"print", 
+					list(
+						extend = 'pdf',
+						filename = 'CommentThread',
+						text = 'Download pdf'
+					)
+				)
+			),
+			rownames = FALSE
+		)
+	})
 
 	wordcloud_rep <- repeatable(wordcloud)
 

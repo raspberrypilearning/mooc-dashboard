@@ -715,8 +715,6 @@ getEmploymentStatusCount <- function(enrolmentData){
 
 getCommentViewerData <- function(commentData, step){
 	data <- commentData
-	# data <- subset(data, as.Date(data$timestamp) >= start)
-	# data <- subset(data, as.Date(data$timestamp) <= end)
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
 	data$week_step <- getWeekStep(data)
 	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))

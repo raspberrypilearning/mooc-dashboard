@@ -51,7 +51,7 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course", label = "Courses", width = "500px", choices = courses, selected = courses[1])),
+						selectInput("course", label = "Courses", width = "550px", choices = courses, selected = courses[1])),
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs", inline = TRUE)),
 					tags$div(uiOutput("chooseCourse", inline = TRUE)),
 					title = "Course selection",
@@ -146,28 +146,31 @@ body <- dashboardBody(
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudFreq", "Minimum Frequency of Words:",
 							min = 1, max = 100, value = 50, width = "550px")),
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudMax", "Maximum Number of Words:",
-							min = 1, max = 100, value = 50, width = "550px"))
+							min = 1, max = 100, value = 50, width = "550px")),
+						tags$div(style = "margin-left:15px", uiOutput("loadCloud"))
 						),
-						tags$div(style = "margin-left:15px", uiOutput("loadCloud")),
 					title = "Selector", 
 					status = "primary", solidHeader = TRUE, width = 6, height = 500 ,collapsible = TRUE	
-					),
+				),
 				box(
 					plotOutput("stepWordCloud"),
 					title = "Word Cloud",
 					status = "primary", solidHeader = TRUE, width = 6, height = 500, collapsible = TRUE
-					),
+				)
+			),
+			fluidRow(
 				box(
 					DT::dataTableOutput("commentViewer"),
 					title = "Comments", 
 					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
-				),
+				)
+			),
+			fluidRow(
 				box(
-
-					textOutput("debug"),
-					# DT::dataTableOutput("threadViewer"),
-					title = "Selected Comment Thread"),
+					DT::dataTableOutput("threadViewer"),
+					title = "Comment Thread Viewer", 
 					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
+				)
 			)
 		),
 		tabItem(tabName = "total_measures",
