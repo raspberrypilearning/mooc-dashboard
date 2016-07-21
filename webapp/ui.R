@@ -144,9 +144,9 @@ body <- dashboardBody(
 						tags$div(style = "margin-left:15px", uiOutput("viewButton")),
 						tags$br(),
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudFreq", "Minimum Frequency of Words:",
-							min = 1, max = 100, value = 50, width = "500px")),
+							min = 1, max = 100, value = 50, width = "550px")),
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudMax", "Maximum Number of Words:",
-							min = 1, max = 100, value = 50, width = "500px"))
+							min = 1, max = 100, value = 50, width = "550px"))
 						),
 						tags$div(style = "margin-left:15px", uiOutput("loadCloud")),
 					title = "Selector", 

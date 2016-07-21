@@ -1675,7 +1675,7 @@ output$employmentBar <-renderChart2({
 	output$runSteps <- renderUI({
 		chartDependency()
 		steps <- getRunSteps(input$course,input$run)
-		print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "450px"))
+		print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "550px"))
 	})
 
 	output$viewButton <- renderUI({
