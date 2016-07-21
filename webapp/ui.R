@@ -150,12 +150,12 @@ body <- dashboardBody(
 						tags$div(style = "margin-left:15px", uiOutput("loadCloud"))
 						),
 					title = "Selector", 
-					status = "primary", solidHeader = TRUE, width = 6, height = 500 ,collapsible = TRUE	
+					status = "primary", solidHeader = TRUE, width = 6, height = 460 ,collapsible = TRUE	
 				),
 				box(
 					plotOutput("stepWordCloud"),
 					title = "Word Cloud",
-					status = "primary", solidHeader = TRUE, width = 6, height = 500, collapsible = TRUE
+					status = "primary", solidHeader = TRUE, width = 6, height = 460, collapsible = TRUE
 				)
 			),
 			fluidRow(
@@ -169,7 +169,7 @@ body <- dashboardBody(
 				box(
 					DT::dataTableOutput("threadViewer"),
 					title = "Comment Thread Viewer", 
-					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
+					status = "primary", solidHeader = TRUE, width = 12, height = 950 ,collapsible = TRUE
 				)
 			)
 		),

@@ -12,6 +12,7 @@ require(shinyjs)
 require(tm)
 require(wordcloud)
 require(DT)
+require(R.utils)
 source("config.R")
 source("learner_analysis.R")
 source("learner_filters.R")
@@ -1579,6 +1580,12 @@ output$employmentBar <-renderChart2({
 	})  
 
 	output$aggregateEnrolmentData <- renderDataTable({
+
+		aggregateEnrol$Course <- gsub( "-", " ", as.character(aggregateEnrol$Course))
+		aggregateEnrol$Course <- capitalize(aggregateEnrol$Course)
+		aggregateEnrol <- aggregateEnrol[order(aggregateEnrol$Course),]
+		aggregateEnrol$Start.Date <- as.Date(aggregateEnrol$Start.Date)
+
 		DT::datatable(
 			aggregateEnrol, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 			colnames = c('Start Date' = 2,
@@ -1586,7 +1593,7 @@ output$employmentBar <-renderChart2({
 			'Joiners' = 4,
 			'Leavers' = 5,
 			'Active Learners' = 7,
-			'Return Learners' = 8,
+			'Returning Learners' = 8,
 			'Social Learners' = 9,
 			'Fully Participating Learners' = 10,
 			'Statements Sold' = 11),

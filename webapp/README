@@ -1,7 +1,7 @@
 MOOC Dashboard - Web Application
 ================================
 Originator : Lyubomir Vasilev (lyubo.vasilev93@gmail.com)
-Last Updated : 19 July 2016 by tangdarron@gmail.com
+Last Updated : 21 July 2016 by tangdarron@gmail.com
 
 
 Overview
@@ -52,6 +52,7 @@ install.packages("shinydashboard")
 devtools::install_github("rstudio/DT")
 install.packages("tm")
 install.packages("wordcloud")
+install.packages("R.utils")
 
 
 4. Install Shiny Server Open Source (system wide):
