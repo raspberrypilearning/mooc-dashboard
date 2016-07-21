@@ -1697,7 +1697,7 @@ output$employmentBar <-renderChart2({
 		if(input$viewButton == 0){
 			return()
 		}
-		data <- getCommentViewerData(comments_data, viewPressed(), input$commentDateRange[1],input$commentDateRange[2])
+		data <- getCommentViewerData(comments_data, viewPressed())
 		DT::datatable(
 			data[,c("timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 			colnames = c(
@@ -1784,11 +1784,12 @@ output$employmentBar <-renderChart2({
 			rot.per = 0)
 	})
 
-	output$commentDateRange <- renderUI({
-		first = as.Date(comments_data$timestamp[1])
-		last = as.Date(tail(comments_data$timestamp, n=1))
-		dateRangeInput(inputId = "commentDateRange",label = 'Date Range:',start = first, min = first, end = last, max = last, weekstart = 1,format = "dd/mm/yy")
-	})
+	# output$commentDateRange <- renderUI({
+	# 	chartDependency()
+	# 	first = as.Date(comments_data$timestamp[1])
+	# 	last = as.Date(tail(comments_data$timestamp, n=1))
+	# 	dateRangeInput(inputId = "commentDateRange",label = 'Date Range:',start = first, min = first, end = last, max = last, weekstart = 1,format = "dd/mm/yy")
+	# })
 
 
 	getPage<-function() {
