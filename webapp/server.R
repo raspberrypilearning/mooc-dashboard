@@ -96,7 +96,7 @@ function(input, output, session) {
 		
 	}, priority = 10)
 
-	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Enrolment Data","enrolmentData.csv"))
+	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Enrolment Data","Enrolment-Data.csv"))
 		assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
 	observeEvent(input$chooseCourseButton, {
@@ -1790,10 +1790,9 @@ output$employmentBar <-renderChart2({
 
 	wordcloud_rep <- repeatable(wordcloud)
 
-	terms <- eventReactive(input$loadCloud,{
+	terms <- reactive({
 		isolate({
-			withProgress({
-				setProgress(message = "Processing Word Cloud...")
+			withProgress(message = "Processing Word Cloud",{
 				data <- comments_data
 				data$week_step <- getWeekStep(data)
 				stepChoice <- input$stepChoice
