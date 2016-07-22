@@ -38,6 +38,7 @@ def update(email,password):
 		print "Retrieving courses..."
 
 		enrolmentData = []
+
 		for course_name , runs in cos.getCourses().items():
 			
 			for run, info in runs.items():
@@ -51,7 +52,7 @@ def update(email,password):
 		# JSR Disable import as unused
 		#importData(files,cos.getUniName())
 		enrol_path = "../data/" +cos.getUniName()+ "/Enrolment Data"
-		enrol_filename = "/enrolmentData.csv"
+		enrol_filename = "/Enrolment-Data.csv"
 		if not os.path.exists(enrol_path):
 			os.makedirs(enrol_path)
 
