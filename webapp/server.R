@@ -1591,11 +1591,12 @@ output$employmentBar <-renderChart2({
 			colnames = c('Start Date' = 2,
 			'Weeks' = 3,
 			'Joiners' = 4,
-			'Leavers' = 5,
-			'Active Learners' = 7,
-			'Returning Learners' = 8,
-			'Social Learners' = 9,
-			'Fully Participating Learners' = 10,
+			'Leavers (Joiners who leave the course)' = 5,
+			'Learners (Joiners who view a step)' = 6,
+			'Active Learners (Learners who mark as complete)' = 7,
+			'Returning Learners (Learners who mark as complete in two weeks)' = 8,
+			'Social Learners (Learners who make comments)' = 9,
+			'Fully Participating Learners (Learners who complete 50% of steps + assements)' = 10,
 			'Statements Sold' = 11),
 			options = list(
 				lengthMenu = list(c(10,20,30,-1),c('10','20','30','All')),
@@ -1604,7 +1605,16 @@ output$employmentBar <-renderChart2({
 				buttons = list(
 					"print",
 					list(
-						extend = 'pdf', filename = paste(institution,'Mooc Enrolment Data'), orientation = 'landscape', text = 'Download PDF'))
+						extend = 'pdf',
+						filename = paste(institution,'Mooc Enrolment Data', Sys.Date()),
+						orientation = 'landscape',
+						text = 'Download PDF'),
+					list(
+						extend = 'excel',
+						filename = paste(institution,'Mooc Enrolment Data', Sys.Date()),
+						text = 'Download Excel'
+					)
+				)
 			),
 			rownames = FALSE
 		)
@@ -1723,7 +1733,12 @@ output$employmentBar <-renderChart2({
 						extend = 'pdf',
 						filename = 'Comments',
 						text = 'Download pdf'
-						)
+						),
+					list(
+						extend = 'excel',
+						filename = 'Comments',
+						text = 'Download Excel'
+					)
 					)
 			),
 			rownames = FALSE,
@@ -1779,8 +1794,13 @@ output$employmentBar <-renderChart2({
 					"print", 
 					list(
 						extend = 'pdf',
-						filename = 'CommentThread',
+						filename = 'Comment Thread',
 						text = 'Download pdf'
+					),
+					list(
+						extend = 'excel',
+						filename = 'Comment Thread',
+						text = 'Download Excel'
 					)
 				)
 			),
