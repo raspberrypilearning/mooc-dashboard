@@ -32,6 +32,7 @@ sidebar <- dashboardSidebar(
 		menuItem("Home", tabName = "home", icon = icon("home")),
 		menuItem("Aggregate Enrolment Data", tabName = "enrolment", icon = icon("th")),
 		menuItem("Demographics", tabName = "demographics", icon = icon("pie-chart")),
+		menuItem("Statement Demographics", tabName = "statementDemographics", icon = icon("pie-chart")),
 		menuItem("Step Completion", tabName = "step_completion", icon = icon("graduation-cap")),
 		menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
 		menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
@@ -64,22 +65,25 @@ body <- dashboardBody(
 				box(
 					title = "Aggregate Enrolment Data",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE,
-					DT::dataTableOutput('aggregateEnrolmentData', width = "100%")),
-					valueBoxOutput("totalJoiners", width = 6),
-					valueBoxOutput("totalLearners", width = 6),
-					valueBoxOutput("totalStatementsSold", width = 6)
+					DT::dataTableOutput('aggregateEnrolmentData', width = "100%")
+				),
+				valueBoxOutput("totalJoiners", width = 6),
+				valueBoxOutput("totalLearners", width = 6),
+				valueBoxOutput("totalStatementsSold", width = 6)
 			)
 		),
 		tabItem(tabName = "demographics",
 			fluidRow(
 				box(
 					showOutput("learnersAgeBar", "highcharts"),
-						title = "Age Distribution", 
-						status = "primary", solidHeader = TRUE, width = 8, collapsible = TRUE),
+					title = "Age Distribution", 
+					status = "primary", solidHeader = TRUE, width = 8, collapsible = TRUE
+				),
 				box(
 					showOutput("learnersGender", "highcharts"),
 					title = "Gender",
-					status = "primary", solidHeader = TRUE, width = 4, collapsible = TRUE)
+					status = "primary", solidHeader = TRUE, width = 4, collapsible = TRUE
+				)
 			),
 			fluidRow(
 				tabBox(
@@ -94,8 +98,39 @@ body <- dashboardBody(
 			fluidRow(
 				box(htmlOutput("learnerMap"),
 					title = "Learners by country", 
-					status = "primary", solidHeader = TRUE, width = 12, height = 700,collapsible = TRUE)
+					status = "primary", solidHeader = TRUE, width = 12, height = 700,collapsible = TRUE
+				)
 			)#fluidRow
+		),
+		tabItem(tabName = "statementDemographics",
+			fluidRow(
+				box(showOutput("AllvsFPvsStateAgeBar","highcharts"),
+					title = "Statements Sold Age Ranges",
+					status = "primary", solidHeader = TRUE, width = 8, height = 500,collapsible = TRUE
+				),
+				box(
+					showOutput("AllvsFPvsStateGenderColumn","highcharts"),
+					title = "Statements Sold Gender",
+					status = "primary", solidHeader = TRUE, width = 4, height = 500,collapsible = TRUE
+				)
+			),
+			fluidRow(
+				tabBox(
+					title = "Employment and Education",
+					id = "StatementsEmploymentTabBox",
+					width = 12,
+					height = 600,
+					tabPanel("Area", showOutput("AllvsFPvsStateEmploymentAreaBar", "highcharts")),
+					tabPanel("Status", showOutput("AllvsFPvsStateEmploymentStatusBar", "highcharts")),
+					tabPanel("Degree", showOutput("AllvsFPvsStateDegreeBar", "highcharts"))
+				)
+			),
+			fluidRow(
+				box(showOutput("AllvsFPvsStateCountryBar", "highcharts"),
+					title = "Statements Sold By Country",
+					status = "primary", solidHeader = TRUE, width = 12, height = 1600,collapsible = TRUE
+				)
+			)
 		),
 		tabItem(tabName = "step_completion",
 			fluidRow(

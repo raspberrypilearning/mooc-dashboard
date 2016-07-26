@@ -729,3 +729,50 @@ getCommentViewerData <- function(commentData, step){
 	sorted <- stepComments[order(-stepComments$likes),]
 	return(sorted)
 }
+
+getSurveyResponsesFromFullyParticipating <- function(enrolmentData){
+	responses <- enrolmentData[which(enrolmentData$fully_participated_at != ""),]
+	responses <- responses[which(responses$gender != "Unknown" | responses$country != "Unknown" | responses$age_range != "Unknown" | responses$highest_education_level != "Unknown" | responses$employment_status != "Unknown" | responses$employment_area != "Unknown"),]
+	return(responses)
+}
+
+getSurveyResponsesFromStatementBuyers <- function(enrolmentData){
+	responses <- enrolmentData[which(enrolmentData$purchased_statement_at != ""),]
+	responses <- responses[which(responses$gender != "Unknown" | responses$country != "Unknown" | responses$age_range != "Unknown" | responses$highest_education_level != "Unknown" | responses$employment_status != "Unknown" | responses$employment_area != "Unknown"),]
+	return(responses)
+}
+
+getAllvsFPvsStateData <-function(all, fp, state){
+	allCount <- count(all)
+	allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
+	allCount$percentage <- round(allCount$percentage,2)
+	allCount <- allCount[,c("x","percentage")]
+
+	fpCount <- count(fp)
+	fpCount$percentage <- fpCount$freq / sum(fpCount$freq) * 100
+	fpCount$percentage <- round(fpCount$percentage,2)
+	fpCount <- fpCount[,c("x","percentage")]
+
+	stateCount <- count(state)
+	stateCount$percentage <- stateCount$freq / sum(stateCount$freq) * 100
+	stateCount$percentage <- round(stateCount$percentage,2)
+	stateCount <- stateCount[,c("x","percentage")]
+
+	levels <- unique(allCount$x)
+	data <- data.frame(x = levels, Overall = integer(length = length(levels)), FullyParticipating = integer(length = length(levels)), StatementsSold = integer(length = length(levels)))
+	
+	for(i in c(1:length(allCount$percentage))){
+	  data[data$x == allCount$x[i],]$Overall <- allCount$percentage[i]
+	}
+
+	for(i in c(1:length(fpCount$percentage))){
+ 		data[data$x == fpCount$x[i],]$FullyParticipating <- fpCount$percentage[i]
+	}
+
+	for(i in c(1:length(stateCount$percentage))){
+ 		data[data$x == stateCount$x[i],]$StatementsSold <- stateCount$percentage[i] 
+	}
+
+	data <- data[order(-data$Overall),]
+	return(data)
+}

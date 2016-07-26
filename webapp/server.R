@@ -1746,11 +1746,6 @@ output$employmentBar <-renderChart2({
 		)
 	})
 
-	output$debug <-renderText({
-		# print("Hello")
-		print(toString(input$commentViewer_rows_selected))
-	})
-
 	threadSelected <- eventReactive( input$commentViewer_rows_selected, {
 		runif(input$commentViewer_rows_selected)
 	})
@@ -1854,13 +1849,141 @@ output$employmentBar <-renderChart2({
 			rot.per = 0)
 	})
 
-	# output$commentDateRange <- renderUI({
-	# 	chartDependency()
-	# 	first = as.Date(comments_data$timestamp[1])
-	# 	last = as.Date(tail(comments_data$timestamp, n=1))
-	# 	dateRangeInput(inputId = "commentDateRange",label = 'Date Range:',start = first, min = first, end = last, max = last, weekstart = 1,format = "dd/mm/yy")
-	# })
+	output$AllvsFPvsStateGenderColumn <- renderChart2({
+		chartDependency()
 
+		all <- enrolment_data[which(enrolment_data$gender != "Unknown"),]$gender
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data)
+		fp <- fullyParticipated[which(fullyParticipated$gender != "Unknown"),]$gender
+		state <- statementsSold[which(statementsSold$gender != "Unknown"),]$gender
+
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'column', width = '350')
+		chart$data(data[c("Overall","FullyParticipating","StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$plotOptions(
+			bar = list(
+				dataLabels = list(
+					enabled = "true"
+				)
+			)
+		) 
+		return(chart)
+	})
+
+	output$AllvsFPvsStateAgeBar <- renderChart2({
+		chartDependency()
+
+		all <- enrolment_data[which(enrolment_data$age_range != "Unknown"),]$age_range
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data)
+		fp <- fullyParticipated[which(fullyParticipated$age_range != "Unknown"),]$age_range
+		state <- statementsSold[which(statementsSold$age_range != "Unknown"),]$age_range
+
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'bar', width = '750')
+		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$plotOptions(
+			bar = list(
+				dataLabels = list(
+					enabled = "true"
+				)
+			)
+		)
+		return(chart)
+	})
+
+	output$AllvsFPvsStateEmploymentAreaBar <- renderChart2({
+		chartDependency()
+
+		all <- enrolment_data[which(enrolment_data$employment_area != "Unknown"),]$employment_area
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data)
+		fp <- fullyParticipated[which(fullyParticipated$employment_area != "Unknown"),]$employment_area
+		state <- statementsSold[which(statementsSold$employment_area != "Unknown"),]$employment_area
+
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'bar', width = '1200', height = '550')
+		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		return(chart)
+	})
+
+	output$AllvsFPvsStateEmploymentStatusBar <- renderChart2({
+		chartDependency()
+
+		all <- enrolment_data[which(enrolment_data$employment_status != "Unknown"),]$employment_status
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data)
+		fp <- fullyParticipated[which(fullyParticipated$employment_status != "Unknown"),]$employment_status
+		state <- statementsSold[which(statementsSold$employment_status != "Unknown"),]$employment_status
+
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'bar', width = '1200', height = '550')
+		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		return(chart)
+	})
+
+	output$AllvsFPvsStateDegreeBar <- renderChart2({
+		chartDependency()
+
+		all <- enrolment_data[which(enrolment_data$highest_education_level != "Unknown"),]$highest_education_level
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data)
+		fp <- fullyParticipated[which(fullyParticipated$highest_education_level != "Unknown"),]$highest_education_level
+		state <- statementsSold[which(statementsSold$highest_education_level != "Unknown"),]$highest_education_level
+		
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'bar', width = '1200', height = '550')
+		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		return(chart)
+	})
+
+	output$AllvsFPvsStateCountryBar <- renderChart2({
+		chartDependency()
+
+		all <- enrolment_data[which(enrolment_data$country != "Unknown"),]$country
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data)
+		fp <- fullyParticipated[which(fullyParticipated$country != "Unknown"),]$country
+		state <- statementsSold[which(statementsSold$country != "Unknown"),]$country
+
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'bar', width = '1200', height = '1500')
+		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		return(chart)
+	})
+
+	
 
 	getPage<-function() {
 		return(includeHTML("funnel.html"))
