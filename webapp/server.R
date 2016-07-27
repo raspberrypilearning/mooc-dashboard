@@ -892,6 +892,32 @@ output$employmentBar <-renderChart2({
 		)
 		return (map)
 	})
+
+	output$HDIColumn <- renderChart2({
+		chartDependency()
+		enrolments <- enrolment_data
+		enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
+		all <- as.factor(countryCodesToHDI(as.character(enrolments$country)))
+
+		allCount <- count(all)
+		allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
+		allCount$percentage <- round(allCount$percentage,2)
+		allCount <- allCount[,c("x","percentage")]
+		allCount <- allCount[order(-allCount$percentage),]
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'column', width = 1200)
+		chart$data(allCount$percentage)
+		chart$xAxis(categories = allCount$x)
+		chart$plotOptions(
+		  column = list(
+		    dataLabels = list(
+		      enabled = "true"
+		    )
+		  )
+		)
+		return(chart)
+	})
 	
 	output$howFoundCourse <- renderChart2({
 		chartDependency()

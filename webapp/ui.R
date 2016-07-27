@@ -97,9 +97,12 @@ body <- dashboardBody(
 				)
 			),#fluidRow
 			fluidRow(
-				box(htmlOutput("learnerMap"),
-					title = "Learners by country", 
-					status = "primary", solidHeader = TRUE, width = 12, height = 700,collapsible = TRUE
+				tabBox(
+					title = "Regional",
+					id = "regionalTabBox",
+					width = 12,
+					tabPanel("Country", htmlOutput("learnerMap")),
+					tabPanel("HDI", showOutput("HDIColumn", "highcharts"))
 				)
 			)#fluidRow
 		),
@@ -129,7 +132,7 @@ body <- dashboardBody(
 			fluidRow(
 				tabBox(
 					title = "Country Data",
-					id = "StatementsEmploymentTabBox",
+					id = "statementsRegionalTabBox",
 					width = 12,
 					height = 1600,
 					tabPanel("Countrys", showOutput("AllvsFPvsStateCountryBar", "highcharts")),
