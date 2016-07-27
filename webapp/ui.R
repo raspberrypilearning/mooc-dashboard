@@ -33,6 +33,7 @@ sidebar <- dashboardSidebar(
 		menuItem("Aggregate Enrolment Data", tabName = "enrolment", icon = icon("th")),
 		menuItem("Demographics", tabName = "demographics", icon = icon("pie-chart")),
 		menuItem("Statement Demographics", tabName = "statementDemographics", icon = icon("pie-chart")),
+		menuItem("Sign Ups and Statements Sold", tabName = "signUpsStatementsSold", icon = icon("graduation-cap")),
 		menuItem("Step Completion", tabName = "step_completion", icon = icon("graduation-cap")),
 		menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
 		menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
@@ -119,16 +120,34 @@ body <- dashboardBody(
 					title = "Employment and Education",
 					id = "StatementsEmploymentTabBox",
 					width = 12,
-					height = 600,
+					height = 650,
 					tabPanel("Area", showOutput("AllvsFPvsStateEmploymentAreaBar", "highcharts")),
 					tabPanel("Status", showOutput("AllvsFPvsStateEmploymentStatusBar", "highcharts")),
 					tabPanel("Degree", showOutput("AllvsFPvsStateDegreeBar", "highcharts"))
 				)
 			),
 			fluidRow(
-				box(showOutput("AllvsFPvsStateCountryBar", "highcharts"),
-					title = "Statements Sold By Country",
-					status = "primary", solidHeader = TRUE, width = 12, height = 1600,collapsible = TRUE
+				tabBox(
+					title = "Country Data",
+					id = "StatementsEmploymentTabBox",
+					width = 12,
+					height = 1600,
+					tabPanel("Countrys", showOutput("AllvsFPvsStateCountryBar", "highcharts")),
+					tabPanel("HDI", showOutput("allvsFPvsStateHDIColumn", "highcharts"))
+				)
+			)
+		),
+		tabItem(tabName = "signUpsStatementsSold",
+			fluidRow(
+				box(
+					showOutput("signUpsLine", "highcharts"),
+					title = "Sign Ups per day",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+				),
+				box(
+					showOutput("statementsSoldColumn", "highcharts"),
+					title = "Statements Sold per day",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
 				)
 			)
 		),

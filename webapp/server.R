@@ -659,7 +659,7 @@ output$learnersGender <- renderChart2({
 	chartDependency()
 	genderCount <- getGenderCount(enrolment_data)
 	a <- rCharts:::Highcharts$new()
-	a$chart(type = "column", width = "350")
+	a$chart(type = "column", width = 350)
 	a$data(genderCount[c("percentage")])
 	a$xAxis(categories = unlist(genderCount[c("gender")]))
 	a$plotOptions(
@@ -677,7 +677,7 @@ output$employmentBar <-renderChart2({
 	chartDependency()
 	employmentCount <- getEmploymentAreaCount(enrolment_data)
 	a <- rCharts:::Highcharts$new()
-	a$chart(type = "bar", width = "1100")
+	a$chart(type = "bar", width = 1200)
 	a$data(employmentCount[c("percentage")])
 	a$xAxis(categories = gsub( "_"," ",unlist(employmentCount[c("employment")])))
 	a$plotOptions(
@@ -776,7 +776,7 @@ output$employmentBar <-renderChart2({
 		chartDependency()
 		statusCount <- getEmploymentStatusCount(enrolment_data)
 		a <- rCharts:::Highcharts$new()
-		a$chart(type = "bar", width = "1100")
+		a$chart(type = "bar", width = 1200)
 		a$data(statusCount[c("percentage")])
 		a$xAxis(categories = gsub( "_"," ",unlist(statusCount[c("status")])))
 		a$plotOptions(
@@ -840,7 +840,7 @@ output$employmentBar <-renderChart2({
 		plotData$degree <- seq(from = 0, to = nrow(plotData) - 1)
 		colnames(plotData)[c(1,2)] <- c("x", "y")
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column", width = "800")
+		histogram$chart (type = "column", width = 800)
 		histogram$series(
 			data = toJSONArray2(plotData, json = FALSE, names = TRUE),
 			name = "learners"
@@ -909,7 +909,7 @@ output$employmentBar <-renderChart2({
 		plotData$how_found_course <- seq(from = 0, to = nrow(plotData) - 1)
 		colnames(plotData)[c(1,2)] <- c("x", "y")
 		histogram <- Highcharts$new()
-		histogram$chart (width = "380")
+		histogram$chart (width = 380)
 		histogram$series(
 			data = toJSONArray2(plotData, json = FALSE, names = TRUE),
 			type = "bar",
@@ -948,7 +948,7 @@ output$employmentBar <-renderChart2({
 		plotData$hope_get_course <- seq(from = 0, to = nrow(plotData) - 1)
 		colnames(plotData)[c(1,2)] <- c("x", "y")
 		histogram <- Highcharts$new()
-		histogram$chart (width = "380")
+		histogram$chart (width = 380)
 		histogram$series(
 			data = toJSONArray2(plotData, json = FALSE, names = TRUE),
 			type = "bar",
@@ -982,7 +982,7 @@ output$employmentBar <-renderChart2({
 		assign("fullMethodsData", data[[1]], envir = .GlobalEnv)
 		plotData <- data[[2]]
 		histogram <- Highcharts$new()
-		histogram$chart (width = "380")
+		histogram$chart (width = 380)
 		
 		histogram$series(
 			data = list(
@@ -1082,7 +1082,7 @@ output$employmentBar <-renderChart2({
 		plotData$subject <- seq(from = 0, to = nrow(plotData) - 1)
 		colnames(plotData)[c(1,2)] <- c("x", "y")
 		histogram <- Highcharts$new()
-		histogram$chart (width = "380")
+		histogram$chart (width = 380)
 		
 		histogram$series(
 			data = toJSONArray2(plotData, F, T),
@@ -1121,7 +1121,7 @@ output$employmentBar <-renderChart2({
 		plotData$previous_online_course <- seq(from = 0, to = nrow(plotData) - 1)
 		colnames(plotData)[c(1,2)] <- c("x", "y")
 		histogram <- Highcharts$new()
-		histogram$chart (width = "380")
+		histogram$chart (width = 380)
 		histogram$series(
 			data = toJSONArray2(plotData, F, T),
 			type = "column",
@@ -1159,7 +1159,7 @@ output$employmentBar <-renderChart2({
 		plotData$learning_place <- seq(from = 0, to = nrow(plotData) - 1)
 		colnames(plotData)[c(1,2)] <- c("x", "y")
 		histogram <- Highcharts$new()
-		histogram$chart (width = "380")
+		histogram$chart (width = 380)
 		histogram$series(
 			data = toJSONArray2(plotData, F, T),
 			type = "column",
@@ -1221,7 +1221,7 @@ output$employmentBar <-renderChart2({
 		plotData <- ddply(plotData, ~week, summarise, replies = sum(replies), comments = sum(comments))
 		# Create the histogram and pass in some options
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column",  width = "550")
+		histogram$chart (type = "column",  width = 550)
 		histogram$data (plotData)
 		histogram$xAxis (categories = weekCat)
 		histogram$yAxis (
@@ -1267,7 +1267,7 @@ output$employmentBar <-renderChart2({
 		authors <- ddply(authors, ~week, summarise, authors = sum(authors))
 		# Create the histogram and pass in some options
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column", width = "550")
+		histogram$chart (type = "column", width = 550)
 		histogram$data (authors)
 		histogram$xAxis (categories = weekCat)
 		histogram$yAxis (
@@ -1313,7 +1313,7 @@ output$employmentBar <-renderChart2({
 		plotData <- ddply(plotData, ~completed, summarise, comments = mean(comments))
 		# Create the line chart and pass in some options
 		lineChart <- Highcharts$new()
-		lineChart$chart (type = "line", width = "380", height = "210")
+		lineChart$chart (type = "line", width = 380, height = 210)
 		lineChart$series (
 			name = "Comments",
 			data = toJSONArray2(plotData, json = FALSE, names = FALSE),
@@ -1430,7 +1430,7 @@ output$employmentBar <-renderChart2({
 		regressionData <- rbind(startPoint, endPoint)
 		# Create the scatter plot and pass in some options
 		scatter <- hPlot(x ~ y, data = plotData, type = "scatter", color = "completed")
-		scatter$chart (width = "1500")
+		scatter$chart (width = 1500)
 		scatter$series (list(
 			list(
 				data = toJSONArray2(regressionData, json = FALSE, names = FALSE), 
@@ -1639,7 +1639,7 @@ output$employmentBar <-renderChart2({
 		chartDependency()
 		stepsCount <- getStepsCompletedData(step_data)
 		a <- rCharts:::Highcharts$new()
-		a$chart(type = "column", width = "1100")
+		a$chart(type = "column", width = 1200)
 		a$data(stepsCount[c("freq")])
 		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
 		return(a)
@@ -1676,7 +1676,7 @@ output$employmentBar <-renderChart2({
 		chartDependency()
 		plotData <- getCommentsBarChart(step_data,comments_data)
 		histogram <- Highcharts$new()
-		histogram$chart(type = "column" , width = "1100")
+		histogram$chart(type = "column" , width = 1200)
 		histogram$data(plotData[,c("reply","post")])
 		histogram$xAxis (categories = plotData$week_step)
 		histogram$plotOptions (
@@ -1862,7 +1862,7 @@ output$employmentBar <-renderChart2({
 		data <- getAllvsFPvsStateData(all,fp,state)
 
 		chart <- Highcharts$new()
-		chart$chart(type = 'column', width = '350')
+		chart$chart(type = 'column', width = 350)
 		chart$data(data[c("Overall","FullyParticipating","StatementsSold")])
 		chart$xAxis(categories = data$x)
 		chart$colors('#7cb5ec', '#434348','#8085e9')
@@ -1889,7 +1889,7 @@ output$employmentBar <-renderChart2({
 		data <- getAllvsFPvsStateData(all,fp,state)
 
 		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = '750')
+		chart$chart(type = 'bar', width = 750)
 		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
 		chart$xAxis(categories = data$x)
 		chart$colors('#7cb5ec', '#434348','#8085e9')
@@ -1916,7 +1916,7 @@ output$employmentBar <-renderChart2({
 		data <- getAllvsFPvsStateData(all,fp,state)
 
 		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = '1200', height = '550')
+		chart$chart(type = 'bar', width = 1200, height = 550)
 		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
 		chart$xAxis(categories = data$x)
 		chart$colors('#7cb5ec', '#434348','#8085e9')
@@ -1936,7 +1936,7 @@ output$employmentBar <-renderChart2({
 		data <- getAllvsFPvsStateData(all,fp,state)
 
 		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = '1200', height = '550')
+		chart$chart(type = 'bar', width = 1200, height = 550)
 		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
 		chart$xAxis(categories = data$x)
 		chart$colors('#7cb5ec', '#434348','#8085e9')
@@ -1956,7 +1956,7 @@ output$employmentBar <-renderChart2({
 		data <- getAllvsFPvsStateData(all,fp,state)
 
 		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = '1200', height = '550')
+		chart$chart(type = 'bar', width = 1200, height = 550)
 		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
 		chart$xAxis(categories = data$x)
 		chart$colors('#7cb5ec', '#434348','#8085e9')
@@ -1976,13 +1976,88 @@ output$employmentBar <-renderChart2({
 		data <- getAllvsFPvsStateData(all,fp,state)
 
 		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = '1200', height = '1500')
+		chart$chart(type = 'bar', width = 1200, height = 1500)
 		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
 		chart$xAxis(categories = data$x)
 		chart$colors('#7cb5ec', '#434348','#8085e9')
 		return(chart)
 	})
 
+	output$allvsFPvsStateHDIColumn <- renderChart2({
+		chartDependency()
+		enrolments <- enrolment_data
+		enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
+		enrolments$hdi <- as.factor(countryCodesToHDI(as.character(enrolments$country)))
+
+		all <- enrolments$hdi
+
+		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolments)
+		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolments)
+		fp <- fullyParticipated[which(fullyParticipated$hdi != "Unknown"),]$hdi
+		state <- statementsSold[which(statementsSold$hdi != "Unknown"),]$hdi
+
+		data <- getAllvsFPvsStateData(all,fp,state)
+
+		
+		chart <- Highcharts$new()
+		chart$chart(type = 'column', width = 1200)
+		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
+		chart$xAxis(categories = data$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$plotOptions(
+		  column = list(
+		    dataLabels = list(
+		      enabled = "true"
+		    )
+		  )
+		)
+		return(chart)
+
+	})
+
+	output$signUpsLine <- renderChart2({
+		chartDependency()
+
+		enrolled_at <- substr(as.character(enrolment_data$enrolled_at),start = 1, stop = 10)
+		enrolledCount <- count(enrolled_at)
+		enrolledCount$x <- as.character(enrolledCount$x)
+		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
+		enrolledCount <- subset(enrolledCount, as.numeric(gsub("-","",enrolledCount$x)) >= startDate)
+		names(enrolledCount)[names(enrolledCount)=="freq"] <- "SignUps"
+
+		chart <- Highcharts$new()
+		chart$chart(type = "line", width = 1200)
+		chart$data(enrolledCount[c("SignUps")])
+		chart$xAxis(categories = enrolledCount$x)
+		return(chart)
+	})
+
+	output$statementsSoldColumn <- renderChart2({
+		chartDependency()
+
+		purchased <- enrolment_data[which(enrolment_data$purchased_statement_at != ""),]$purchased_statement_at
+		purchased_at <- substr(as.character(purchased),start = 1, stop = 10)
+		purchasedCount <- count(purchased_at)
+		purchasedCount$x <- as.Date(purchasedCount$x,format = '%Y-%m-%d')
+		startDate <- as.Date(substr(input$run,5,14))
+		endDate<- tail(purchasedCount$x, n=1)
+		purchasedCount <- subset(purchasedCount, as.Date(purchasedCount$x,format = '%Y-%m-%d') >= startDate)
+		dateRange <- seq.Date(from = startDate, to = endDate, by = 1)
+
+		data <- data.frame(dates = dateRange, count = integer(length=length(dateRange)))
+
+		for(i in c(1:length(purchasedCount$freq))){
+		  data[data$date == purchasedCount$x[i],]$count <- purchasedCount$freq[i]
+		}
+
+		chart <- Highcharts$new()
+		chart$chart(type = "column", width = 1200)
+		chart$data(data[c("count")])
+		chart$xAxis(categories = as.character(data$dates))
+
+		print(chart)
+
+	})
 	
 
 	getPage<-function() {
