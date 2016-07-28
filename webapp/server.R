@@ -1607,14 +1607,15 @@ output$employmentBar <-renderChart2({
 
 	output$aggregateEnrolmentData <- renderDataTable({
 
-		aggregateEnrol$Course <- gsub( "-", " ", as.character(aggregateEnrol$Course))
-		aggregateEnrol$Course <- capitalize(aggregateEnrol$Course)
-		aggregateEnrol <- aggregateEnrol[order(aggregateEnrol$Course),]
-		aggregateEnrol$Start.Date <- as.Date(aggregateEnrol$Start.Date)
+		aggregateEnrol$course <- gsub( "-", " ", as.character(aggregateEnrol$course))
+		aggregateEnrol$course <- capitalize(aggregateEnrol$course)
+		aggregateEnrol <- aggregateEnrol[order(aggregateEnrol$course),]
+		aggregateEnrol$start_date <- as.Date(aggregateEnrol$start_date)
 
 		DT::datatable(
 			aggregateEnrol, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-			colnames = c('Start Date' = 2,
+			colnames = c('Course' = 1,
+			'Start Date' = 2,
 			'Weeks' = 3,
 			'Joiners' = 4,
 			'Leavers (Joiners who leave the course)' = 5,
@@ -1647,18 +1648,18 @@ output$employmentBar <-renderChart2({
 	})
 
 	output$totalJoiners <- renderValueBox({
-		valueBox("Total Joiners", subtitle = sum(aggregateEnrol$Joiners), icon = icon("group"), color = "red")
+		valueBox("Total Joiners", subtitle = sum(aggregateEnrol$joiners), icon = icon("group"), color = "red")
 	})
 
 	output$totalLearners <- renderValueBox({
-		learners <- subset(aggregateEnrol , Learners != "N/A")
-		learners2 <- sapply(learners$Learners, function(x) strsplit(toString(x), "-"))
+		learners <- subset(aggregateEnrol , learners != "N/A")
+		learners2 <- sapply(learners$learners, function(x) strsplit(toString(x), "-"))
 		learners3 <- sapply(learners2, function(x) as.numeric(x[[1]]))
 		valueBox("Total Learners", subtitle = sum(learners3), icon = icon("group"), color = "red")
 	})
 
 	output$totalStatementsSold <- renderValueBox({
-		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$Statements.Sold), icon = icon("certificate"), color = "red")
+		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$statements_sold), icon = icon("certificate"), color = "red")
 	})
 
 	output$stepsCompleted <- renderChart2({
