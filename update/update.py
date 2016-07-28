@@ -43,14 +43,16 @@ def update(email,password):
 			
 			for run, info in runs.items():
 				run_enrol_data = info['enrolmentData']
-				run_enrol_data['No Of Weeks'] = info['duration_weeks']
+				run_enrol_data['no_of_weeks'] = info['duration_weeks']
 				enrolmentData.append(run_enrol_data)
 				if(not len(info['datasets']) == 0):
 					download(loginInfo, cos.getUniName(), course_name, run, info)
 
 
 		# JSR Disable import as unused
-		#importData(files,cos.getUniName())
+		# importData(files,cos.getUniName())
+
+
 		enrol_path = "../data/" +cos.getUniName()+ "/Enrolment Data"
 		enrol_filename = "/Enrolment-Data.csv"
 		if not os.path.exists(enrol_path):
@@ -58,14 +60,14 @@ def update(email,password):
 
 		with open(enrol_path + enrol_filename, 'w') as f:
 			writer = csv.writer(f)
-			writer.writerow("Course,Start Date,No Of Weeks,Joiners,Leavers,Learners,Active Learners,Returning Learners,Social Learners,Fully Participating Learners,Statements Sold".split(','))
+			writer.writerow("course,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold".split(','))
 			for row in enrolmentData:
-				if 'Learners' not in row:
-					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5}'.format(row['Course'],row['Start Date'], row['No Of Weeks'], row['Joiners'], row['Leavers'], row['Statements Sold']) 
-				elif 'Statements Sold' in row:
-					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(row['Course'],row['Start Date'],row['No Of Weeks'],row['Joiners'],row['Leavers'],row['Learners'],row['Active Learners'],row['Returning Learners'],row['Social Learners'],row['Fully Participating Learners'],row['Statements Sold'])
+				if 'learners' not in row:
+					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5}'.format(row['course'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold']) 
+				elif 'statements_sold' in row:
+					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(row['course'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['statements_sold'])
 				else:
-					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(row['Course'],row['Start Date'],row['No Of Weeks'],row['Joiners'],row['Leavers'],row['Learners'],row['Active Learners'],row['Returning Learners'],row['Social Learners'],row['Fully Participating Learners'],row['Certificates Sold'])
+					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(row['course'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['certificates_sold'])
 				writer.writerow(line.split(','))
 			f.close()
 

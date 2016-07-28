@@ -2,7 +2,7 @@ import datetime,mysql.connector
 
 
 # connect to sql
-sql = mysql.connector.connect (host = 'localhost',user= 'mooc',password = 'changeMe',database = 'moocs')
+sql = mysql.connector.connect (host = 'localhost',user= 'root',password = 'moocDashboard1',database = 'moocs')
 cursor = sql.cursor()
 
 createComment = "CREATE TABLE Comments(" \
@@ -49,7 +49,7 @@ createAssignments = "CREATE TABLE Assignments(" \
 		"step_number INT NOT NULL," \
 		"week_number INT NOT NULL," \
 		"author_id VARCHAR(50) NOT NULL," \
-		"text VARCHAR(1200) NOT NULL," \
+		"text VARCHAR(2000) NOT NULL," \
 		"first_viewed_at DATETIME NOT NULL," \
 		"submitted_at DATETIME NOT NULL," \
 		"moderated DATETIME," \
@@ -109,11 +109,28 @@ createActivity = "CREATE TABLE Activity(" \
 		"PRIMARY KEY (university,course,course_run,learner_id,week,stepNumber)" \
 		");"
 
+createLearners = "CREATE TABLE Learners(" \
+		"course VARCHAR(50) NOT NULL," \
+		"start_date DATE NOT NULL," \
+		"no_of_weeks INT NOT NULL," \
+		"joiners INT NOT NULL," \
+		"leavers VARCHAR(20)," \
+		"learners VARCHAR(20)," \
+		"active_learners VARCHAR(20)," \
+		"returning_learners VARCHAR(20)," \
+		"social_learners VARCHAR(20)," \
+		"fully_participating_learners VARCHAR(20)," \
+		"statements_sold INT NOT NULL" \
+		"university VARCHAR(40) NOT NULL," \
+		"INDEX(course)," \
+		"PRIMARY KEY (university, course)" \
+		");"
+
 #create all tables, if tables exist, will be deleted
 drops = ['DROP TABLE IF EXISTS Comments','DROP TABLE IF EXISTS Enrolments','DROP TABLE IF EXISTS Assignments', \
-		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity']
+		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity', 'DROP TABLE IF EXISTS Learners']
 
-creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity]
+creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createLearners]
 
 for d in drops:
 	cursor.execute(d)

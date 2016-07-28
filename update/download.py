@@ -57,6 +57,3 @@ def importData(files,uni):
 	for f,course_run in files.items():
 		convert.insertIntoTable(f,course_run,uni)
 		os.remove(f)
-
-
-

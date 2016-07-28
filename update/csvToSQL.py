@@ -7,7 +7,7 @@ class CSV_TO_SQL:
 		self.__database = database
 
 # accept a file and import it into mysql
-	def insertIntoTable(self,f,course_run,uni ='university of Southampton'):
+	def insertIntoTable(self,f,course_run,uni):
 		_file = open(f)
 		_reader = csv.reader(_file)
 		head  = next(_reader)
@@ -111,5 +111,3 @@ class CSV_TO_SQL:
 		self.__database.commit()
 		cursor.close()
 		_file.close()
-	
-	

@@ -135,7 +135,7 @@ class FLCourses:
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 			table = soup.find('table', class_ = "table table-condensed table-striped table-fixed run-stats-dashboard-table")
 
-			enrolmentData["Course"] = " - ".join([stats_dashboard_url.split("/")[-3], stats_dashboard_url.split("/")[-2]]).encode('ascii','ignore')
+			enrolmentData["course"] = " - ".join([stats_dashboard_url.split("/")[-3], stats_dashboard_url.split("/")[-2]]).encode('ascii','ignore')
 			startDate = soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
 			
 			if len(startDate[1]) == 1:
@@ -145,21 +145,20 @@ class FLCourses:
 
 
 			startDateFormatted = '-'.join([startDate[3],monthToNum[startDate[2]], day])
-			enrolmentData["Start Date"] =  startDateFormatted
+			enrolmentData["start_date"] =  startDateFormatted
 
 			if(table):
 				trs = table.find_all('tr')
 
 				for tr in trs:
-					rowName = tr.find('th').get_text().strip().encode('ascii','ignore')
+					rowName = tr.find('th').get_text().strip().encode('ascii','ignore').lower().replace(" ", "_")
 					tds = tr.find_all('td')
 					numeric = tds[0].get_text().strip().replace("," , "").encode('ascii','ignore')
 					percent = tds[1].get_text().strip().encode('ascii','ignore')
-					if rowName in ['Statements Sold', 'Joiners','Certificates Sold']:
+					if rowName in ['statements_sold', 'joiners','certificates_sold']:
 						enrolmentData[rowName] = numeric
 					else:
 						enrolmentData[rowName] = ' - '.join((numeric,percent))
-						
 
 			print enrolmentData
 			return enrolmentData
