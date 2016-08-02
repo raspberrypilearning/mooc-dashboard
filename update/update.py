@@ -33,7 +33,7 @@ def update(email,password):
 	if rep.status_code == 200:
 		print "Login OK..."
 		cos  = FLCourses(loginInfo)
-		download_files = {}
+		files = {}
 
 		print "Retrieving courses..."
 
@@ -41,35 +41,44 @@ def update(email,password):
 
 		for course_name , runs in cos.getCourses().items():
 			
-			for run, info in runs.items():
+			for run, info in runs.items():	
+				start_date = info['start_date'].strftime('%Y-%m-%d')
+				end_date = info['end_date'].strftime('%Y-%m-%d')
+				dir_path = "../data/" + cos.getUniName() + "/" + course_name + "/" + run +" - "+ start_date + " - "+end_date
 				run_enrol_data = info['enrolmentData']
 				run_enrol_data['no_of_weeks'] = info['duration_weeks']
 				enrolmentData.append(run_enrol_data)
 				if(not len(info['datasets']) == 0):
 					download(loginInfo, cos.getUniName(), course_name, run, info)
+					
+					for url,filename in info['datasets'].items():
+						files[dir_path+"/"+filename] = run
+
+
+		courses_path = "../data/" +cos.getUniName()+ "/Courses Data"
+		courses_filename = "/Courses-Data.csv"
+		if not os.path.exists(courses_path):
+			os.makedirs(courses_path)
+
+		with open(courses_path + courses_filename, 'w') as f:
+			writer = csv.writer(f)
+			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,course_run".split(','))
+			for row in enrolmentData:
+				if 'learners' not in row:
+					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5},{6},{7}'.format(row['run_id'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold'], row['course'],row['course_run']) 
+				elif 'statements_sold' in row:
+					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['statements_sold'], row['course'],row['course_run'])
+				else:
+					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['certificates_sold'], row['course'],row['course_run'])
+				writer.writerow(line.split(','))
+			f.close()
+
+
+		files[courses_path+"/"+courses_filename] = 1
 
 
 		# JSR Disable import as unused
-		# importData(files,cos.getUniName())
-
-
-		enrol_path = "../data/" +cos.getUniName()+ "/Enrolment Data"
-		enrol_filename = "/Enrolment-Data.csv"
-		if not os.path.exists(enrol_path):
-			os.makedirs(enrol_path)
-
-		with open(enrol_path + enrol_filename, 'w') as f:
-			writer = csv.writer(f)
-			writer.writerow("course,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold".split(','))
-			for row in enrolmentData:
-				if 'learners' not in row:
-					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5}'.format(row['course'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold']) 
-				elif 'statements_sold' in row:
-					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(row['course'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['statements_sold'])
-				else:
-					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(row['course'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['certificates_sold'])
-				writer.writerow(line.split(','))
-			f.close()
+		importData(files,cos.getUniName())
 
 		f_update_time = open("../data/"+cos.getUniName()+"/updated.txt",'w')
 		f_update_time.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))

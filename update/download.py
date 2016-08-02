@@ -51,9 +51,10 @@ def download(s, uni_name, course_name, run, info):
 
 def importData(files,uni):
 	
-	sql = mysql.connector.connect(host = 'localhost',user= 'mooc',password = 'changeMe',database = 'moocs')
+	sql = mysql.connector.connect(host = 'localhost',user= 'root',password = 'moocDashboard1',database = 'moocs')
 	convert = CSV_TO_SQL(sql)
 	
 	for f,course_run in files.items():
 		convert.insertIntoTable(f,course_run,uni)
-		os.remove(f)
+		# os.remove(f)
+		# Lets not delete the csv files until the sql conversion is finished.

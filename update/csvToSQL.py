@@ -11,10 +11,11 @@ class CSV_TO_SQL:
 		_file = open(f)
 		_reader = csv.reader(_file)
 		head  = next(_reader)
-		_filename, _extend = f.split('.')
-		course , datatype = _filename.split('_')
-		c = course.split('/')
-		course = c[len(c) - 1]
+		blank1,blank2,_filename, _extend = f.split('.')
+		# course , datatype = _filename.split('_')
+		dots,data,uni,course, otherDeets, datatype = _filename.split("/")
+		# c = course.split('/')
+		# course = course[]
 		cursor = self.__database.cursor()
 		delete = ''
 		load = ''
@@ -104,7 +105,13 @@ class CSV_TO_SQL:
 			"Set " + setting + "last_completed_at = nullif(@last_completed_at,' '),university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
 			+ str(course_run) + ";" 
 		
-		
+		# elif 'Course' in datatype:
+
+		# 	col = 'course,start_date,no_of_weeks,joiners,leavers,learners,active-Learners,returning_learners,social_learners,fully_participating_learners,statements_sold,university'
+		# 	load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Learners ' \
+		# 	"FIELDS TERMINATED BY ',' " \
+		# 	"IGNORE 1 LINES " + col + \
+		# 	"Set " + 
 	
 			
 		cursor.execute(load)

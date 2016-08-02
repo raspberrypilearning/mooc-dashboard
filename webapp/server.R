@@ -13,10 +13,12 @@ require(tm)
 require(wordcloud)
 require(DT)
 require(R.utils)
+require(RMySQL)
 source("config.R")
 source("learner_analysis.R")
 source("learner_filters.R")
 source("courses.R")
+source("sql_data_retriever.R")
 
 function(input, output, session) { 
 	
@@ -96,7 +98,7 @@ function(input, output, session) {
 		
 	}, priority = 10)
 
-	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Enrolment Data","Enrolment-Data.csv"))
+	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Courses-Data.csv"))
 		assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
 	observeEvent(input$chooseCourseButton, {
@@ -1607,9 +1609,10 @@ output$employmentBar <-renderChart2({
 
 	output$aggregateEnrolmentData <- renderDataTable({
 
-		aggregateEnrol$course <- gsub( "-", " ", as.character(aggregateEnrol$course))
-		aggregateEnrol$course <- capitalize(aggregateEnrol$course)
-		aggregateEnrol <- aggregateEnrol[order(aggregateEnrol$course),]
+		aggregateEnrol <- aggregateEnrol[, !(colnames(aggregateEnrol) %in% c("course","course_run"))]
+		aggregateEnrol$run_id <- gsub( "-", " ", as.character(aggregateEnrol$run_id))
+		aggregateEnrol$run_id <- capitalize(aggregateEnrol$run_id)
+		aggregateEnrol <- aggregateEnrol[order(aggregateEnrol$run_id),]
 		aggregateEnrol$start_date <- as.Date(aggregateEnrol$start_date)
 
 		DT::datatable(
@@ -2085,6 +2088,12 @@ output$employmentBar <-renderChart2({
 		print(chart)
 
 	})
+
+	output$testSQL <- renderText({
+		chartDependency()
+		table <- getTable("Enrolments", "All", "All")
+		print(table$course_run)
+	})
 	
 
 	getPage<-function() {
@@ -2158,4 +2167,6 @@ output$employmentBar <-renderChart2({
 		funnel$addAssets(js = "http://code.highcharts.com/modules/funnel.js")
 		funnel$save("funnel.html", cdn = FALSE)
 	}
+
+
 }

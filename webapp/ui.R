@@ -40,7 +40,8 @@ sidebar <- dashboardSidebar(
 		menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
 		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
 		menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart")),
-		menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
+		menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag")),
+		menuItem("Debug", tabName = "debug")
 	)#sidebarMenu
 )
 
@@ -287,7 +288,13 @@ body <- dashboardBody(
 						 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE)
 				)#column
 			)#fluidRow
-		)#tabItem
+		),#tabItem
+		tabItem(tabName = "debug",
+			fluidRow(
+				box(textOutput("testSQL"),
+					width = 12)
+			)
+		)
 	),
 	tags$h5(textOutput("updatedTime"))
 )# dashboardBody
