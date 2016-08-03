@@ -18,7 +18,7 @@ source("config.R")
 source("learner_analysis.R")
 source("learner_filters.R")
 source("courses.R")
-source("sql_data_retriever.R")
+source("data_retrieval.R")
 
 function(input, output, session) { 
 	
@@ -48,144 +48,159 @@ function(input, output, session) {
 	
 	observeEvent(input$chooseCourseButton, {
 		
-		output$pageTitle <- renderText(paste(input$course, "- [", input$run, "]"))
+		output$pageTitle <- renderText(paste(input$course1, "- [", input$run1, "]"))
 		
 		updateTabsetPanel(session, "tabs", selected = "demographics")
 		
 		#FixMe - this could all go into a function - but check scope
 		
-		stepDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"step-activity.csv")
-		print(stepDataFile)
-		assign("step_data", getRawData(stepDataFile, "step"), envir = .GlobalEnv)
-		
-		commentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"comments.csv")
-		print(commentsDataFile)
-		assign("comments_data", getRawData(commentsDataFile, "comments"), envir = .GlobalEnv)
-		
-		quizDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"question-response.csv")
-		print(quizDataFile)
-		assign("quiz_data", getRawData(quizDataFile, ""), envir = .GlobalEnv)
-		
-		assignmentsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"peer-review-assignments.csv")
-		print(assignmentsDataFile)
-		if(file.exists(assignmentsDataFile))
-		{
-			assign("assignments_data", getRawData(assignmentsDataFile, ""), envir = .GlobalEnv)
-		}
-		else print("...No such File")
-		
-		reviewsDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"peer-review-reviews.csv")
-		print(reviewsDataFile)
-		if(file.exists(reviewsDataFile))
-		{
-			assign("reviews_data", getRawData(assignmentsDataFile, ""), envir = .GlobalEnv)
-		}
-		else print("...No such File")
-		
-		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
-		print(enrolmentDataFile)
-		assign("enrolment_data", getRawData(enrolmentDataFile, ""), envir = .GlobalEnv)
-		
-		enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course,input$run,"enrolments.csv")
-		print(enrolmentDataFile)
-		assign("pre_course_data", getPreCourseData(enrolmentDataFile), envir = .GlobalEnv)
+		stepDataFiles <- getData("Activity")
+		assign("step_data", stepDataFiles, envir = .GlobalEnv)
 
-		
-		
-		assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
+		commentsDataFiles <- getData("Comments")
+		assign("comments_data", commentsDataFiles, envir = .GlobalEnv)
+
+		quizDataFiles <- getData("Quiz")
+		assign("quiz_data", quizDataFiles, envir = .GlobalEnv)
+
+		assignmentsDataFiles <- getData("Assignments")
+		assign("assignments_data", assignmentsDataFiles, envir = .GlobalEnv)
+
+		reviewsDataFiles <- getData("Reviews")
+		assign("reviews_data", reviewsDataFiles, envir = .GlobalEnv)
+
+		enrolmentsDataFiles <- getData("Enrolments")
+		assign("enrolment_data", enrolmentsDataFiles, envir = .GlobalEnv)
+
+		# enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course1,input$run1,"enrolments.csv")
+		assign("pre_course_data", enrolmentsDataFiles, envir = .GlobalEnv)
+
+		assign("allLearners", getAllLearners(enrolmentsDataFiles[1]), envir = .GlobalEnv)
+
 		assign("filtersEnabled", FALSE, envir = .GlobalEnv)
 		updateTextInput(session, "filteredLearners", value = allLearners)
 		
 	}, priority = 10)
 
+	getData <- function(table){
+		datasets <- list()
+		data1 <- getTable(table, input$course1,input$run1)
+		datasets <- c(datasets,data1)
+		if(input$run2 != "None"){
+			data2 <- getTable(table, input$course2,input$run2)
+			datasets <- c(datasets,data2)
+		}
+		if(input$run3 != "None"){
+			data3 <- getTable(table, input$course3,input$run3)
+			datasets <- c(datasets,data3)
+		}
+		if(input$run4 != "None"){
+			data4 <- getTable(table, input$course4,input$run4)
+			datasets <- c(datasets,data4)
+		}
+		return(datasets)
+	}
+
 	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Courses-Data.csv"))
 		assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
-	observeEvent(input$chooseCourseButton, {
-		range <- getCourseDates(input$course, input$run)
-		assign("courseDates", range, envir = .GlobalEnv)
-		assign("startDate", as.POSIXct(range[[1]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
-		assign("endDate", as.POSIXct(range[[2]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
+	# observeEvent(input$chooseCourseButton, {
+	# 	range <- getCourseDates(input$course1, input$run1)
+	# 	assign("courseDates", range, envir = .GlobalEnv)
+	# 	assign("startDate", as.POSIXct(range[[1]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
+	# 	assign("endDate", as.POSIXct(range[[2]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
 		
-		courseWeeks <- courseDates[[3]]
-		courseStart <- courseDates[[1]]
-		weeks <- c(courseStart)
-		for (i in 2:courseWeeks) {
-			weeks[i] <- as.POSIXct(weeks[i-1], origin = "1970-01-01") + 7 * 24 * 60 * 60
-		}
-		assign("weeks", weeks, envir = .GlobalEnv)
-		if (courseWeeks == 1) {
-			assign("weekCat", c("Week 1"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 2) {
-			assign("weekCat",
-						 c("Week 1", "Week 2"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 3) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 4) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 5) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 6) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 7) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 8) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 9) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 10) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 11) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11"), envir = .GlobalEnv)
-		}
-		else if (courseWeeks == 12) {
-			assign("weekCat",
-						 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"), envir = .GlobalEnv)
-		}
-	}, priority = 4)
+	# 	courseWeeks <- courseDates[[3]]
+	# 	courseStart <- courseDates[[1]]
+	# 	weeks <- c(courseStart)
+	# 	for (i in 2:courseWeeks) {
+	# 		weeks[i] <- as.POSIXct(weeks[i-1], origin = "1970-01-01") + 7 * 24 * 60 * 60
+	# 	}
+	# 	assign("weeks", weeks, envir = .GlobalEnv)
+	# 	if (courseWeeks == 1) {
+	# 		assign("weekCat", c("Week 1"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 2) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 3) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 4) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 5) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 6) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 7) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 8) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 9) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 10) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 11) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11"), envir = .GlobalEnv)
+	# 	}
+	# 	else if (courseWeeks == 12) {
+	# 		assign("weekCat",
+	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"), envir = .GlobalEnv)
+	# 	}
+	# }, priority = 4)
 	
-	categoriseWeek <- function (x) {
+	# categoriseWeek <- function (x) {
 		
-		for (i in 1:courseDates[[3]]) {
-			if (!is.na(weeks[i+1])){
-				if (x >= weeks[i] && x < weeks[i+1]) {
-					return (paste("Week", i))
-				}
-			}else {
-				if (x >= weeks[i]) {
-					return (paste("Week", i))
-				}
-			}
-		}
-	}
+	# 	for (i in 1:courseDates[[3]]) {
+	# 		if (!is.na(weeks[i+1])){
+	# 			if (x >= weeks[i] && x < weeks[i+1]) {
+	# 				return (paste("Week", i))
+	# 			}
+	# 		}else {
+	# 			if (x >= weeks[i]) {
+	# 				return (paste("Week", i))
+	# 			}
+	# 		}
+	# 	}
+	# }
 	
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
 	
 	#START: COURSE SELECTION UI AND VALUE BOXES
 	
 	print("About to assemble runs")
-	output$runs <-renderUI({
-		runs <- getRuns(input$course)
-		selectInput("run", label = "Run", width = "550px", choices = runs)
+	output$runs1 <-renderUI({
+		runs <- getRuns(input$course1)
+		selectInput("run1", label = "Run", width = "550px", choices = c("All",runs))
+	})
+	output$runs2 <-renderUI({
+		runs <- getRuns(input$course2)
+		selectInput("run2", label = "Run", width = "550px", choices = c("None","All",runs))
+	})
+	output$runs3 <-renderUI({
+		runs <- getRuns(input$course3)
+		selectInput("run3", label = "Run", width = "550px", choices = c("None","All",runs))
+	})
+	output$runs4 <-renderUI({
+		runs <- getRuns(input$course4)
+		selectInput("run4", label = "Run", width = "550px", choices = c("None","All",runs))
 	})
 	
 	output$courseNameAndRun <- renderUI({
@@ -897,7 +912,7 @@ output$employmentBar <-renderChart2({
 
 	output$HDIColumn <- renderChart2({
 		chartDependency()
-		enrolments <- enrolment_data
+		enrolments <- enrolment_data[1]
 		enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
 		all <- as.factor(countryCodesToHDI(as.character(enrolments$country)))
 
@@ -2089,10 +2104,10 @@ output$employmentBar <-renderChart2({
 
 	})
 
-	output$testSQL <- renderText({
+	output$debug <- renderText({
 		chartDependency()
-		table <- getTable("Enrolments", "All", "All")
-		print(table$course_run)
+		enrolments <- head(enrolment_data[[1]])
+		enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
 	})
 	
 

@@ -4,7 +4,7 @@ getListOfCourses <- function() {
   #print(outputPath)
   courses <- list.dirs(path = outputPath, full.names = FALSE, recursive = FALSE)
   # print(courses)
-  coursesupdated <- courses[which(courses != "Enrolment Data")]
+  coursesupdated <- courses[which(courses != "Courses Data")]
   return(coursesupdated)
 }
 

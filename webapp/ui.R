@@ -54,11 +54,36 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course", label = "Courses", width = "550px", choices = courses, selected = courses[1])),
-					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs", inline = TRUE)),
-					tags$div(uiOutput("chooseCourse", inline = TRUE)),
+						selectInput("course1", label = "Courses", width = "550px", choices = c("All",courses))),
+					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs1", inline = TRUE)),
 					title = "Course selection",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
+				),
+				box(
+					tags$div(uiOutput("chooseCourse", inline = TRUE)),
+					title = "Go",
+					status = "primary", solidHeader = TRUE, width = 2, collapsible = FALSE
+				),
+				box(
+					tags$div(style="display:inline-block; margin-right:15px", 
+						selectInput("course2", label = "Courses", width = "550px", choices = c("None","All",courses))),
+					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs2", inline = TRUE)),
+					title = "Course selection",
+					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
+				),
+				box(
+					tags$div(style="display:inline-block; margin-right:15px", 
+						selectInput("course3", label = "Courses", width = "550px", choices = c("None","All",courses))),
+					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs3", inline = TRUE)),
+					title = "Course selection",
+					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
+				),
+				box(
+					tags$div(style="display:inline-block; margin-right:15px", 
+						selectInput("course4", label = "Courses", width = "550px", choices = c("None","All",courses))),
+					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs4", inline = TRUE)),
+					title = "Course selection",
+					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
 				)
 			)
 		),
@@ -291,7 +316,7 @@ body <- dashboardBody(
 		),#tabItem
 		tabItem(tabName = "debug",
 			fluidRow(
-				box(textOutput("testSQL"),
+				box(textOutput("debug"),
 					width = 12)
 			)
 		)
