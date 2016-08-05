@@ -54,7 +54,7 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course1", label = "Courses", width = "550px", choices = c("All",courses))),
+						selectInput("course1", label = "Courses", width = "500px", choices = c("All",courses))),
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs1", inline = TRUE)),
 					title = "Course selection",
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
@@ -66,25 +66,25 @@ body <- dashboardBody(
 				),
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course2", label = "Courses", width = "550px", choices = c("None","All",courses))),
+						selectInput("course2", label = "Courses", width = "500px", choices = c("None","All",courses))),
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs2", inline = TRUE)),
 					title = "Course selection",
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
 				),
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course3", label = "Courses", width = "550px", choices = c("None","All",courses))),
+						selectInput("course3", label = "Courses", width = "500px", choices = c("None","All",courses))),
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs3", inline = TRUE)),
 					title = "Course selection",
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
-				),
-				box(
-					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course4", label = "Courses", width = "550px", choices = c("None","All",courses))),
-					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs4", inline = TRUE)),
-					title = "Course selection",
-					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
 				)
+				# box(
+				# 	tags$div(style="display:inline-block; margin-right:15px", 
+				# 		selectInput("course4", label = "Courses", width = "500px", choices = c("None","All",courses))),
+				# 	tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs4", inline = TRUE)),
+				# 	title = "Course selection",
+				# 	status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
+				# )
 			)
 		),
 		tabItem(tabName = "enrolment",
@@ -117,6 +117,7 @@ body <- dashboardBody(
 					title = "Employment and Education",
 					id = "employmentTabBox",
 					width = 12,
+					height = 700,
 					tabPanel("Area", showOutput("employmentBar", "highcharts")),
 					tabPanel("Status", showOutput("employmentStatus", "highcharts")),
 					tabPanel("Degree", showOutput("degreeLevel", "highcharts"))

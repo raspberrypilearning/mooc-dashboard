@@ -4,8 +4,7 @@ getTable <- function(table,course,course_run){
 	m<-dbDriver("MySQL");
 	con<-dbConnect(m,user='root',password='moocDashboard1',host='localhost',dbname='moocs');
 	
-
-	query <- ""
+	query <- sprintf("SELECT * FROM %s",table)
 	if(course != "All" && course_run != "All"){
 		course_run <- substring(course_run,1,1)
 		query <- sprintf("SELECT * FROM %s t WHERE t.course = '%s' AND t.course_run = %s",table,course,course_run)
@@ -21,4 +20,3 @@ getTable <- function(table,course,course_run){
 	dbDisconnect(con)
 	return(data)
 }
-

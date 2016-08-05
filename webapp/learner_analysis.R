@@ -674,6 +674,14 @@ getGenderCount <- function(enrolmentData){
 	names(genderCount)[names(genderCount)=="x"] <- "gender"
 	genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
 	genderCount$percentage <- round(genderCount$percentage,2)
+	genderCount$gender <- as.character(genderCount$gender)
+	if(length(genderCount) < 4){
+		data <- data.frame(gender = as.character(c("male","female","nonbinary","other")), freq = integer(4), percentage = numeric(4))
+		for(i in c(1:length(genderCount))){
+			data[data$gender == genderCount$gender[i],] <- genderCount[genderCount$gender == genderCount$gender[i],]
+		}
+	}
+	genderCount <- data
 	return(genderCount)
 }
 
@@ -711,6 +719,17 @@ getEmploymentStatusCount <- function(enrolmentData){
 	statusCount$percentage <- round(statusCount$percentage,2)
 	statusCount <- statusCount[order(-statusCount$percentage),]
 	return(statusCount)
+}
+
+getEmploymentDegreeCount <- function(enrolmentData){
+  enrolments <- enrolmentData
+  status <- as.character(enrolments$highest_education_level)
+  status <- status[status!="Unknown"]
+  statusCount <- count(status)
+  names(statusCount)[names(statusCount)=="x"] <- "degree"
+  statusCount$percentage <- statusCount$freq / sum(statusCount$freq) * 100
+  statusCount$percentage <- round(statusCount$percentage,2)
+  return(statusCount)
 }
 
 getCommentViewerData <- function(commentData, step){
@@ -766,11 +785,11 @@ getAllvsFPvsStateData <-function(all, fp, state){
 	}
 
 	for(i in c(1:length(fpCount$percentage))){
- 		data[data$x == fpCount$x[i],]$FullyParticipating <- fpCount$percentage[i]
+		data[data$x == fpCount$x[i],]$FullyParticipating <- fpCount$percentage[i]
 	}
 
 	for(i in c(1:length(stateCount$percentage))){
- 		data[data$x == stateCount$x[i],]$StatementsSold <- stateCount$percentage[i] 
+		data[data$x == stateCount$x[i],]$StatementsSold <- stateCount$percentage[i] 
 	}
 
 	data <- data[order(-data$Overall),]
@@ -778,20 +797,19 @@ getAllvsFPvsStateData <-function(all, fp, state){
 }
 
 countryCodesToHDI <- function(countryCodes){
-	table <- data.frame(code = unlist(strsplit(
-		"AF,AL,DZ,AD,AO,AG,AR,AM,AU,AT,AZ,BS,BH,BD,BB,BY,BE,BZ,BJ,BT,BO,BA,BW,BR,BN,BG,BF,BI,KH,CM,CA,CV,CF,TD,CL,CN,CO,KM,CG,CD,CR,HR,CU,CY,CZ,DK,DJ,DM,DO,EC,EG,SV,GQ,ER,EE,ET,FJ,FI,FR,GA,GM,GE,DE,GH,GR,GD,GT,GN,GW,GY,HT,HN,HK,HU,IS,IN,ID,IR,IQ,IE,IL,IT,JM,JP,JO,KZ,KE,KI,KR,KW,KG,LA,LV,LB,LS,LR,LY,LI,LT,LU,MK,MG,MW,MY,MV,ML,MT,MR,MU,MX,FM,MD,MN,ME,MA,MZ,MM,NA,NP,NL,NZ,NI,NE,NG,NO,OM,PK,PW,PS,PA,PG,PY,PE,PH,PL,PT,QA,RO,RU,RW,KN,LC,VC,WS,ST,SA,SN,RS,SC,SL,SG,SK,SI,SB,ZA,SS,ES,LK,SD,SR,SZ,SE,CH,SY,TJ,TZ,TH,TL,TG,TO,TT,TN,TR,TM,UG,UA,AE,GB,US,UY,UZ,VU,VE,VN,YE,ZM,ZW,JE,IM,GG,TW,BM,VI,XK,SO,PR,UM",
-		split = ",")),
-                    hdi = unlist(strsplit(
-                    	"Low,High,High,Very High,Low,High,Very High,High,Very High,Very High,High,High,Very High,Medium,High,High,Very High,High,Low,Medium,Medium,High,Medium,High,Very High,High,Low,Low,Medium,Low,Very High,Medium,Low,Low,Very High,High,High,Low,Medium,Low,High,Very High,High,Very High,Very High,Very High,Low,High,High,High,Medium,Medium,Medium,Low,Very High,Low,High,Very High,Very High,Medium,Low,High,Very High,Medium,Very High,High,Medium,Low,Low,Medium,Low,Medium,Very High,Very High,Very High,Medium,Medium,High,Medium,Very High,Very High,Very High,High,Very High,High,High,Low,Medium,Very High,Very High,Medium,Medium,Very High,High,Low,Low,High,Very High,Very High,Very High,High,Low,Low,High,High,Low,Very High,Low,High,High,Medium,Medium,High,Very High,Medium,Low,Low,Medium,Low,Very High,Very High,Medium,Low,Low,Very High,High,Low,High,Medium,High,Low,Medium,High,Medium,Very High,Very High,Very High,High,High,Low,High,High,High,High,Medium,Very High,Low,High,High,Low,Very High,Very High,Very High,Low,Medium,Low,Very High,High,Low,High,Low,Very High,Very High,Medium,Medium,Low,High,Medium,Low,High,High,High,High,Medium,Low,High,Very High,Very High,Very High,High,Medium,Medium,High,Medium,Low,Medium,Low,Very High,Very High,Very High,Very High,Very High,Very High,High,Low,Very High,Very High",
-                    	split = ",")))
-
-	table$code <- as.character(table$code)
-	table$hdi <- as.character(table$hdi)
-
-	hdi <- character(length = length(countryCodes))
-	for(i in c(1:length(countryCodes))){
-	  hdi[i] <- table[countryCodes[i] == table$code,]$hdi
-	}
-
-	return(hdi)
+  table <- data.frame(code = unlist(strsplit(
+    "AF,AL,DZ,AD,AO,AG,AR,AM,AU,AT,AZ,BS,BH,BD,BB,BY,BE,BZ,BJ,BT,BO,BA,BW,BR,BN,BG,BF,BI,KH,CM,CA,CV,CF,TD,CL,CN,CO,KM,CG,CD,CR,HR,CU,CY,CZ,DK,DJ,DM,DO,EC,EG,SV,GQ,ER,EE,ET,FJ,FI,FR,GA,GM,GE,DE,GH,GR,GD,GT,GN,GW,GY,HT,HN,HK,HU,IS,IN,ID,IR,IQ,IE,IL,IT,JM,JP,JO,KZ,KE,KI,KR,KW,KG,LA,LV,LB,LS,LR,LY,LI,LT,LU,MK,MG,MW,MY,MV,ML,MT,MR,MU,MX,FM,MD,MN,ME,MA,MZ,MM,NA,NP,NL,NZ,NI,NE,NG,NO,OM,PK,PW,PS,PA,PG,PY,PE,PH,PL,PT,QA,RO,RU,RW,KN,LC,VC,WS,ST,SA,SN,RS,SC,SL,SG,SK,SI,SB,ZA,SS,ES,LK,SD,SR,SZ,SE,CH,SY,TJ,TZ,TH,TL,TG,TO,TT,TN,TR,TM,UG,UA,AE,GB,US,UY,UZ,VU,VE,VN,YE,ZM,ZW,JE,IM,GG,TW,BM,VI,XK,SO,PR,UM,CI,BV",
+    split = ",")),
+    hdi = unlist(strsplit(
+      "Low,High,High,Very High,Low,High,Very High,High,Very High,Very High,High,High,Very High,Medium,High,High,Very High,High,Low,Medium,Medium,High,Medium,High,Very High,High,Low,Low,Medium,Low,Very High,Medium,Low,Low,Very High,High,High,Low,Medium,Low,High,Very High,High,Very High,Very High,Very High,Low,High,High,High,Medium,Medium,Medium,Low,Very High,Low,High,Very High,Very High,Medium,Low,High,Very High,Medium,Very High,High,Medium,Low,Low,Medium,Low,Medium,Very High,Very High,Very High,Medium,Medium,High,Medium,Very High,Very High,Very High,High,Very High,High,High,Low,Medium,Very High,Very High,Medium,Medium,Very High,High,Low,Low,High,Very High,Very High,Very High,High,Low,Low,High,High,Low,Very High,Low,High,High,Medium,Medium,High,Very High,Medium,Low,Low,Medium,Low,Very High,Very High,Medium,Low,Low,Very High,High,Low,High,Medium,High,Low,Medium,High,Medium,Very High,Very High,Very High,High,High,Low,High,High,High,High,Medium,Very High,Low,High,High,Low,Very High,Very High,Very High,Low,Medium,Low,Very High,High,Low,High,Low,Very High,Very High,Medium,Medium,Low,High,Medium,Low,High,High,High,High,Medium,Low,High,Very High,Very High,Very High,High,Medium,Medium,High,Medium,Low,Medium,Low,Very High,Very High,Very High,Very High,Very High,Very High,High,Low,Very High,Very High,Low,Very High",
+      split = ",")))
+  
+  table$code <- as.character(table$code)
+  table$hdi <- as.character(table$hdi)
+  
+  hdi <- character(length = length(countryCodes))
+  for(i in c(1:length(countryCodes))){
+    hdi[i] <- table[countryCodes[i] == table$code,]$hdi
+  }
+  return(hdi)
 }
