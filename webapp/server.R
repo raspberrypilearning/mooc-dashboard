@@ -662,15 +662,22 @@ function(input, output, session) {
 	output$learnersAgeBar <- renderChart2({
 		chartDependency()
 
-		data <- data.frame(age_range = character(7))
+		data <- data.frame(levels = c("<18",">65","18-25","26-35","36-45","46-55","56-65"))
+		data$levels <- as.character(data$levels)
+
 		for(x in names(enrolment_data)){
 			ageCount <- getLearnerAgeCount(enrolment_data[[x]])
-			data[[x]] <- ageCount$percentage
+			data[[x]] <- numeric(7)
+			for(i in c(1:length(ageCount$age_group))){
+				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+			}
 		}
-		data$age_range <- ageCount$age_group
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
+
+
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 750)
-		a$xAxis(categories = data$age_range)
+		a$xAxis(categories = data$levels)
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
 		a$plotOptions(
@@ -686,16 +693,22 @@ function(input, output, session) {
 
 	output$learnersGender <- renderChart2({
 		chartDependency()
-		data <- data.frame(gender = character(4))
+		data <- data.frame(levels = c("male","female","other","non-binary"))
+		data$levels <- as.character(data$levels)
+
 		for(x in names(enrolment_data)){
-		  genderCount <- getGenderCount(enrolment_data[[x]])
-		  data[[x]] <- genderCount$percentage
+			genderCount <- getGenderCount(enrolment_data[[x]])
+			data[[x]] <- numeric(4)
+			for(i in c(1:length(genderCount$gender))){
+				data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$percentage[i]
+			}
 		}
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
 
 		data$gender <- genderCount$gender
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
-		a$xAxis(categories = data$gender)
+		a$xAxis(categories = data$levels)
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
 		a$plotOptions(
@@ -711,26 +724,34 @@ function(input, output, session) {
 
 	output$employmentBar <-renderChart2({
 		chartDependency()
-		data <- data.frame(area = character(21))
+		data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
+                                         "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
+                                         "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
+                                         "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
+                                         "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
+                                         "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
+		data$area <- as.character(data$area)
+
 		for(x in names(enrolment_data)){
 		  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
-		  data[[x]] <- areaCount$percentage
+		  data[[x]] <- numeric(21)
+		  for(i in c(1:length(areaCount$employment))){
+		    data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+		  }
 		}
-
-		data$area <- areaCount$employment
-
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
-		a$xAxis(categories = gsub( "_"," ",unlist(areaCount[c("employment")])))
+		a$xAxis(categories = gsub( "_"," ",(data$area)))
 		a$plotOptions(
-			bar = list(
-				dataLabels = list(
-					enabled = "true"
-				),
-				animation = FALSE
-			)
+		  bar = list(
+		    dataLabels = list(
+		      enabled = "true"
+		    ),
+		    animation = FALSE
+		  )
 		)
 		return(a)
 	})
@@ -883,18 +904,24 @@ function(input, output, session) {
 	
 	output$degreeLevel <- renderChart2({
 		chartDependency()
-		data <- data.frame(area = character(8))
+		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
+		"tertiary","university_degree","university_doctorate","university_masters"))
+		data$level <- as.character(data$level)
+
 		for(x in names(enrolment_data)){
 		  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
-		  data[[x]] <- degreeCount$percentage
+		  data[[x]] <- numeric(8)
+		  for(i in c(1:length(degreeCount$degree))){
+		    data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+		  }
 		}
-		data$area <- degreeCount$degree
+
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
-		a$xAxis(categories = gsub( "_"," ",unlist(degreeCount[c("degree")])))
+		a$xAxis(categories = gsub( "_"," ",data$level))
 		a$plotOptions(
 		  	column = list(
 		    	dataLabels = list(
@@ -932,31 +959,38 @@ function(input, output, session) {
 
 	output$HDIColumn <- renderChart2({
 		chartDependency()
-		data <- data.frame(levels <- character(4))
+		data <- data.frame(levels = c("Very High","High","Medium","Low"))
 
 		for(x in names(enrolment_data)){
-			enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
-			countries<- as.character(enrolments$country)
-			hdilevels <- countryCodesToHDI(countries)
-			all <- as.factor(hdilevels)
-			allCount <- count(all)
-			allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
-			allCount$percentage <- round(allCount$percentage,2)
-			allCount <- allCount[,c("x","percentage")]
-			allCount <- allCount[order(-allCount$percentage),]
-		 	data[[x]] <- allCount$percentage
+		  print(x)
+		  enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
+		  countries<- as.character(enrolments$country)
+		  hdilevels <- countryCodesToHDI(countries)
+		  all <- as.factor(hdilevels)
+		  allCount <- count(all)
+		  allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
+		  allCount$percentage <- round(allCount$percentage,2)
+		  allCount$x <- as.character(allCount$x)
+		  allCount <- allCount[,c("x","percentage")]
+		  allCount <- allCount[order(-allCount$percentage),]
+		  data[[x]] <- numeric(4)
+		  
+		  for(i in c(1:length(allCount$x))){
+		    data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
+		  }
 		}
 
 		chart <- Highcharts$new()
 		chart$chart(type = 'column', width = 1200)
 		chart$data(data[c(names(enrolment_data))])
-		chart$xAxis(categories = allCount$x)
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$xAxis(categories = data$levels)
 		chart$plotOptions(
-			column = list(
-		    	dataLabels = list(
-		      		enabled = "true"
-		    	)
-		  	)
+		  column = list(
+		    dataLabels = list(
+		      enabled = "true"
+		    )
+		  )
 		)
 		return(chart)
 	})
