@@ -1,10 +1,10 @@
 import mysql.connector
 
-sql = mysql.connector.connect (host = 'localhost',user= 'root',password = 'moocDashboard1',database = 'moocs')
+sql = mysql.connector.connect (host = 'localhost',user= 'root',password = 'moocDashboard1')
 cursor = sql.cursor()
 
 dropDB = "DROP DATABASE IF EXISTS moocs"
-createDB = "CREATEDATABASE IF NOT EXISTS moocs"
+createDB = "CREATE DATABASE IF NOT EXISTS moocs"
 
 cursor.execute(dropDB)
 cursor.execute(createDB)

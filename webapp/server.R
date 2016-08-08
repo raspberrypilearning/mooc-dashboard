@@ -2126,12 +2126,11 @@ function(input, output, session) {
 		chart$xAxis(categories = as.character(data$dates))
 
 		print(chart)
-
 	})
 
 	output$debug <- renderText({
 		chartDependency()
-		print("Hello")
+		print(enrolment_data[[1]]$age_range)
 	})
 	
 

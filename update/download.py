@@ -17,7 +17,7 @@ def download(s, uni_name, course_name, run, info):
 	end_date = info['end_date'].strftime('%Y-%m-%d')
 
 	dir_path = "../data/" + uni_name + "/" + course_name + "/" + run +" - "+ start_date + " - "+end_date
-	print "Considering: %s (%s, %s - %s) status: [%s] ..." % (course_name, rdun, start_date, end_date,  info['status'])
+	print "Considering: %s (%s, %s - %s) status: [%s] ..." % (course_name, run, start_date, end_date,  info['status'])
 
 	if info['status'] == 'in progress' or not os.path.isdir(dir_path):
 		#We only fetch data for course runs that are currently in progress, or about which we know nothing.
@@ -55,6 +55,7 @@ def importData(files,uni):
 	convert = CSV_TO_SQL(sql)
 	
 	for f,course_run in files.items():
+		print("Inserting " + f + " into database.")
 		convert.insertIntoTable(f,course_run,uni)
 		# os.remove(f)
 		# Lets not delete the csv files until the sql conversion is finished.d

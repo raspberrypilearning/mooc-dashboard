@@ -17,7 +17,7 @@ createComment = "CREATE TABLE Comments(" \
  		"moderated DATETIME," \
  		"likes INT NOT NULL," \
  		"university VARCHAR(40) NOT NULL," \
-	    "course VARCHAR(50) NOT NULL," \
+	    "course VARCHAR(70) NOT NULL," \
 	    "course_run INT NOT NULL," \
 	    "INDEX(course,course_run)," \
  		"PRIMARY KEY(university,course,course_run,id)" \
@@ -37,7 +37,7 @@ createEnroll = "CREATE TABLE Enrolments(" \
 		"employment_status VARCHAR(50)," \
 		"employment_area VARCHAR(50)," \
 		"university VARCHAR(40) NOT NULL,"\
-		"course VARCHAR(50) NOT NULL," \
+		"course VARCHAR(70) NOT NULL," \
 		"course_run INT NOT NULL," \
 		"INDEX(course,course_run)," \
 		"PRIMARY KEY (university,course,course_run,learner_id)" \
@@ -55,7 +55,7 @@ createAssignments = "CREATE TABLE Assignments(" \
 		"moderated DATETIME," \
 		"review_count INT NOT NULL," \
 		"university VARCHAR(40) NOT NULL," \
-		"course VARCHAR(50) NOT NULL," \
+		"course VARCHAR(70) NOT NULL," \
 		"course_run INT NOT NULL," \
 		"INDEX(course,course_run)," \
 		"PRIMARY KEY (university,course,course_run,id)" \
@@ -73,7 +73,7 @@ createReviews = "CREATE TABLE Reviews(" \
 		"guideline_three_feedback VARCHAR(1200) NOT NULL," \
 		"created_at DATETIME NOT NULL," \
 		"university VARCHAR(40) NOT NULL," \
-		"course VARCHAR(50) NOT NULL," \
+		"course VARCHAR(70) NOT NULL," \
 		"course_run INT NOT NULL," \
 		"INDEX(course,course_run)," \
 		"PRIMARY KEY (university,course,course_run, id)" \
@@ -89,7 +89,7 @@ createQuiz = "CREATE TABLE Quiz(" \
 		"submitted_at DATETIME NOT NULL," \
 		"correct INT NOT NULL," \
 		"university VARCHAR(40) NOT NULL," \
-		"course VARCHAR(50) NOT NULL," \
+		"course VARCHAR(70) NOT NULL," \
 		"course_run INT NOT NULL," \
 		"INDEX(course,course_run)," \
 		"PRIMARY KEY(university,course,course_run,learner_id,quiz_question,response,submitted_at)" \
@@ -103,14 +103,14 @@ createActivity = "CREATE TABLE Activity(" \
 		"first_visited_at DATETIME NOT NULL," \
 		"last_completed_at DATETIME," \
 		"university VARCHAR(40) NOT NULL," \
-		"course VARCHAR(50) NOT NULL," \
+		"course VARCHAR(70) NOT NULL," \
 		"course_run INT NOT NULL," \
 		"INDEX(course,course_run)," \
 		"PRIMARY KEY (university,course,course_run,learner_id,week,stepNumber)" \
 		");"
 
 createCourses = "CREATE TABLE Courses(" \
-		"course VARCHAR(50) NOT NULL," \
+		"course VARCHAR(70) NOT NULL," \
 		"course_run int NOT NULL," \
 		"start_date Date NOT NULL," \
 		"no_of_weeks INT NOT NULL," \
