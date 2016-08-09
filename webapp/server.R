@@ -192,15 +192,15 @@ function(input, output, session) {
 	print("About to assemble runs")
 	output$runs1 <-renderUI({
 		runs <- getRuns(input$course1)
-		selectInput("run1", label = "Run", width = "500px", choices = c("All",runs))
+		selectInput("run1", label = "Run", width = "450px", choices = c("All",runs))
 	})
 	output$runs2 <-renderUI({
 		runs <- getRuns(input$course2)
-		selectInput("run2", label = "Run", width = "500px", choices = c("None","All",runs))
+		selectInput("run2", label = "Run", width = "450px", choices = c("None","All",runs))
 	})
 	output$runs3 <-renderUI({
 		runs <- getRuns(input$course3)
-		selectInput("run3", label = "Run", width = "500px", choices = c("None","All",runs))
+		selectInput("run3", label = "Run", width = "450px", choices = c("None","All",runs))
 	})
 	# output$runs4 <-renderUI({
 	# 	runs <- getRuns(input$course4)
@@ -662,9 +662,8 @@ function(input, output, session) {
 	output$learnersAgeBar <- renderChart2({
 		chartDependency()
 
-		data <- data.frame(levels = c("<18",">65","18-25","26-35","36-45","46-55","56-65"))
+		data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
 		data$levels <- as.character(data$levels)
-
 		for(x in names(enrolment_data)){
 			ageCount <- getLearnerAgeCount(enrolment_data[[x]])
 			data[[x]] <- numeric(7)
@@ -672,16 +671,14 @@ function(input, output, session) {
 				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
 			}
 		}
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
-
 
 		a <- rCharts:::Highcharts$new()
-		a$chart(type = "bar", width = 750)
+		a$chart(type = "column", width = 750)
 		a$xAxis(categories = data$levels)
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
 		a$plotOptions(
-			bar = list(
+			column = list(
 				dataLabels = list(
 			  	enabled = "true"
 				),
