@@ -509,9 +509,7 @@ getNetworkByLearner <- function(data,number = 10){
 # default list 7 learner
 getDegreeByLearner <- function(data, number = 7){
 	
-	
 	rp2Com <- getConnection(data)
-	
 	
 	aut_rp <- dcast(rp2Com,Givers ~ 'Replies',length)
 	aut_rp <- aut_rp[order(aut_rp$Replies,decreasing = TRUE),]
@@ -671,17 +669,10 @@ getGenderCount <- function(enrolmentData){
 	gender <- as.character(data$gender)
 	gender <- gender[gender!="Unknown"]
 	genderCount <- count(gender)
+	genderCount <- genderCount[order(-genderCount$freq),]
 	names(genderCount)[names(genderCount)=="x"] <- "gender"
 	genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
 	genderCount$percentage <- round(genderCount$percentage,2)
-	genderCount$gender <- as.character(genderCount$gender)
-	if(length(genderCount) < 4){
-		data <- data.frame(gender = as.character(c("male","female","nonbinary","other")), freq = integer(4), percentage = numeric(4))
-		for(i in c(1:length(genderCount))){
-			data[data$gender == genderCount$gender[i],] <- genderCount[genderCount$gender == genderCount$gender[i],]
-		}
-	}
-	genderCount <- data
 	return(genderCount)
 }
 

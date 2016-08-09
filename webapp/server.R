@@ -705,7 +705,6 @@ function(input, output, session) {
 		}
 		data <- data[order(-data[[names(enrolment_data[1])]]),]
 
-		data$gender <- genderCount$gender
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
 		a$xAxis(categories = data$levels)
@@ -2121,50 +2120,82 @@ function(input, output, session) {
 
 	output$signUpsLine <- renderChart2({
 		chartDependency()
-
-		enrolled_at <- substr(as.character(enrolment_data$a$enrolled_at),start = 1, stop = 10)
-		enrolledCount <- count(enrolled_at)
-		enrolledCount$x <- as.character(enrolledCount$x)
-		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
-		enrolledCount <- subset(enrolledCount, as.numeric(gsub("-","",enrolledCount$x)) >= startDate)
-		names(enrolledCount)[names(enrolledCount)=="freq"] <- "SignUps"
-
+		freqs <- list()
+		maxLength <- 0
+		for(i in c(1:length(names(enrolment_data)))){
+		  learners <- enrolment_data[[names(enrolment_data)[i]]]
+		  learners <- learners[which(learners$role == "learner"),]
+		  signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
+		  
+		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  for(x in c(1:length(signUpCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+		  }
+		  freqs[[i]] <- dates
+		}
+		data <- data.frame(day = seq(from = 1, to = maxLength))
+		for(x in c(1:length(freqs))){
+		  d <- numeric(maxLength)
+		  for(i in c(1:length(freqs[[x]][[2]]))){
+		    if(!is.na(freqs[[x]][[2]][i]))
+		    d[i] <- freqs[[x]][[2]][i]
+		  }
+		  data[[names(enrolment_data[x])]] <- d
+		}
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
-		chart$data(enrolledCount[c("SignUps")])
-		chart$xAxis(categories = enrolledCount$x)
+		chart$data(data[c(names(enrolment_data))])
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$xAxis(categories = data$day)
 		return(chart)
 	})
 
 	output$statementsSoldColumn <- renderChart2({
 		chartDependency()
 
-		purchased <- enrolment_data$a[which(enrolment_data$a$purchased_statement_at != ""),]$purchased_statement_at
-		purchased_at <- substr(as.character(purchased),start = 1, stop = 10)
-		purchasedCount <- count(purchased_at)
-		purchasedCount$x <- as.Date(purchasedCount$x,format = '%Y-%m-%d')
-		startDate <- as.Date(substr(input$run,5,14))
-		endDate<- tail(purchasedCount$x, n=1)
-		purchasedCount <- subset(purchasedCount, as.Date(purchasedCount$x,format = '%Y-%m-%d') >= startDate)
-		dateRange <- seq.Date(from = startDate, to = endDate, by = 1)
+		freqs <- list()
 
-		data <- data.frame(dates = dateRange, count = integer(length=length(dateRange)))
+		maxLength <- 0
+		for(i in c(1:length(names(enrolment_data)))){
+		  learners <- enrolment_data[[names(enrolment_data)[i]]]
+		  learners <- learners[which(learners$role == "learner"),]
+		  learners <- learners[which(learners$purchased_statement_at != ""),]
+		  signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
+		  
+		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  for(x in c(1:length(signUpCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+		  }
+		  freqs[[i]] <- dates
+		}
 
-		for(i in c(1:length(purchasedCount$freq))){
-		  data[data$date == purchasedCount$x[i],]$count <- purchasedCount$freq[i]
+		data <- data.frame(day = seq(from = 1, to = maxLength))
+
+		for(x in c(1:length(freqs))){
+		  d <- numeric(maxLength)
+		  for(i in c(1:length(freqs[[x]][[2]]))){
+		    if(!is.na(freqs[[x]][[2]][i]))
+		    d[i] <- freqs[[x]][[2]][i]
+		  }
+		  data[[names(enrolment_data[x])]] <- d
 		}
 
 		chart <- Highcharts$new()
-		chart$chart(type = "column", width = 1200)
-		chart$data(data[c("count")])
-		chart$xAxis(categories = as.character(data$dates))
-
-		print(chart)
+		chart$chart(type = "line", width = 1200)
+		chart$data(data[c(names(enrolment_data))])
+		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$xAxis(categories = data$day)
+		return(chart)
 	})
 
 	output$debug <- renderText({
 		chartDependency()
-		print(enrolment_data[[1]]$age_range)
 	})
 	
 
