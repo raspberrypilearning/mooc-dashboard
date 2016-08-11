@@ -117,7 +117,7 @@ body <- dashboardBody(
 					title = "Employment and Education",
 					id = "employmentTabBox",
 					width = 12,
-					height = 700,
+					height = 730,
 					tabPanel("Area", showOutput("employmentBar", "highcharts")),
 					tabPanel("Status", showOutput("employmentStatus", "highcharts")),
 					tabPanel("Degree", showOutput("degreeLevel", "highcharts"))
@@ -150,7 +150,7 @@ body <- dashboardBody(
 					title = "Employment and Education",
 					id = "StatementsEmploymentTabBox",
 					width = 12,
-					height = 650,
+					height = 730,
 					tabPanel("Area", showOutput("AllvsFPvsStateEmploymentAreaBar", "highcharts")),
 					tabPanel("Status", showOutput("AllvsFPvsStateEmploymentStatusBar", "highcharts")),
 					tabPanel("Degree", showOutput("AllvsFPvsStateDegreeBar", "highcharts"))
@@ -162,7 +162,7 @@ body <- dashboardBody(
 					id = "statementsRegionalTabBox",
 					width = 12,
 					height = 1600,
-					tabPanel("Countrys", showOutput("AllvsFPvsStateCountryBar", "highcharts")),
+					tabPanel("Countrys", htmlOutput("statementLearnerMap")),
 					tabPanel("HDI", showOutput("allvsFPvsStateHDIColumn", "highcharts"))
 				)
 			)
@@ -175,7 +175,7 @@ body <- dashboardBody(
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
 				),
 				box(
-					showOutput("statementsSoldColumn", "highcharts"),
+					showOutput("statementsSoldLine", "highcharts"),
 					title = "Statements Sold per day",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
 				)

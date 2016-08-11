@@ -680,10 +680,10 @@ function(input, output, session) {
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
-			  	enabled = "true"
+				enabled = "true"
 				),
 				animation = FALSE
-		  	)
+			)
 		)
 		return(a)
 	})
@@ -708,12 +708,12 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
 		a$plotOptions(
-		  	column = list(
-		    	dataLabels = list(
-		      		enabled = "true"
-		    	),
+			column = list(
+				dataLabels = list(
+					enabled = "true"
+				),
 				animation = FALSE
-		  	)
+			)
 		)
 		return(a)
 	})
@@ -721,18 +721,18 @@ function(input, output, session) {
 	output$employmentBar <-renderChart2({
 		chartDependency()
 		data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
-                                         "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
-                                         "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
-                                         "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
-                                         "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
-                                         "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
+										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
+										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
+										 "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
+										 "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
+										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
 		data$area <- as.character(data$area)
 
 		for(x in names(enrolment_data)){
 		  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
 		  data[[x]] <- numeric(21)
 		  for(i in c(1:length(areaCount$employment))){
-		    data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
 		  }
 		}
 		data <- data[order(-data[[names(enrolment_data[1])]]),]
@@ -743,10 +743,10 @@ function(input, output, session) {
 		a$xAxis(categories = gsub( "_"," ",(data$area)))
 		a$plotOptions(
 		  bar = list(
-		    dataLabels = list(
-		      enabled = "true"
-		    ),
-		    animation = FALSE
+			dataLabels = list(
+			  enabled = "true"
+			),
+			animation = FALSE
 		  )
 		)
 		return(a)
@@ -835,25 +835,32 @@ function(input, output, session) {
 
 	output$employmentStatus <- renderChart2({
 		chartDependency()
-		data <- data.frame(area = character(8))
+
+		data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
+			"not_working","full_time_student","self_employed","looking_for_work")))
+		data$levels <- as.character(data$levels)
 		for(x in names(enrolment_data)){
-		  statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
-		  data[[x]] <- statusCount$percentage
+			statusCount <- getEmploymentStatusCount(statusCount)
+			data[[x]] <- numeric(8)
+			for(i in c(1:length(statusCount$status))){
+			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+		  }
 		}
-		data$area <- statusCount$employment
+		
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9')
-		a$xAxis(categories = gsub( "_"," ",unlist(statusCount[c("status")])))
+		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
 		a$plotOptions(
-		  	bar = list(
-		    	dataLabels = list(
-		      	enabled = "true"
-		    	),
+			bar = list(
+				dataLabels = list(
+				enabled = "true"
+				),
 				animation = FALSE
-		  	)
+			)
 		)
 		return(a)
 	})
@@ -908,7 +915,7 @@ function(input, output, session) {
 		  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
 		  data[[x]] <- numeric(8)
 		  for(i in c(1:length(degreeCount$degree))){
-		    data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
 		  }
 		}
 
@@ -919,12 +926,12 @@ function(input, output, session) {
 		a$colors('#7cb5ec', '#434348','#8085e9')
 		a$xAxis(categories = gsub( "_"," ",data$level))
 		a$plotOptions(
-		  	column = list(
-		    	dataLabels = list(
-		      		enabled = "true"
-		    	),
+			column = list(
+				dataLabels = list(
+					enabled = "true"
+				),
 				animation = FALSE
-		  	)
+			)
 		)
 		return(a)
 	})
@@ -958,7 +965,6 @@ function(input, output, session) {
 		data <- data.frame(levels = c("Very High","High","Medium","Low"))
 
 		for(x in names(enrolment_data)){
-		  print(x)
 		  enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
 		  countries<- as.character(enrolments$country)
 		  hdilevels <- countryCodesToHDI(countries)
@@ -972,7 +978,7 @@ function(input, output, session) {
 		  data[[x]] <- numeric(4)
 		  
 		  for(i in c(1:length(allCount$x))){
-		    data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
+			data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
 		  }
 		}
 
@@ -983,9 +989,9 @@ function(input, output, session) {
 		chart$xAxis(categories = data$levels)
 		chart$plotOptions(
 		  column = list(
-		    dataLabels = list(
-		      enabled = "true"
-		    )
+			dataLabels = list(
+			  enabled = "true"
+			)
 		  )
 		)
 		return(chart)
@@ -1951,168 +1957,226 @@ function(input, output, session) {
 
 	output$AllvsFPvsStateGenderColumn <- renderChart2({
 		chartDependency()
+		data <- data.frame(levels = c("male","female","other","non-binary"))
+		data$levels <- as.character(data$levels)
 
-		all <- enrolment_data$a[which(enrolment_data$a$gender != "Unknown"),]$gender
+		for(x in names(enrolment_data)){
+		  statementsSoldCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		  statementsSoldCount <- getGenderCount(statementsSoldCount)
+		  print(statementsSoldCount)
+		  
+		  data[[x]] <- numeric(4)
+		  for(i in c(1:length(statementsSoldCount$gender))){
+			data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$percentage[i]
+		  }
+		}
 
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data$a)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data$a)
-		fp <- fullyParticipated[which(fullyParticipated$gender != "Unknown"),]$gender
-		state <- statementsSold[which(statementsSold$gender != "Unknown"),]$gender
-
-		data <- getAllvsFPvsStateData(all,fp,state)
-
-		chart <- Highcharts$new()
-		chart$chart(type = 'column', width = 350)
-		chart$data(data[c("Overall","FullyParticipating","StatementsSold")])
-		chart$xAxis(categories = data$x)
-		chart$colors('#7cb5ec', '#434348','#8085e9')
-		chart$plotOptions(
-			bar = list(
-				dataLabels = list(
-					enabled = "true"
-				)
-			)
-		) 
-		return(chart)
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = 350)
+		a$xAxis(categories = data$levels)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$plotOptions(
+		  column = list(
+			dataLabels = list(
+			  enabled = "true"
+			),
+			animation = FALSE
+		  )
+		)
+		return(a)
 	})
 
 	output$AllvsFPvsStateAgeBar <- renderChart2({
 		chartDependency()
 
-		all <- enrolment_data$a[which(enrolment_data$a$age_range != "Unknown"),]$age_range
+		data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
+		data$levels <- as.character(data$levels)
+		for(x in names(enrolment_data)){
+			ageCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+			ageCount <- getLearnerAgeCount(ageCount)
+			data[[x]] <- numeric(7)
+			for(i in c(1:length(ageCount$age_group))){
+				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+			}
+		}
 
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data$a)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data$a)
-		fp <- fullyParticipated[which(fullyParticipated$age_range != "Unknown"),]$age_range
-		state <- statementsSold[which(statementsSold$age_range != "Unknown"),]$age_range
-
-		data <- getAllvsFPvsStateData(all,fp,state)
-
-		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = 750)
-		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
-		chart$xAxis(categories = data$x)
-		chart$colors('#7cb5ec', '#434348','#8085e9')
-		chart$plotOptions(
-			bar = list(
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = 750)
+		a$xAxis(categories = data$levels)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$plotOptions(
+			column = list(
 				dataLabels = list(
-					enabled = "true"
-				)
+				enabled = "true"
+				),
+				animation = FALSE
 			)
 		)
-		return(chart)
+		return(a)
 	})
 
 	output$AllvsFPvsStateEmploymentAreaBar <- renderChart2({
 		chartDependency()
 
-		all <- enrolment_data$a[which(enrolment_data$a$employment_area != "Unknown"),]$employment_area
+		chartDependency()
+		data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
+										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
+										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
+										 "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
+										 "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
+										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
+		data$area <- as.character(data$area)
 
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data$a)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data$a)
-		fp <- fullyParticipated[which(fullyParticipated$employment_area != "Unknown"),]$employment_area
-		state <- statementsSold[which(statementsSold$employment_area != "Unknown"),]$employment_area
-
-		data <- getAllvsFPvsStateData(all,fp,state)
-
-		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = 1200, height = 550)
-		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
-		chart$xAxis(categories = data$x)
-		chart$colors('#7cb5ec', '#434348','#8085e9')
-		return(chart)
+		for(x in names(enrolment_data)){
+			areaCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+			areaCount <- getEmploymentAreaCount(areaCount)
+			data[[x]] <- numeric(21)
+			for(i in c(1:length(areaCount$employment))){
+			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+		  }
+		}
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "bar", width = 1200, height = 650)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$xAxis(categories = gsub( "_"," ",(data$area)))
+		a$plotOptions(
+		  bar = list(
+			dataLabels = list(
+			  enabled = "true"
+			),
+			animation = FALSE
+		  )
+		)
+		return(a)
 	})
 
 	output$AllvsFPvsStateEmploymentStatusBar <- renderChart2({
 		chartDependency()
 
-		all <- enrolment_data$a[which(enrolment_data$a$employment_status != "Unknown"),]$employment_status
+		data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
+			"not_working","full_time_student","self_employed","looking_for_work")))
+		data$levels <- as.character(data$levels)
+		for(x in names(enrolment_data)){
+			statusCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+			statusCount <- getEmploymentStatusCount(statusCount)
+			data[[x]] <- numeric(8)
+			for(i in c(1:length(statusCount$status))){
+			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+		  }
+		}
 
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data$a)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data$a)
-		fp <- fullyParticipated[which(fullyParticipated$employment_status != "Unknown"),]$employment_status
-		state <- statementsSold[which(statementsSold$employment_status != "Unknown"),]$employment_status
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
 
-		data <- getAllvsFPvsStateData(all,fp,state)
-
-		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = 1200, height = 550)
-		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
-		chart$xAxis(categories = data$x)
-		chart$colors('#7cb5ec', '#434348','#8085e9')
-		return(chart)
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "bar", width = 1200, height = 650)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
+		a$plotOptions(
+			bar = list(
+				dataLabels = list(
+				enabled = "true"
+				),
+				animation = FALSE
+			)
+		)
+		return(a)
 	})
 
 	output$AllvsFPvsStateDegreeBar <- renderChart2({
 		chartDependency()
+		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
+		"tertiary","university_degree","university_doctorate","university_masters"))
+		data$level <- as.character(data$level)
 
-		all <- enrolment_data$a[which(enrolment_data$a$highest_education_level != "Unknown"),]$highest_education_level
+		for(x in names(enrolment_data)){
+			degreeCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+			degreeCount <- getEmploymentDegreeCount(degreeCount)
+			data[[x]] <- numeric(8)
+			for(i in c(1:length(degreeCount$degree))){
+				data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+			}
+		}
 
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data$a)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data$a)
-		fp <- fullyParticipated[which(fullyParticipated$highest_education_level != "Unknown"),]$highest_education_level
-		state <- statementsSold[which(statementsSold$highest_education_level != "Unknown"),]$highest_education_level
-		
-		data <- getAllvsFPvsStateData(all,fp,state)
 
-		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = 1200, height = 550)
-		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
-		chart$xAxis(categories = data$x)
-		chart$colors('#7cb5ec', '#434348','#8085e9')
-		return(chart)
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = 1200, height = 650)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$xAxis(categories = gsub( "_"," ",data$level))
+		a$plotOptions(
+			column = list(
+				dataLabels = list(
+					enabled = "true"
+				),
+				animation = FALSE
+			)
+		)
+		return(a)
 	})
 
-	output$AllvsFPvsStateCountryBar <- renderChart2({
+	output$statementLearnerMap <- renderGvis({
 		chartDependency()
-
-		all <- enrolment_data$a[which(enrolment_data$a$country != "Unknown"),]$country
-
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolment_data$a)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolment_data$a)
-		fp <- fullyParticipated[which(fullyParticipated$country != "Unknown"),]$country
-		state <- statementsSold[which(statementsSold$country != "Unknown"),]$country
-
-		data <- getAllvsFPvsStateData(all,fp,state)
-
-		chart <- Highcharts$new()
-		chart$chart(type = 'bar', width = 1200, height = 1500)
-		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
-		chart$xAxis(categories = data$x)
-		chart$colors('#7cb5ec', '#434348','#8085e9')
-		return(chart)
+		
+		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown"), ])
+		assign("fullCountryData", data[[1]], envir = .GlobalEnv)
+		plotData <- data[[2]]
+		jscode <- "var sel = chart.getSelection();  
+								var row = sel[0].row;
+								var country = data.getValue(row, 0);
+								$('input#selected').val(country);
+								$('input#selected').trigger('change');"
+		
+		map <- gvisGeoChart(plotData, locationvar = "country", colorvar = "learners",
+												options = list(
+													gvis.listener.jscode = jscode,
+													width = 1100,
+													height = 600,
+													keepAspectRatio = "false",
+													colorAxis = "{colors:['#91BFDB', '#FC8D59']}"
+												)
+		)
+		return (map)
 	})
 
 	output$allvsFPvsStateHDIColumn <- renderChart2({
 		chartDependency()
-		enrolments <- enrolment_data$a
-		enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
-		enrolments$hdi <- as.factor(countryCodesToHDI(as.character(enrolments$country)))
-
-		all <- enrolments$hdi
-
-		fullyParticipated <- getSurveyResponsesFromFullyParticipating(enrolments)
-		statementsSold <- getSurveyResponsesFromStatementBuyers(enrolments)
-		fp <- fullyParticipated[which(fullyParticipated$hdi != "Unknown"),]$hdi
-		state <- statementsSold[which(statementsSold$hdi != "Unknown"),]$hdi
-
-		data <- getAllvsFPvsStateData(all,fp,state)
-
-		
+		data <- data.frame(levels = c("Very High","High","Medium","Low"))
+		for(x in names(enrolment_data)){
+			enrolments <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		  	enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
+			countries<- as.character(enrolments$country)
+			hdilevels <- countryCodesToHDI(countries)
+			all <- as.factor(hdilevels)
+			allCount <- count(all)
+			allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
+			allCount$percentage <- round(allCount$percentage,2)
+			allCount$x <- as.character(allCount$x)
+			allCount <- allCount[,c("x","percentage")]
+			allCount <- allCount[order(-allCount$percentage),]
+			data[[x]] <- numeric(4)
+			 
+			for(i in c(1:length(allCount$x))){
+				data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
+				}
+		}
 		chart <- Highcharts$new()
 		chart$chart(type = 'column', width = 1200)
-		chart$data(data[c("Overall","FullyParticipating", "StatementsSold")])
-		chart$xAxis(categories = data$x)
+		chart$data(data[c(names(enrolment_data))])
 		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$xAxis(categories = data$levels)
 		chart$plotOptions(
-		  column = list(
-			dataLabels = list(
-			  enabled = "true"
+		  	column = list(
+				dataLabels = list(
+			  		enabled = "true"
+				)
 			)
-		  )
 		)
 		return(chart)
-
 	})
 
 	output$signUpsLine <- renderChart2({
@@ -2126,10 +2190,10 @@ function(input, output, session) {
 		  
 		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
 		  if(length(dates[[1]]) > maxLength){
-		    maxLength <- length(dates[[1]])
+			maxLength <- length(dates[[1]])
 		  }
 		  for(x in c(1:length(signUpCount$x))){
-		    dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
 		  }
 		  freqs[[i]] <- dates
 		}
@@ -2137,8 +2201,8 @@ function(input, output, session) {
 		for(x in c(1:length(freqs))){
 		  d <- numeric(maxLength)
 		  for(i in c(1:length(freqs[[x]][[2]]))){
-		    if(!is.na(freqs[[x]][[2]][i]))
-		    d[i] <- freqs[[x]][[2]][i]
+			if(!is.na(freqs[[x]][[2]][i]))
+			d[i] <- freqs[[x]][[2]][i]
 		  }
 		  data[[names(enrolment_data[x])]] <- d
 		}
@@ -2150,7 +2214,7 @@ function(input, output, session) {
 		return(chart)
 	})
 
-	output$statementsSoldColumn <- renderChart2({
+	output$statementsSoldLine <- renderChart2({
 		chartDependency()
 
 		freqs <- list()
@@ -2164,10 +2228,10 @@ function(input, output, session) {
 		  
 		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
 		  if(length(dates[[1]]) > maxLength){
-		    maxLength <- length(dates[[1]])
+			maxLength <- length(dates[[1]])
 		  }
 		  for(x in c(1:length(signUpCount$x))){
-		    dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
 		  }
 		  freqs[[i]] <- dates
 		}
@@ -2177,8 +2241,8 @@ function(input, output, session) {
 		for(x in c(1:length(freqs))){
 		  d <- numeric(maxLength)
 		  for(i in c(1:length(freqs[[x]][[2]]))){
-		    if(!is.na(freqs[[x]][[2]][i]))
-		    d[i] <- freqs[[x]][[2]][i]
+			if(!is.na(freqs[[x]][[2]][i]))
+			d[i] <- freqs[[x]][[2]][i]
 		  }
 		  data[[names(enrolment_data[x])]] <- d
 		}
