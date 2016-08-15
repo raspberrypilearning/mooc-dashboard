@@ -69,7 +69,7 @@ class FLCourses:
 							end_date = start_date + datetime.timedelta(weeks=int(run_duration_weeks))
 							print "...end date: %s" %end_date
 
-							run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path)}
+							run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path + "/overview")}
 							course_info[str(run_count)] = run_data
 					
 						run_count-=1
@@ -133,10 +133,15 @@ class FLCourses:
 
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
+			while soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb') is None:
+				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
+				print "It was None"
+
 			table = soup.find('table', class_ = "table table-condensed table-striped table-fixed run-stats-dashboard-table")
 
 			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-3], stats_dashboard_url.split("/")[-2]]).encode('ascii','ignore')
 			startDate = soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
+			# print(soup.find_all("ul"))
 			enrolmentData["course"] = soup.find_all("h1")[1].get_text().encode('ascii','ignore')
 			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-2].encode('ascii','ignore')
 

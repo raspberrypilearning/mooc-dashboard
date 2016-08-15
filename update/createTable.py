@@ -10,8 +10,8 @@ createComment = "CREATE TABLE Comments(" \
  		"author_id VARCHAR(50) NOT NULL," \
  		"parent_id INT," \
  		"step VARCHAR(5) NOT NULL," \
- 		"week INT NOT NULL," \
- 		"stepNumber INT NOT NULL," \
+ 		"week_number INT NOT NULL," \
+ 		"step_number INT NOT NULL," \
  		"text VARCHAR(1200) NOT NULL," \
  		"timestamp DATETIME NOT NULL," \
  		"moderated DATETIME," \
@@ -98,15 +98,15 @@ createQuiz = "CREATE TABLE Quiz(" \
 createActivity = "CREATE TABLE Activity(" \
 		"learner_id VARCHAR(50) NOT NULL," \
 		"step VARCHAR(5) NOT NULL," \
-		"week INT NOT NULL," \
-		"stepNumber INT NOT NULL," \
+		"week_number INT NOT NULL," \
+		"step_number INT NOT NULL," \
 		"first_visited_at DATETIME NOT NULL," \
 		"last_completed_at DATETIME," \
 		"university VARCHAR(40) NOT NULL," \
 		"course VARCHAR(70) NOT NULL," \
 		"course_run INT NOT NULL," \
 		"INDEX(course,course_run)," \
-		"PRIMARY KEY (university,course,course_run,learner_id,week,stepNumber)" \
+		"PRIMARY KEY (university,course,course_run,learner_id,week_number,step_number)" \
 		");"
 
 createCourses = "CREATE TABLE Courses(" \

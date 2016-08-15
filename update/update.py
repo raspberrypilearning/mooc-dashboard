@@ -29,7 +29,7 @@ def update(email,password):
 	"""
 
 	loginInfo, rep = login(email,password,'https://www.futurelearn.com/sign-in')
-		
+
 	if rep.status_code == 200:
 		print "Login OK..."
 		cos  = FLCourses(loginInfo)
@@ -73,9 +73,7 @@ def update(email,password):
 				writer.writerow(line.split(','))
 			f.close()
 
-
 		files[courses_path+"/"+courses_filename] = 1
-
 
 		# JSR Disable import as unused
 		importData(files,cos.getUniName())
@@ -89,7 +87,6 @@ def update(email,password):
 		f = open('fail','a')
 		f.write('update fail ' + datetime.datetime.now().strftime('%Y-%m-%d') +'\n')
 		f.close()
-
 
 # Entry point
 credential_data = open('config.json').read()

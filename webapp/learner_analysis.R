@@ -723,20 +723,15 @@ getEmploymentDegreeCount <- function(enrolmentData){
   return(statusCount)
 }
 
-getCommentViewerData <- function(commentData, step){
-	data <- commentData
+getCommentViewerData <- function(commentData, run){
+	data <- commentData[[which(names(commentData) == run)]]
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
 	data$week_step <- getWeekStep(data)
 	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
 	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
 	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
-	if(step == "All"){
-		stepComments <- data
-	} else {
-		stepComments <- data[which(data$week_step == step),]
-	}
-	stepComments$likes <- as.numeric(stepComments$likes)
-	sorted <- stepComments[order(-stepComments$likes),]
+	data$likes <- as.numeric(data$likes)
+	sorted <- data[order(-data$likes),]
 	return(sorted)
 }
 

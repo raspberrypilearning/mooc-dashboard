@@ -840,7 +840,7 @@ function(input, output, session) {
 			"not_working","full_time_student","self_employed","looking_for_work")))
 		data$levels <- as.character(data$levels)
 		for(x in names(enrolment_data)){
-			statusCount <- getEmploymentStatusCount(statusCount)
+			statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
 			data[[x]] <- numeric(8)
 			for(i in c(1:length(statusCount$status))){
 			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
@@ -1793,11 +1793,23 @@ function(input, output, session) {
 		return(histogram)
 	})
 
-	output$runSteps <- renderUI({
+	output$runSelector <- renderUI({
 		chartDependency()
-		steps <- getRunSteps(input$course,input$run)
-		print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "550px"))
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		print(selectInput("runChooser", label = "Run", choices = runs, width = "550px"))
 	})
+
+	# output$runSteps <- renderUI({
+	# 	chartDependency()
+	# 	steps <- getRunSteps(input$courseChooser,input$run)
+	# 	print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "550px"))
+	# })
 
 	output$viewButton <- renderUI({
 		chartDependency()
@@ -1810,7 +1822,7 @@ function(input, output, session) {
 	})
 
 	viewPressed <- eventReactive(input$viewButton, {
-		return(input$stepChoice)
+		return(input$runChooser)
 	})
 
 	output$commentViewer <- renderDataTable({
@@ -1820,14 +1832,15 @@ function(input, output, session) {
 		}
 		data <- getCommentViewerData(comments_data, viewPressed())
 		DT::datatable(
-			data[,c("timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+			data[,c("course","timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 			colnames = c(
-				"Date" = 1,
-				"Step" = 2,
-				"Comment" = 3,
-				"Part of a Thread?" = 4,
-				"Likes" = 5
-				),
+				"Course" = 1,
+				"Date" = 2,
+				"Step" = 3,
+				"Comment" = 4,
+				"Part of a Thread?" = 5,
+				"Likes" = 6
+			),
 			options = list(
 				scrollY = "700px",
 				lengthMenu = list(c(10,20,30),c('10','20','30')),
@@ -1845,7 +1858,7 @@ function(input, output, session) {
 						filename = 'Comments',
 						text = 'Download Excel'
 					)
-					)
+				)
 			),
 			rownames = FALSE,
 			selection = 'single'
@@ -1879,12 +1892,13 @@ function(input, output, session) {
 		rows <- rows[order(rows$timestamp),]
 
 		DT::datatable(
-			rows[,c("timestamp","week_step","text","likes")], class = 'cell-border stripe', extensions = 'Buttons',
+			rows[,c("course","timestamp","week_step","text","likes")], class = 'cell-border stripe', extensions = 'Buttons',
 			colnames = c(
-				"Date" = 1,
-				"Step" = 2,
-				"Comment" = 3,
-				"Likes" = 4
+				"Course" = 1,
+				"Date" = 2,
+				"Step" = 3,
+				"Comment" = 4,
+				"Likes" = 5
 			),
 			options = list(
 				scrollY = "700px",
@@ -2159,7 +2173,7 @@ function(input, output, session) {
 			allCount <- allCount[,c("x","percentage")]
 			allCount <- allCount[order(-allCount$percentage),]
 			data[[x]] <- numeric(4)
-			 
+			
 			for(i in c(1:length(allCount$x))){
 				data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
 				}
@@ -2257,6 +2271,8 @@ function(input, output, session) {
 
 	output$debug <- renderText({
 		chartDependency()
+		data <- comments_data[[1]]
+		print(as.character(data$week))
 	})
 	
 

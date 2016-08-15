@@ -28,11 +28,11 @@ class CSV_TO_SQL:
 			
 			if(len(head) == 8):
 				col = 	"(id,author_id,@parent_id,@step,@text,@timestamp,@moderated,@likes) "
-				setting = "step = @step,week = SUBSTRING_INDEX(@step,'.',1),stepNumber = SUBSTRING_INDEX(@step,'.',-1),"\
+				setting = "step = @step,week_number = SUBSTRING_INDEX(@step,'.',1),step_number = SUBSTRING_INDEX(@step,'.',-1),"\
 				"text = @text,timestamp = @timestamp,Likes = @Likes, "''
 
 			else:
-				col = "(id,author_id,@parent_id,step,week,stepNumber,text,timestamp,@moderated,likes) "
+				col = "(id,author_id,@parent_id,step,week_number,step_number,text,timestamp,@moderated,likes) "
 
 			load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Comments ' \
 			"FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
@@ -93,10 +93,10 @@ class CSV_TO_SQL:
 			setting = ''
 			if(len(head) == 4):
 				col = '(learner_id,@step,@first_visited_at,@last_completed_at)'				
-				setting = "step = @step, week = SUBSTRING_INDEX(@step,'.',1),stepNumber = SUBSTRING_INDEX(@step,'.',-1)," \
+				setting = "step = @step, week_number = SUBSTRING_INDEX(@step,'.',1),step_number = SUBSTRING_INDEX(@step,'.',-1)," \
 				" first_visited_at = @first_visited_at, "
 			else:
-				col = '(learner_id,step,week,stepNumber,first_visited_at,@last_completed_at)'
+				col = '(learner_id,step,week_number,step_number,first_visited_at,@last_completed_at)'
 
 
 			load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Activity ' \
