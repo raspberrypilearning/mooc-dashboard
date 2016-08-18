@@ -98,10 +98,10 @@ function(input, output, session) {
 			data3 <- getTable(table, input$course3,input$run3)
 			datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
 		}
-		# if(input$run4 != "None"){
-		# 	data4 <- getTable(table, input$course4,input$run4)
-		# 	datasets$d <- data4
-		# }
+		if(input$run4 != "None"){
+			data4 <- getTable(table, input$course4,input$run4)
+			datasets[[paste(c(input$course4,substr(input$run4,1,1)), collapse = " - ")]] <- data4
+		}
 		return(datasets)
 	}
 
@@ -202,10 +202,10 @@ function(input, output, session) {
 		runs <- getRuns(input$course3)
 		selectInput("run3", label = "Run", width = "450px", choices = c("None","All",runs))
 	})
-	# output$runs4 <-renderUI({
-	# 	runs <- getRuns(input$course4)
-	# 	selectInput("run4", label = "Run", width = "500px", choices = c("None","All",runs))
-	# })
+	output$runs4 <-renderUI({
+		runs <- getRuns(input$course4)
+		selectInput("run4", label = "Run", width = "450px", choices = c("None","All",runs))
+	})
 	
 	output$courseNameAndRun <- renderUI({
 		if (!is.null(input$course)) {
@@ -675,8 +675,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 750)
 		a$xAxis(categories = data$levels)
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -705,8 +706,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
 		a$xAxis(categories = data$levels)
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -739,8 +741,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",(data$area)))
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$plotOptions(
 		  bar = list(
 			dataLabels = list(
@@ -852,8 +855,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$plotOptions(
 			bar = list(
 				dataLabels = list(
@@ -908,7 +912,7 @@ function(input, output, session) {
 	output$degreeLevel <- renderChart2({
 		chartDependency()
 		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
-		"tertiary","university_degree","university_doctorate","university_masters"))
+		"tertiary","university_degree","university_masters","university_doctorate"))
 		data$level <- as.character(data$level)
 
 		for(x in names(enrolment_data)){
@@ -923,8 +927,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",data$level))
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -985,8 +990,9 @@ function(input, output, session) {
 		chart <- Highcharts$new()
 		chart$chart(type = 'column', width = 1200)
 		chart$data(data[c(names(enrolment_data))])
-		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		chart$xAxis(categories = data$levels)
+		chart$yAxis(title = list(text = "Percentage of Population"))
 		chart$plotOptions(
 		  column = list(
 			dataLabels = list(
@@ -1748,6 +1754,7 @@ function(input, output, session) {
 		a$chart(type = "column", width = 1200)
 		a$data(stepsCount[c("freq")])
 		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
+		a$yAxis(title = list(text = "Frequency"))
 		return(a)
 	})
 
@@ -1785,6 +1792,7 @@ function(input, output, session) {
 		histogram$chart(type = "column" , width = 1200)
 		histogram$data(plotData[,c("reply","post")])
 		histogram$xAxis (categories = plotData$week_step)
+		histogram$yAxis(title = list(text = "Frequency"))
 		histogram$plotOptions (
 			column = list(
 				stacking = "normal"
@@ -1985,11 +1993,14 @@ function(input, output, session) {
 		  }
 		}
 
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
+
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
 		a$xAxis(categories = data$levels)
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
 		  column = list(
 			dataLabels = list(
@@ -2018,8 +2029,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 750)
 		a$xAxis(categories = data$levels)
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -2055,8 +2067,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",(data$area)))
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$plotOptions(
 		  bar = list(
 			dataLabels = list(
@@ -2088,8 +2101,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$plotOptions(
 			bar = list(
 				dataLabels = list(
@@ -2104,7 +2118,7 @@ function(input, output, session) {
 	output$AllvsFPvsStateDegreeBar <- renderChart2({
 		chartDependency()
 		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
-		"tertiary","university_degree","university_doctorate","university_masters"))
+		"tertiary","university_degree","university_masters","university_doctorate"))
 		data$level <- as.character(data$level)
 
 		for(x in names(enrolment_data)){
@@ -2120,8 +2134,9 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9')
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",data$level))
+		a$yAxis(title = list(text = "Percentage of Population"))
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -2137,6 +2152,7 @@ function(input, output, session) {
 		chartDependency()
 		
 		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown"), ])
+		data <- data[which(data$purchased_statement_at != ""),]
 		assign("fullCountryData", data[[1]], envir = .GlobalEnv)
 		plotData <- data[[2]]
 		jscode <- "var sel = chart.getSelection();  
@@ -2183,6 +2199,7 @@ function(input, output, session) {
 		chart$data(data[c(names(enrolment_data))])
 		chart$colors('#7cb5ec', '#434348','#8085e9')
 		chart$xAxis(categories = data$levels)
+		chart$yAxis(title = list(text = "Percentage of Population"))
 		chart$plotOptions(
 		  	column = list(
 				dataLabels = list(
@@ -2223,8 +2240,9 @@ function(input, output, session) {
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
-		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		chart$xAxis(categories = data$day)
+		chart$yAxis(title = list(text = "Frequency"))
 		return(chart)
 	})
 
@@ -2264,15 +2282,16 @@ function(input, output, session) {
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
-		chart$colors('#7cb5ec', '#434348','#8085e9')
+		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		chart$xAxis(categories = data$day)
+		chart$yAxis(title = list(text = "Frequency"))
 		return(chart)
 	})
 
 	output$debug <- renderText({
 		chartDependency()
-		data <- comments_data[[1]]
-		print(as.character(data$week))
+		data <- enrolment_data[[1]]
+		print(as.character(unique(data$country)))
 	})
 	
 

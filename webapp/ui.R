@@ -54,7 +54,7 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course1", label = "Courses", width = "450px", choices = courses)),
+						selectInput("course1", label = "Courses", width = "450px", choices = c("All",courses))),
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs1", inline = TRUE)),
 					title = "Course selection",
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
@@ -77,14 +77,14 @@ body <- dashboardBody(
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs3", inline = TRUE)),
 					title = "Course selection",
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
+				),
+				box(
+					tags$div(style="display:inline-block; margin-right:15px", 
+						selectInput("course4", label = "Courses", width = "450px", choices = c("None",courses))),
+					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs4", inline = TRUE)),
+					title = "Course selection",
+					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
 				)
-				# box(
-				# 	tags$div(style="display:inline-block; margin-right:15px", 
-				# 		selectInput("course4", label = "Courses", width = "500px", choices = c("None","All",courses))),
-				# 	tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs4", inline = TRUE)),
-				# 	title = "Course selection",
-				# 	status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
-				# )
 			)
 		),
 		tabItem(tabName = "enrolment",
