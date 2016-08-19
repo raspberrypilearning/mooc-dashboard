@@ -23,7 +23,7 @@ source("data_retrieval.R")
 function(input, output, session) { 
 	
 	output$institution <- renderText({"soton"})
-	output$pageTitle <- renderText("Welcome to MOOC Dashboard")
+	output$pageTitle <- renderText("Welcome to MOOC Dashboard, Start by selecting the runs you wish to compare")
 	output$updatedTime <- renderText(paste("Data last updated  -  ",getUpdatedTime()))
 	
 	# Make the text inputs of the active filters read-only and hide the dummy inputs
@@ -1835,42 +1835,44 @@ function(input, output, session) {
 
 	output$commentViewer <- renderDataTable({
 		chartDependency()
-		if(input$viewButton == 0){
-			return()
-		}
-		data <- getCommentViewerData(comments_data, viewPressed())
-		DT::datatable(
-			data[,c("course","timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-			colnames = c(
-				"Course" = 1,
-				"Date" = 2,
-				"Step" = 3,
-				"Comment" = 4,
-				"Part of a Thread?" = 5,
-				"Likes" = 6
-			),
-			options = list(
-				scrollY = "700px",
-				lengthMenu = list(c(10,20,30),c('10','20','30')),
-				pageLength = 20,
-				dom = 'lfrtBip',
-				buttons = list(
-					"print", 
-					list(
-						extend = 'pdf',
-						filename = 'Comments',
-						text = 'Download pdf'
-						),
-					list(
-						extend = 'excel',
-						filename = 'Comments',
-						text = 'Download Excel'
+		withProgress(message = "Processing Comments",{
+			if(input$viewButton == 0){
+				return()
+			}
+			data <- getCommentViewerData(comments_data, viewPressed())
+			DT::datatable(
+				data[,c("course","timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+				colnames = c(
+					"Course" = 1,
+					"Date" = 2,
+					"Step" = 3,
+					"Comment" = 4,
+					"Part of a Thread?" = 5,
+					"Likes" = 6
+				),
+				options = list(
+					scrollY = "700px",
+					lengthMenu = list(c(10,20,30),c('10','20','30')),
+					pageLength = 20,
+					dom = 'lfrtBip',
+					buttons = list(
+						"print", 
+						list(
+							extend = 'pdf',
+							filename = 'Comments',
+							text = 'Download pdf'
+							),
+						list(
+							extend = 'excel',
+							filename = 'Comments',
+							text = 'Download Excel'
+						)
 					)
-				)
-			),
-			rownames = FALSE,
-			selection = 'single'
-		)
+				),
+				rownames = FALSE,
+				selection = 'single'
+			)
+		})
 	})
 
 	threadSelected <- eventReactive( input$commentViewer_rows_selected, {
@@ -2178,7 +2180,7 @@ function(input, output, session) {
 		data <- data.frame(levels = c("Very High","High","Medium","Low"))
 		for(x in names(enrolment_data)){
 			enrolments <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
-		  	enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
+			enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
 			countries<- as.character(enrolments$country)
 			hdilevels <- countryCodesToHDI(countries)
 			all <- as.factor(hdilevels)
@@ -2201,9 +2203,9 @@ function(input, output, session) {
 		chart$xAxis(categories = data$levels)
 		chart$yAxis(title = list(text = "Percentage of Population"))
 		chart$plotOptions(
-		  	column = list(
+			column = list(
 				dataLabels = list(
-			  		enabled = "true"
+					enabled = "true"
 				)
 			)
 		)
@@ -2215,27 +2217,26 @@ function(input, output, session) {
 		freqs <- list()
 		maxLength <- 0
 		for(i in c(1:length(names(enrolment_data)))){
-		  learners <- enrolment_data[[names(enrolment_data)[i]]]
-		  learners <- learners[which(learners$role == "learner"),]
-		  signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
-		  
-		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-		  if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
-		  }
-		  for(x in c(1:length(signUpCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-		  }
-		  freqs[[i]] <- dates
+			learners <- enrolment_data[[names(enrolment_data)[i]]]
+			learners <- learners[which(learners$role == "learner"),]
+			signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
+			dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+			if(length(dates[[1]]) > maxLength){
+				maxLength <- length(dates[[1]])
+			}
+			for(x in c(1:length(signUpCount$x))){
+				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+			}
+			freqs[[i]] <- dates
 		}
 		data <- data.frame(day = seq(from = 1, to = maxLength))
 		for(x in c(1:length(freqs))){
-		  d <- numeric(maxLength)
-		  for(i in c(1:length(freqs[[x]][[2]]))){
-			if(!is.na(freqs[[x]][[2]][i]))
-			d[i] <- freqs[[x]][[2]][i]
-		  }
-		  data[[names(enrolment_data[x])]] <- d
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(enrolment_data[x])]] <- d
 		}
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
@@ -2253,30 +2254,29 @@ function(input, output, session) {
 
 		maxLength <- 0
 		for(i in c(1:length(names(enrolment_data)))){
-		  learners <- enrolment_data[[names(enrolment_data)[i]]]
-		  learners <- learners[which(learners$role == "learner"),]
-		  learners <- learners[which(learners$purchased_statement_at != ""),]
-		  signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
-		  
-		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-		  if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
-		  }
-		  for(x in c(1:length(signUpCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-		  }
-		  freqs[[i]] <- dates
+			learners <- enrolment_data[[names(enrolment_data)[i]]]
+			learners <- learners[which(learners$role == "learner"),]
+			learners <- learners[which(learners$purchased_statement_at != ""),]
+			signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
+			dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+			if(length(dates[[1]]) > maxLength){
+				maxLength <- length(dates[[1]])
+			}
+			for(x in c(1:length(signUpCount$x))){
+				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+			}
+			freqs[[i]] <- dates
 		}
 
 		data <- data.frame(day = seq(from = 1, to = maxLength))
 
 		for(x in c(1:length(freqs))){
-		  d <- numeric(maxLength)
-		  for(i in c(1:length(freqs[[x]][[2]]))){
-			if(!is.na(freqs[[x]][[2]][i]))
-			d[i] <- freqs[[x]][[2]][i]
-		  }
-		  data[[names(enrolment_data[x])]] <- d
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(enrolment_data[x])]] <- d
 		}
 
 		chart <- Highcharts$new()
