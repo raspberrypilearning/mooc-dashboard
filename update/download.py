@@ -1,4 +1,4 @@
-import requests,datetime,mysql.connector,os,errno
+import requests,datetime,mysql.connector,os,errno,json
 from login import login
 from csvToSQL import CSV_TO_SQL
 
@@ -50,8 +50,11 @@ def download(s, uni_name, course_name, run, info):
 
 
 def importData(files,uni):
+
+	credential_data = open('config.json').read()
+	credentials = json.loads(credential_data)
 	
-	sql = mysql.connector.connect(host = 'localhost',user= 'root',password = 'moocDashboard1',database = 'moocs')
+	sql = mysql.connector.connect(host = 'localhost',user= 'root',password = credentials['mysqlpassword'],database = 'moocs')
 	convert = CSV_TO_SQL(sql)
 	
 	for f,course_run in files.items():
