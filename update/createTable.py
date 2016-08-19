@@ -1,8 +1,10 @@
-import datetime,mysql.connector
+import datetime,mysql.connector,json
 
+credential_data = open('config.json').read()
+credentials = json.loads(credential_data)
 
 # connect to sql
-sql = mysql.connector.connect (host = 'localhost',user= 'root',password = 'moocDashboard1',database = 'moocs')
+sql = mysql.connector.connect (host = 'localhost',user= 'root',password = credentials['mysqlpassword'],database = 'moocs')
 cursor = sql.cursor()
 
 createComment = "CREATE TABLE Comments(" \

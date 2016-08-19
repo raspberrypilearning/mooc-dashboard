@@ -1,6 +1,9 @@
-import mysql.connector
+import mysql.connector,json
 
-sql = mysql.connector.connect (host = 'localhost',user= 'root',password = 'moocDashboard1')
+credential_data = open('config.json').read()
+credentials = json.loads(credential_data)
+
+sql = mysql.connector.connect (host = 'localhost',user= 'root',password = credentials['mysqlpassword'])
 cursor = sql.cursor()
 
 dropDB = "DROP DATABASE IF EXISTS moocs"
