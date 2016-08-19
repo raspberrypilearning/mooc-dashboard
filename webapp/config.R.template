@@ -6,3 +6,5 @@ institution <- "University of Unconfigured"
 
 # Set the working directory (the directory containing this file)
 setwd("/home/mooc/mooc-dashboard/webapp")
+
+sqlPassword <- ""
