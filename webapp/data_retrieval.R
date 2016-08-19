@@ -19,5 +19,6 @@ getTable <- function(table,course,course_run){
 	sendQuery<-dbSendQuery(con, query)
 	data<- fetch(sendQuery, n = -1)
 	dbDisconnect(con)
+	dbClearResult(dbListResults(conn)[[1]])
 	return(data)
 }
