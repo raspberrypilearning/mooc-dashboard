@@ -1,8 +1,9 @@
 require(RMySQL)
+source("config.R")
 
 getTable <- function(table,course,course_run){
 	m<-dbDriver("MySQL");
-	con<-dbConnect(m,user='root',password='moocDashboard1',host='localhost',dbname='moocs');
+	con<-dbConnect(m,user='root',password=sqlPassword,host='localhost',dbname='moocs');
 	
 	query <- sprintf("SELECT * FROM %s",table)
 	if(course != "All" && course_run != "All"){
