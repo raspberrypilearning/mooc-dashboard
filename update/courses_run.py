@@ -139,11 +139,11 @@ class FLCourses:
 
 			table = soup.find('table', class_ = "table table-condensed table-striped table-fixed run-stats-dashboard-table")
 
-			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-3], stats_dashboard_url.split("/")[-2]]).encode('ascii','ignore')
+			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-4], stats_dashboard_url.split("/")[-3]]).encode('ascii','ignore')
 			startDate = soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
 			# print(soup.find_all("ul"))
 			enrolmentData["course"] = soup.find_all("h1")[1].get_text().encode('ascii','ignore')
-			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-2].encode('ascii','ignore')
+			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-3].encode('ascii','ignore')
 
 			if len(startDate[1]) == 1:
 				day = ''.join(['0',startDate[1]])
