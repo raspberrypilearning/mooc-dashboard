@@ -16,9 +16,9 @@ getTable <- function(table,course,course_run){
 		query <- sprintf("SELECT * FROM %s t WHERE t.course_run = %s",table,course_run)
 	}
 
-	sendQuery<-dbSendQuery(con, query)
-	data<- fetch(sendQuery, n = -1)
+	# sendQuery<-dbSendQuery(con, query)
+	# data<- fetch(sendQuery, n = -1)
+	data <- dbGetQuery(con,query)
 	dbDisconnect(con)
-	dbClearResult(dbListResults(conn)[[1]])
 	return(data)
 }
