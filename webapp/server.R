@@ -1835,10 +1835,10 @@ function(input, output, session) {
 
 	output$commentViewer <- renderDataTable({
 		chartDependency()
+		if(input$viewButton == 0){
+			return()
+		}
 		withProgress(message = "Processing Comments",{
-			if(input$viewButton == 0){
-				return()
-			}
 			data <- getCommentViewerData(comments_data, viewPressed())
 			DT::datatable(
 				data[,c("course","timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
@@ -1938,28 +1938,24 @@ function(input, output, session) {
 	terms <- reactive({
 		isolate({
 			withProgress(message = "Processing Word Cloud",{
-				data <- comments_data
+				data <- comments_data[[1]]
 				data$week_step <- getWeekStep(data)
-				stepChoice <- input$stepChoice
-				if(stepChoice != "All"){
-					data <- subset(data, data$week_step == stepChoice)
-				}
+				# stepChoice <- input$stepChoice
+				# if(stepChoice != "All"){
+				# 	data <- subset(data, data$week_step == stepChoice)
+				# }
 				data <- data[c("text","likes")]
 				data$likes <- as.numeric(data$likes)
 				data <- data[order(-data$likes),]
 				text <- unlist(strsplit(toString(data$text),"[\n]"))
-				if(stepChoice == "All"){
-					myCorpus = Corpus(VectorSource(head(text,1000)))
-				} else {
-					myCorpus = Corpus(VectorSource(text))
-				}
+				myCorpus = Corpus(VectorSource(head(text,1000)))
 				myCorpus = tm_map(myCorpus, content_transformer(tolower))
 				myCorpus = tm_map(myCorpus, removePunctuation)
 				myCorpus = tm_map(myCorpus, removeNumbers)
 				myCorpus = tm_map(myCorpus, removeWords,
-													c(stopwords("SMART")))
+				                  c(stopwords("SMART")))
 				myDTM = TermDocumentMatrix(myCorpus,
-																	 control = list(minWordLength = 1))
+				                           control = list(minWordLength = 1))
 				m = as.matrix(myDTM)
 				m <- sort(rowSums(m), decreasing = TRUE)
 			})
@@ -2290,8 +2286,7 @@ function(input, output, session) {
 
 	output$debug <- renderText({
 		chartDependency()
-		data <- enrolment_data[[1]]
-		print(as.character(unique(data$country)))
+		print("")
 	})
 	
 
