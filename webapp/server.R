@@ -1938,7 +1938,7 @@ function(input, output, session) {
 	terms <- reactive({
 		isolate({
 			withProgress(message = "Processing Word Cloud",{
-				data <- comments_data[[1]]
+				data <- comments_data[[which(names(comments_data) == input$runChooser)]]
 				data$week_step <- getWeekStep(data)
 				# stepChoice <- input$stepChoice
 				# if(stepChoice != "All"){
@@ -2286,7 +2286,7 @@ function(input, output, session) {
 
 	output$debug <- renderText({
 		chartDependency()
-		print("")
+		print(which(names(comments_data) == input$runChooser))
 	})
 	
 
