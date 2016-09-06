@@ -113,12 +113,11 @@ createActivity = "CREATE TABLE Activity(" \
 
 createCourses = "CREATE TABLE Courses(" \
 		"course VARCHAR(70) NOT NULL," \
-		"course_run int NOT NULL," \
 		"start_date Date NOT NULL," \
 		"no_of_weeks INT NOT NULL," \
 		"joiners INT NOT NULL," \
 		"leavers VARCHAR(20) NOT NULL," \
-		"learners VARCHAR(2) NOT NULL," \
+		"learners VARCHAR(20) NOT NULL," \
 		"active_learners VARCHAR(20) NOT NULL," \
 		"returning_learners VARCHAR(20) NOT NULL," \
 		"social_learners VARCHAR(20) NOT NULL," \

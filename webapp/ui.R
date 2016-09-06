@@ -184,6 +184,11 @@ body <- dashboardBody(
 		tabItem(tabName = "step_completion",
 			fluidRow(
 				box(
+					uiOutput("runSelectorSteps"),
+					title = "Run Selector",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+				),
+				box(
 					showOutput("stepsCompleted","highcharts"),
 					title = "Steps Marked As Complete",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE

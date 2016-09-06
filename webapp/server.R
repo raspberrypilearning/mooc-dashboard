@@ -49,9 +49,9 @@ function(input, output, session) {
 	observeEvent(input$chooseCourseButton, {
 		
 		output$pageTitle <- renderText(paste(input$course1, "- [", substr(input$run1,1,1), "]",
-			ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
-			ifelse(input$run3 != "None",paste0(" vs ",input$course3,"- [", substr(input$run3,1,1), "]"),""),
-			ifelse(input$run4 != "None",paste0(" vs ",input$course4,"- [", substr(input$run4,1,1), "]"),"")))
+		ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
+		ifelse(input$run3 != "None",paste0(" vs ",input$course3,"- [", substr(input$run3,1,1), "]"),""),
+		ifelse(input$run4 != "None",paste0(" vs ",input$course4,"- [", substr(input$run4,1,1), "]"),"")))
 		
 		updateTabsetPanel(session, "tabs", selected = "demographics")
 		
@@ -108,83 +108,6 @@ function(input, output, session) {
 	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Courses-Data.csv"))
 	assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
-	# observeEvent(input$chooseCourseButton, {
-	# 	range <- getCourseDates(input$course1, input$run1)
-	# 	assign("courseDates", range, envir = .GlobalEnv)
-	# 	assign("startDate", as.POSIXct(range[[1]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
-	# 	assign("endDate", as.POSIXct(range[[2]], format = "%Y-%m-%d", origin = "1970-01-01", tz = "GMT"), envir = .GlobalEnv)
-		
-	# 	courseWeeks <- courseDates[[3]]
-	# 	courseStart <- courseDates[[1]]
-	# 	weeks <- c(courseStart)
-	# 	for (i in 2:courseWeeks) {
-	# 		weeks[i] <- as.POSIXct(weeks[i-1], origin = "1970-01-01") + 7 * 24 * 60 * 60
-	# 	}
-	# 	assign("weeks", weeks, envir = .GlobalEnv)
-	# 	if (courseWeeks == 1) {
-	# 		assign("weekCat", c("Week 1"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 2) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 3) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 4) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 5) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 6) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 7) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 8) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 9) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 10) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 11) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11"), envir = .GlobalEnv)
-	# 	}
-	# 	else if (courseWeeks == 12) {
-	# 		assign("weekCat",
-	# 					 c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"), envir = .GlobalEnv)
-	# 	}
-	# }, priority = 4)
-	
-	# categoriseWeek <- function (x) {
-		
-	# 	for (i in 1:courseDates[[3]]) {
-	# 		if (!is.na(weeks[i+1])){
-	# 			if (x >= weeks[i] && x < weeks[i+1]) {
-	# 				return (paste("Week", i))
-	# 			}
-	# 		}else {
-	# 			if (x >= weeks[i]) {
-	# 				return (paste("Week", i))
-	# 			}
-	# 		}
-	# 	}
-	# }
-	
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
 	
 	#START: COURSE SELECTION UI AND VALUE BOXES
@@ -205,12 +128,6 @@ function(input, output, session) {
 	output$runs4 <-renderUI({
 		runs <- getRuns(input$course4)
 		selectInput("run4", label = "Run", width = "450px", choices = c("None","All",runs))
-	})
-	
-	output$courseNameAndRun <- renderUI({
-		if (!is.null(input$course)) {
-			tags$h2(paste(input$course, " - ", input$run))
-		}
 	})
 	
 	output$chooseCourse <- renderUI({
@@ -617,47 +534,6 @@ function(input, output, session) {
 			updateTextInput(session, "filteredStreams", value = learnerIDs)
 		}
 	})
-	
-	# #START: LEARNER FILTERS - CHARTS
-	# output$learnersAge <- renderChart2({
-	# 	chartDependency()
-		
-	# 	#assign("allLearners", getAllLearners(enrolment_data), envir = .GlobalEnv)
-	# 	assign("filtersEnabled", FALSE, envir = .GlobalEnv)
-	# 	updateTextInput(session, "filteredLearners", value = allLearners)
-		
-	# 	data <- getLearnersByAge(pre_course_data)
-	# 	assign("fullAgeData", data[[1]], envir = .GlobalEnv)
-	# 	plotData <- data[[2]]
-	# 	plotData$ageFilter <- plotData$age
-	# 	colnames(plotData)[c(1,2)] <- c("name", "y")
-	# 	pie <- Highcharts$new()
-	# 	pie$chart (type = "pie", width = "190")
-	# 	pie$series(
-	# 		name = "learners",
-	# 		colorByPoint = "true",
-	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE)
-	# 	)
-	# 	pie$plotOptions(
-	# 		pie = list(
-	# 			dataLabels = list(
-	# 				enabled = "false",
-	# 				connectorWidth = "0",
-	# 				color = "white"
-	# 			),
-	# 			showInLegend = "true",
-	# 			allowPointSelect = "true",
-	# 			size = "100%",
-	# 			cursor = "pointer",
-	# 			point = list(
-	# 				events = list(
-	# 					click = "#! function() { Shiny.onInputChange('click', {ageFilter: this.ageFilter})} !#"
-	# 				)
-	# 			)
-	# 		) 
-	# 	)
-	# 	return (pie)
-	# })
 
 	output$learnersAgeBar <- renderChart2({
 		chartDependency()
@@ -753,88 +629,7 @@ function(input, output, session) {
 		  )
 		)
 		return(a)
-	})
-	
-	
-	# output$learnersGender <- renderChart2({
-	# 	chartDependency()
-		
-	# 	data <- getLearnersByGender(pre_course_data)
-	# 	assign("fullGenderData", data[[1]], envir = .GlobalEnv)
-	# 	plotData <- data[[2]]
-		
-	# 	plotData$genderFilter <- plotData$gender
-	# 	colnames(plotData)[c(1,2)] <- c("x", "y")
-	# 	plotData <- plotData[1:2,]
-	# 	plotData[1,1] <- 0
-	# 	plotData[2,1] <- 1
-	# 	histogram <- Highcharts$new()
-	# 	histogram$chart (type = "column", width = "190")
-	# 	histogram$series(
-	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE),
-	# 		name = "learners"
-	# 	)
-	# 	histogram$xAxis (
-	# 		categories = c("Female", "Male"),
-	# 		labels = list(
-	# 			style = list(
-	# 				fontSize = 8
-	# 			)
-	# 		)
-	# 	)
-	# 	histogram$plotOptions(
-	# 		column = list(
-	# 			dataLabels = list(
-	# 				enabled = "true"
-	# 			),
-	# 			cursor = "pointer",
-	# 			point = list(
-	# 				events = list(
-	# 					click = "#! function() { Shiny.onInputChange('click', {genderFilter: this.genderFilter})} !#"
-	# 				)
-	# 			)
-	# 		)
-	# 	)
-	# 	return (histogram)
-	# })
-	
-	# output$employmentArea <- renderChart2({
-	# 	chartDependency()
-		
-	# 	data <- getLearnersByEmploymentArea(pre_course_data)
-	# 	assign("fullEmplAreaData", data[[1]], envir = .GlobalEnv)
-	# 	plotData <- data[[2]]
-	# 	plotData$employmentAreaFilter <- plotData$employment_area
-	# 	colnames(plotData)[c(1,2)] <- c("name", "y")
-	# 	pie <- Highcharts$new()
-	# 	pie$chart (type = "pie", width = "800")
-	# 	pie$series(
-	# 		name = "learners",
-	# 		colorByPoint = "true",
-	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE)
-	# 	)
-	# 	pie$plotOptions(
-	# 		pie = list(
-	# 			allowPointSelect = "true",
-	# 			cursor = "pointer", 
-	# 			point = list(
-	# 				events = list(
-	# 					click = "#! function() { Shiny.onInputChange('click', {employmentAreaFilter: this.employmentAreaFilter})} !#"
-	# 				)
-	# 			),
-	# 			dataLabels = list(
-	# 				enabled = "true",
-	# 				connectorPadding = 1,
-	# 				crop = "false",
-	# 				distance = 10
-	# 			),
-	# 			size = "25%",
-	# 			startAngle = 300
-	# 		)
-	# 	)
-	# 	return (pie)
-	# })
-	
+	})	
 
 	output$employmentStatus <- renderChart2({
 		chartDependency()
@@ -868,46 +663,6 @@ function(input, output, session) {
 		)
 		return(a)
 	})
-	
-	# output$employmentStatus <- renderChart2({
-	# 	chartDependency()
-		
-	# 	data <- getLearnersByEmploymentStatus(pre_course_data)
-	# 	assign("fullEmplStatusData", data[[1]], envir = .GlobalEnv)
-	# 	plotData <- data[[2]]
-	# 	catList <- plotData$employment_status
-	# 	plotData$employmentStatusFilter <- plotData$employment_status
-	# 	plotData$employment_status <- seq(from = 0, to = nrow(plotData) - 1)
-	# 	colnames(plotData)[c(1,2)] <- c("x", "y")
-	# 	histogram <- Highcharts$new()
-	# 	histogram$chart (type = "column", width = "800")
-	# 	histogram$series(
-	# 		data = toJSONArray2(plotData, json = FALSE, names = TRUE),
-	# 		name = "learners"
-	# 	)
-	# 	histogram$xAxis (
-	# 		categories = catList,
-	# 		labels = list(
-	# 			style = list(
-	# 				fontSize = 10
-	# 			)
-	# 		)
-	# 	)
-	# 	histogram$plotOptions(
-	# 		column = list(
-	# 			dataLabels = list(
-	# 				enabled = "true"
-	# 			),
-	# 			cursor = "pointer",
-	# 			point = list(
-	# 				events = list(
-	# 					click = "#! function() { Shiny.onInputChange('click', {employmentStatusFilter: this.employmentStatusFilter})} !#"
-	# 				)
-	# 			)  
-	# 		)
-	# 	)
-	# 	return (histogram)
-	# })
 	
 	output$degreeLevel <- renderChart2({
 		chartDependency()
@@ -1747,9 +1502,24 @@ function(input, output, session) {
 		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$statements_sold), icon = icon("certificate"), color = "red")
 	})
 
+	output$runSelectorSteps <- renderUI({
+		chartDependency()
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
+		print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
+	})
+
 	output$stepsCompleted <- renderChart2({
 		chartDependency()
-		stepsCount <- getStepsCompletedData(step_data)
+		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200)
 		a$data(stepsCount[c("freq")])
@@ -1760,8 +1530,8 @@ function(input, output, session) {
 
 	output$stepCompletionHeat <- renderD3heatmap({
 		chartDependency()
-		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
-		map <- getStepCompletionHeatMap(step_data, startDate)
+		startDate <- as.numeric(gsub("-","",substr(input$runChooserSteps,5,14)))
+		map <- getStepCompletionHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
 			scale = "column",
@@ -1773,9 +1543,9 @@ function(input, output, session) {
 
 	output$firstVisitedHeat <- renderD3heatmap({
 		chartDependency()
-		startDate <- as.numeric(gsub("-","",substr(input$run,5,14)))
+		startDate <- as.numeric(gsub("-","",substr(input$runChooserSteps,5,14)))
 
-		map <- getFirstVisitedHeatMap(step_data,startDate)
+		map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]],startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
 			scale = "column",
@@ -1810,14 +1580,11 @@ function(input, output, session) {
 		if(input$run3 != "None"){
 			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
 		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
 		print(selectInput("runChooser", label = "Run", choices = runs, width = "550px"))
 	})
-
-	# output$runSteps <- renderUI({
-	# 	chartDependency()
-	# 	steps <- getRunSteps(input$courseChooser,input$run)
-	# 	print(selectInput("stepChoice", label = "Steps", choices = c("All",steps), width = "550px"))
-	# })
 
 	output$viewButton <- renderUI({
 		chartDependency()
@@ -2286,7 +2053,7 @@ function(input, output, session) {
 
 	output$debug <- renderText({
 		chartDependency()
-		print(which(names(comments_data) == input$runChooser))
+		print(names(step_data))
 	})
 	
 
@@ -2330,37 +2097,37 @@ function(input, output, session) {
 	
 	
 	
-	createFunnelChart <- function () {
-		plotData <- getFunnelOfParticipation(enrolment_data, step_data, comments_data, assignments_data, 
-																				 startDate, endDate)
-		funnel <- Highcharts$new()
-		funnel$plotOptions (
-			funnel = list(
-				neckWidth = "23%",
-				neckHeight = "32%",
-				width = "68%",
-				dataLabels = list(
-					enabled = "true",
-					style = list(
-						fontSize = "8px"
-					)
-				)
-			)
-		)
-		funnel$series (
-			data = list(
-				list(plotData[1,1], plotData[1,2]),
-				list(plotData[2,1], plotData[2,2]),
-				list(plotData[3,1], plotData[3,2]),
-				list(plotData[4,1], plotData[4,2]),
-				list(plotData[5,1], plotData[5,2])
-			),
-			type = "funnel",
-			name = "learners"
-		)
-		funnel$addAssets(js = "http://code.highcharts.com/modules/funnel.js")
-		funnel$save("funnel.html", cdn = FALSE)
-	}
+	# createFunnelChart <- function () {
+	# 	plotData <- getFunnelOfParticipation(enrolment_data, step_data, comments_data, assignments_data, 
+	# 																			 startDate, endDate)
+	# 	funnel <- Highcharts$new()
+	# 	funnel$plotOptions (
+	# 		funnel = list(
+	# 			neckWidth = "23%",
+	# 			neckHeight = "32%",
+	# 			width = "68%",
+	# 			dataLabels = list(
+	# 				enabled = "true",
+	# 				style = list(
+	# 					fontSize = "8px"
+	# 				)
+	# 			)
+	# 		)
+	# 	)
+	# 	funnel$series (
+	# 		data = list(
+	# 			list(plotData[1,1], plotData[1,2]),
+	# 			list(plotData[2,1], plotData[2,2]),
+	# 			list(plotData[3,1], plotData[3,2]),
+	# 			list(plotData[4,1], plotData[4,2]),
+	# 			list(plotData[5,1], plotData[5,2])
+	# 		),
+	# 		type = "funnel",
+	# 		name = "learners"
+	# 	)
+	# 	funnel$addAssets(js = "http://code.highcharts.com/modules/funnel.js")
+	# 	funnel$save("funnel.html", cdn = FALSE)
+	# }
 
 
 }

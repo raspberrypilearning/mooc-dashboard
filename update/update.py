@@ -55,7 +55,7 @@ def update(email,password):
 						files[dir_path+"/"+filename] = run
 
 
-		courses_path = "../data/" +cos.getUniName()+ "/Courses Data"
+		courses_path = "../data/" +cos.getUniName()+ "/Courses Data/Deets"
 		courses_filename = "/Courses-Data.csv"
 		if not os.path.exists(courses_path):
 			os.makedirs(courses_path)
@@ -73,7 +73,7 @@ def update(email,password):
 				writer.writerow(line.split(','))
 			f.close()
 
-		files[courses_path+"/"+courses_filename] = 1
+		files[courses_path+courses_filename] = 1
 
 		# JSR Disable import as unused
 		importData(files,cos.getUniName())

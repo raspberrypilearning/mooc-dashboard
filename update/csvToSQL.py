@@ -105,13 +105,15 @@ class CSV_TO_SQL:
 			"Set " + setting + "last_completed_at = nullif(@last_completed_at,' '),university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
 			+ str(course_run) + ";" 
 		
-		# elif 'Course' in datatype:
+		elif 'Courses' in datatype:
 
-		# 	col = 'course,start_date,no_of_weeks,joiners,leavers,learners,active-Learners,returning_learners,social_learners,fully_participating_learners,statements_sold,university'
-		# 	load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Learners ' \
-		# 	"FIELDS TERMINATED BY ',' " \
-		# 	"IGNORE 1 LINES " + col + \
-		# 	"Set " + 
+			col = '(course,start_date,no_of_weeks,joiners,leavers,learners,active_Learners,returning_learners,social_learners,fully_participating_learners,statements_sold)'
+			load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Courses ' \
+			"FIELDS TERMINATED BY ',' " \
+			"IGNORE 1 LINES " + col + \
+			"Set university = " + "'" + uni + "';"
+
+			print(load)
 	
 			
 		cursor.execute(load)
