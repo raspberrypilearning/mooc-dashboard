@@ -113,7 +113,6 @@ class CSV_TO_SQL:
 			"IGNORE 1 LINES " + col + \
 			"Set university = " + "'" + uni + "';"
 
-			print(load)
 	
 			
 		cursor.execute(load)

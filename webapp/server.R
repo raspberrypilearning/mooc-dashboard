@@ -105,7 +105,7 @@ function(input, output, session) {
 		return(datasets)
 	}
 
-	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Courses-Data.csv"))
+	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Deets","Courses-Data.csv"))
 	assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
