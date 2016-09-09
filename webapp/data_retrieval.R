@@ -15,10 +15,16 @@ getTable <- function(table,course,course_run){
 		course_run <- substring(course_run,1,1)
 		query <- sprintf("SELECT * FROM %s t WHERE t.course_run = %s",table,course_run)
 	}
-
-	# sendQuery<-dbSendQuery(con, query)
-	# data<- fetch(sendQuery, n = -1)
 	data <- dbGetQuery(con,query)
 	dbDisconnect(con)
 	return(data)
+}
+
+getCourseMetaData <- function(course,course_run){
+	m<-dbDriver("MySQL");
+	con<-dbConnect(m,user='root',password=sqlPassword,host='localhost',dbname='moocs');
+	query <- paste0("Select * FROM Courses WHERE course =", course," - ",course_run)
+	
+	data <- dbGetQuery(con,query)
+	dbDisconnect(con)
 }

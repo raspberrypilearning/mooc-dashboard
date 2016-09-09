@@ -135,7 +135,6 @@ class FLCourses:
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 			while soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb') is None:
 				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
-				print "It was None"
 
 			table = soup.find('table', class_ = "table table-condensed table-striped table-fixed run-stats-dashboard-table")
 

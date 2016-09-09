@@ -107,7 +107,7 @@ class CSV_TO_SQL:
 		
 		elif 'Courses' in datatype:
 
-			col = '(course,start_date,no_of_weeks,joiners,leavers,learners,active_Learners,returning_learners,social_learners,fully_participating_learners,statements_sold)'
+			col = '(course_run,start_date,no_of_weeks,joiners,leavers,learners,active_Learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,run)'
 			load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Courses ' \
 			"FIELDS TERMINATED BY ',' " \
 			"IGNORE 1 LINES " + col + \

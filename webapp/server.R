@@ -23,11 +23,11 @@ source("data_retrieval.R")
 function(input, output, session) { 
 	
 	output$institution <- renderText({"soton"})
-	output$pageTitle <- renderText("Welcome to MOOC Dashboard, Start by selecting the runs you wish to compare")
+	output$pageTitle <- renderText("Welcome to the MOOC Dashboard! Select the course(s) and run(s) you wish to visualise")
 	output$updatedTime <- renderText(paste("Data last updated  -  ",getUpdatedTime()))
 	
 	# Make the text inputs of the active filters read-only and hide the dummy inputs
-	shinyjs::disable("gender") 
+	shinyjs::disable("gender")
 	shinyjs::disable("age")
 	shinyjs::disable("selected")
 	shinyjs::disable("emplArea")
@@ -75,6 +75,9 @@ function(input, output, session) {
 		enrolmentsDataFiles <- getData("Enrolments")
 		assign("enrolment_data", enrolmentsDataFiles, envir = .GlobalEnv)
 
+		courseMetaData <- getMetaData()
+		assign("course_data", courseMetaData, envir = .GlobalEnv)
+
 		# enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course1,input$run1,"enrolments.csv")
 		assign("pre_course_data", do.call("rbind",enrolment_data) , envir = .GlobalEnv)
 
@@ -82,8 +85,29 @@ function(input, output, session) {
 
 		assign("filtersEnabled", FALSE, envir = .GlobalEnv)
 		updateTextInput(session, "filteredLearners", value = allLearners)
+
 		
 	}, priority = 10)
+
+	getMetaData <- function(){
+		data1 <- getCourseMetaData(input$course1,substr(input$run1,1,1))
+		name <- paste(c(input$course1,substr(input$run1,1,1)), collapse = " - ")
+		datasets <- list("1" = data1)
+		datasets[which(names(datasets) == "1")] <- name
+		if(input$run2 != "None"){
+			data2 <- getCourseMetaData(input$course2, substr(input$run2,1,1))
+			datasets[[paste(c(input$course2,substr(input$run2,1,1)), collapse = " - ")]] <- data2
+		}
+		if(input$run3 != "None"){
+			data3 <- getCourseMetaData(input$course3, substr(input$run3,1,1))
+			datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
+		}
+		if(input$run4 != "None"){
+			data4 <- getCourseMetaData(input$course4, substr(input$run4,1,1))
+			datasets[[paste(c(input$course4,substr(input$run4,1,1)), collapse = " - ")]] <- data4
+		}
+		return(datasets)
+	}
 
 	getData <- function(table){
 		data1 <- getTable(table, input$course1,input$run1)
@@ -752,7 +776,8 @@ function(input, output, session) {
 		  column = list(
 			dataLabels = list(
 			  enabled = "true"
-			)
+			),
+			animation = FALSE
 		  )
 		)
 		return(chart)
@@ -1525,12 +1550,15 @@ function(input, output, session) {
 		a$data(stepsCount[c("freq")])
 		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
 		a$yAxis(title = list(text = "Frequency"))
+		a$plotOptions(
+			animation = FALSE
+		)
 		return(a)
 	})
 
 	output$stepCompletionHeat <- renderD3heatmap({
 		chartDependency()
-		startDate <- as.numeric(gsub("-","",substr(input$runChooserSteps,5,14)))
+		startDate <- course_data[which(names(course_data== input$runChooserSteps))]$start_date
 		map <- getStepCompletionHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
@@ -1543,8 +1571,7 @@ function(input, output, session) {
 
 	output$firstVisitedHeat <- renderD3heatmap({
 		chartDependency()
-		startDate <- as.numeric(gsub("-","",substr(input$runChooserSteps,5,14)))
-
+		startDate <- course_data[which(names(course_data== input$runChooserSteps))]$start_date
 		map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]],startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
@@ -1557,7 +1584,7 @@ function(input, output, session) {
 
 	output$commentsBarChart <- renderChart2({
 		chartDependency()
-		plotData <- getCommentsBarChart(step_data,comments_data)
+		plotData <- getCommentsBarChart(step_data[1],comments_data[1])
 		histogram <- Highcharts$new()
 		histogram$chart(type = "column" , width = 1200)
 		histogram$data(plotData[,c("reply","post")])
@@ -1566,7 +1593,8 @@ function(input, output, session) {
 		histogram$plotOptions (
 			column = list(
 				stacking = "normal"
-			)
+			),
+			animation = FALSE
 		)
 		return(histogram)
 	})
