@@ -127,7 +127,7 @@ createCourses = "CREATE TABLE Courses(" \
 		"statements_sold INT NOT NULL," \
 		"university VARCHAR(40) NOT NULL," \
 		"INDEX(course)," \
-		"PRIMARY KEY (university,course)" \
+		"PRIMARY KEY (university,course_run)" \
 		");"
 
 #create all tables, if tables exist, will be deleted

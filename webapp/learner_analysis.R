@@ -630,7 +630,7 @@ getStepCompletionHeatMap <- function(stepData, startDate){
 }
 
 getFirstVisitedHeatMap <- function(stepData, startDate){
-	data <- step_data
+	data <-stepData
 	data$week_step <- getWeekStep(data)
 	data <- data[,c("week_step", "first_visited_at")]
 	data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))

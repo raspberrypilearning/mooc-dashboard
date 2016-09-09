@@ -92,8 +92,8 @@ function(input, output, session) {
 	getMetaData <- function(){
 		data1 <- getCourseMetaData(input$course1,substr(input$run1,1,1))
 		name <- paste(c(input$course1,substr(input$run1,1,1)), collapse = " - ")
-		datasets <- list("1" = data1)
-		datasets[which(names(datasets) == "1")] <- name
+		datasets <- list("1"= data1)
+		names(datasets)[which(names(datasets) == "1")] <- name
 		if(input$run2 != "None"){
 			data2 <- getCourseMetaData(input$course2, substr(input$run2,1,1))
 			datasets[[paste(c(input$course2,substr(input$run2,1,1)), collapse = " - ")]] <- data2
@@ -1551,14 +1551,16 @@ function(input, output, session) {
 		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
 		a$yAxis(title = list(text = "Frequency"))
 		a$plotOptions(
-			animation = FALSE
+			column = list(
+				animation = FALSE
+			)
 		)
 		return(a)
 	})
 
 	output$stepCompletionHeat <- renderD3heatmap({
 		chartDependency()
-		startDate <- course_data[which(names(course_data== input$runChooserSteps))]$start_date
+		startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
 		map <- getStepCompletionHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
@@ -1571,8 +1573,8 @@ function(input, output, session) {
 
 	output$firstVisitedHeat <- renderD3heatmap({
 		chartDependency()
-		startDate <- course_data[which(names(course_data== input$runChooserSteps))]$start_date
-		map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]],startDate)
+		startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
+		map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
 		print(d3heatmap(map[,2:ncol(map)],
 			dendrogram = "none",
 			scale = "column",
@@ -2081,7 +2083,11 @@ function(input, output, session) {
 
 	output$debug <- renderText({
 		chartDependency()
-		print(names(step_data))
+		data1 <- getCourseMetaData("Agincourt 1415: Myth and Reality","1")
+		data2 <- getCourseMetaData("Agincourt 1415: Myth and Reality","2")
+		datasets <- list(data1,data2)
+		print(datasets[[1]]$start_date)
+		# print(getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]],startDate))
 	})
 	
 
