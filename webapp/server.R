@@ -1615,6 +1615,7 @@ function(input, output, session) {
 
 	output$commentViewer <- renderDataTable({
 		chartDependency()
+		viewPressed()
 		if(input$viewButton == 0){
 			return()
 		}
@@ -1661,6 +1662,7 @@ function(input, output, session) {
 
 	output$threadViewer <- renderDataTable({
 		chartDependency()
+		viewPressed()
 		threadSelected()
 		data <- getCommentViewerData(comments_data, viewPressed())
 		selectedRow <- data[input$commentViewer_rows_selected,]
@@ -1742,11 +1744,11 @@ function(input, output, session) {
 		})
 	})
 
+	cloudDependancy <- eventReactive(input$loadCloud, {})
+
 	output$stepWordCloud <- renderPlot({
 		chartDependency()
-		if(input$loadCloud == 0){
-			return()
-		}
+		cloudDependancy()
 		m <- terms()
 		wordcloud_rep(names(m),m,scale = c(4,0.5),
 			min.freq = input$commentCloudFreq,
