@@ -90,21 +90,29 @@ function(input, output, session) {
 	}, priority = 10)
 
 	getMetaData <- function(){
-		data1 <- getCourseMetaData(input$course1,substr(input$run1,1,1))
-		name <- paste(c(input$course1,substr(input$run1,1,1)), collapse = " - ")
-		datasets <- list("1"= data1)
-		names(datasets)[which(names(datasets) == "1")] <- name
-		if(input$run2 != "None"){
-			data2 <- getCourseMetaData(input$course2, substr(input$run2,1,1))
-			datasets[[paste(c(input$course2,substr(input$run2,1,1)), collapse = " - ")]] <- data2
+		run1 <- substr(input$run1,1,1)
+		if(run1 != "A"){
+			data1 <- getCourseMetaData(input$course1,run1)
+			name <- paste(c(input$course1,run1), collapse = " - ")
+			datasets <- list("1"= data1)
+			names(datasets)[which(names(datasets) == "1")] <- name
+		} else {
+			datasets <- list()
 		}
-		if(input$run3 != "None"){
-			data3 <- getCourseMetaData(input$course3, substr(input$run3,1,1))
+		run2 <- substr(input$run2,1,1)
+		if(input$run2 != "None" &  run2 != "A"){
+			data2 <- getCourseMetaData(input$course2, run2)
+			datasets[[paste(c(input$course2,run2), collapse = " - ")]] <- data2
+		}
+		run3 <- substr(input$run3,1,1)
+		if(input$run3 != "None" & run3 != "A"){
+			data3 <- getCourseMetaData(input$course3, run3)
 			datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
 		}
-		if(input$run4 != "None"){
-			data4 <- getCourseMetaData(input$course4, substr(input$run4,1,1))
-			datasets[[paste(c(input$course4,substr(input$run4,1,1)), collapse = " - ")]] <- data4
+		run4 <- substr(input$run4,1,1)
+		if(input$run4 != "None" & run4 != "A"){
+			data4 <- getCourseMetaData(input$course4, run4)
+			datasets[[paste(c(input$course4,run4), collapse = " - ")]] <- data4
 		}
 		return(datasets)
 	}
