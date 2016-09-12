@@ -133,6 +133,9 @@ function(input, output, session) {
 	assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
+	stepDependancy <- eventReactive(input$runChooserSteps, {})
+	commentDependancy <- eventReactive(input$runChooserComments, {})
+
 	
 	#START: COURSE SELECTION UI AND VALUE BOXES
 	
@@ -1077,15 +1080,38 @@ function(input, output, session) {
 	})
 	#END: LEARNER FITLERS - CHARTS
 	
+
 	
 	#START: CHARTS - COMMENTS ORIENTATED
+
+	output$commentsBarChart <- renderChart2({
+		chartDependency()
+		commentDependancy()
+		plotData <- getCommentsBarChart(step_data[[which(names(step_data) == input$runChooserComments)]],comments_data[[which(names(comments_data)==input$runChooserComments)]])
+		histogram <- Highcharts$new()
+		histogram$chart(type = "column" , width = 1200)
+		histogram$data(plotData[,c("reply","post")])
+		histogram$xAxis (categories = plotData$week_step)
+		histogram$yAxis(title = list(text = "Frequency"))
+		histogram$plotOptions (
+			column = list(
+				stacking = "normal"
+			),
+			animation = FALSE
+		)
+		return(histogram)
+	})
+
 	# Heatmap of comments made per step and date
 	output$stepDateCommentsHeat <- renderD3heatmap({
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
+		commentDependancy()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		comments <- getNumberOfCommentsByDateStep(learners, startDate, endDate, comments_data)
-		comments <- as.matrix(comments)
+		startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
+		comments <- getCommentsHeatMap(comments_data[[which(names(comments_data) == input$runChooserComments)]], startDate)
+
+		
 		d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
 							color = "Blues",
 							scale = "column",
@@ -1095,88 +1121,41 @@ function(input, output, session) {
 	
 	# Histogram of the comment and replies made per week
 	output$commentsRepliesWeekBar <- renderChart2({
-		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
-		# Get the comments and replies by date and combine them to a single data frame
-		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		comments <- getNumberOfCommentsByDate(learners, startDate, endDate, comments_data)
-		replies <- getNumberOfRepliesByDate(learners, startDate, endDate, comments_data)
-		plotData <- merge (comments, replies, by = "timestamp")
-		# Categorise the dates into course weeks
-		weekList <- lapply(plotData$timestamp, function (x) categoriseWeek (x))
-		# Add the list to the data frame and order it by week
-		plotData$week <- weekList
-		plotData$week <- factor(plotData$week, levels = weekCat)
-		# Split the data by week and aggregate (to get the total sum of comments and replies made per week)
-		plotData <- ddply(plotData, ~week, summarise, replies = sum(replies), comments = sum(comments))
-		# Create the histogram and pass in some options
+		commentDependancy()
+		plotData <- getCommentsBarChartWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
+		
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column",  width = 550)
-		histogram$data (plotData)
-		histogram$xAxis (categories = weekCat)
-		histogram$yAxis (
-			title = list(
-				text = "Total comments made"
-			),
-			stackLabels = list(
-				enabled = "true",
-				style = list(
-					fontWeight = "bold",
-					color = "gray"
-				)
-			)
-		)
+		histogram$chart(type = "column" , width = 550)
+		histogram$data(plotData[,c("reply","post")])
+		histogram$xAxis (categories = plotData$week_number)
+		histogram$yAxis(title = list(text = "Frequency"))
 		histogram$plotOptions (
 			column = list(
-				stacking = "normal",
-				dataLabels = list(
-					enabled = "true",
-					color = "white",
-					style = list(
-						textShadow = "0 0 3px black"
-					)
-				)
-			)
+				stacking = "normal"
+			),
+			animation = FALSE
 		)
-		return (histogram)
+		return(histogram)
 	})
 	
 	# Histogram of the number of authors per week
 	output$authorsWeekBar <- renderChart2({
-		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
-		# Get the number of authors by date
-		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		authors <- getNumberOfAuthorsByDate(learners, input$courseDates[1], input$courseDates[2], comments_data)
-		# Categorise the dates into weeks
-		weekList <- lapply(authors$timestamp, function (x) categoriseWeek (x))
-		# Add the list of weeks to the data frame and order it
-		authors$week <- weekList
-		authors$week <- factor(authors$week, levels = weekCat)
-		# Find the total number of authors per week
-		authors <- ddply(authors, ~week, summarise, authors = sum(authors))
-		# Create the histogram and pass in some options
+		commentDependancy()
+		plotData <- getNumberOfAuthorsByWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
 		histogram <- Highcharts$new()
-		histogram$chart (type = "column", width = 550)
-		histogram$data (authors)
-		histogram$xAxis (categories = weekCat)
-		histogram$yAxis (
-			title = list(
-				text = "Number of authors"
-			)
-		)
+		histogram$chart(type = "column" , width = 550)
+		histogram$data(plotData[,c("authors")])
+		histogram$xAxis (categories = plotData$week_number)
+		histogram$yAxis(title = list(text = "Frequency"))
 		histogram$plotOptions (
 			column = list(
-				dataLabels = list(
-					enabled = "true",
-					color = "white",
-					style = list(
-						textShadow = "0 0 3px black"
-					)
-				)
-			)
+				stacking = "normal"
+			),
+			animation = FALSE
 		)
-		return (histogram)
+		return(histogram)
 	})
 	
 	# Line chart of the average number of comments made per step completion percentage
@@ -1542,8 +1521,10 @@ function(input, output, session) {
 		print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
 	})
 
+	
 	output$stepsCompleted <- renderChart2({
 		chartDependency()
+		stepDependancy()
 		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200)
@@ -1560,6 +1541,7 @@ function(input, output, session) {
 
 	output$stepCompletionHeat <- renderD3heatmap({
 		chartDependency()
+		stepDependancy()
 		startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
 		map <- getStepCompletionHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
 		print(d3heatmap(map[,2:ncol(map)],
@@ -1573,6 +1555,7 @@ function(input, output, session) {
 
 	output$firstVisitedHeat <- renderD3heatmap({
 		chartDependency()
+		stepDependancy()
 		startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
 		map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
 		print(d3heatmap(map[,2:ncol(map)],
@@ -1584,22 +1567,22 @@ function(input, output, session) {
 		)
 	})
 
-	output$commentsBarChart <- renderChart2({
+	output$runSelectorComments <- renderUI({
 		chartDependency()
-		plotData <- getCommentsBarChart(step_data[1],comments_data[1])
-		histogram <- Highcharts$new()
-		histogram$chart(type = "column" , width = 1200)
-		histogram$data(plotData[,c("reply","post")])
-		histogram$xAxis (categories = plotData$week_step)
-		histogram$yAxis(title = list(text = "Frequency"))
-		histogram$plotOptions (
-			column = list(
-				stacking = "normal"
-			),
-			animation = FALSE
-		)
-		return(histogram)
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
+		print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
 	})
+
+	
 
 	output$runSelector <- renderUI({
 		chartDependency()
@@ -2083,11 +2066,7 @@ function(input, output, session) {
 
 	output$debug <- renderText({
 		chartDependency()
-		data1 <- getCourseMetaData("Agincourt 1415: Myth and Reality","1")
-		data2 <- getCourseMetaData("Agincourt 1415: Myth and Reality","2")
-		datasets <- list(data1,data2)
-		print(datasets[[1]]$start_date)
-		# print(getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]],startDate))
+		print(unlist(getNumberOfAuthorsByWeek(comments_data[[1]])))
 	})
 	
 

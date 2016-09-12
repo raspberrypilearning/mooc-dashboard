@@ -104,13 +104,13 @@ getNumberOfCommentsByStep <- function (learners, startDate, endDate, data){
 }
 
 #date-time series of comments made by the specified learners
-getNumberOfCommentsByDate <- function (learners, startDate, endDate, data){
+getNumberOfCommentsByDate <- function (learners, data){
 	mdata <- melt(data, id = c("author_id", "id"))
 	mdata <- subset(mdata, variable == "timestamp")
 	mdata$value <- as.POSIXct(mdata$value, format = "%Y-%m-%d %H", tz = "GMT")
 	#mdata <- subset(mdata, value >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#mdata <- subset(mdata, value <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	mdata <- subset(mdata, author_id %in% learners)
+	# mdata <- subset(mdata, author_id %in% learners)
 	pivot <- dcast(mdata, value ~ ., length)
 	colnames(pivot) <- c("timestamp", "comments")
 	return (pivot) 
@@ -118,11 +118,11 @@ getNumberOfCommentsByDate <- function (learners, startDate, endDate, data){
 
 #gets the number of comments by step and date made by the specified learner
 #the form of the table is ready for conversion to a matrix
-getNumberOfCommentsByDateStep <- function (learners, startDate, endDate, data){
+getNumberOfCommentsByDateStep <- function (learners, data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("author_id", "step", "timestamp"))
 	mdata <- subset(mdata, variable == "id")
 	pivot <- dcast(mdata, timestamp ~ step, length)
@@ -133,11 +133,11 @@ getNumberOfCommentsByDateStep <- function (learners, startDate, endDate, data){
 
 
 #gets the number of replies by date received by the specified learners
-getNumberOfRepliesByDate <- function (learners, startDate, endDate, data){
+getNumberOfRepliesByDate <- function (learners,data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz = "GMT")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("timestamp", "author_id", "id"), na.rm = TRUE)
 	mdata <- subset(mdata, variable == "parent_id")
 	pivot <- dcast(mdata, timestamp + variable ~ ., length)
@@ -210,18 +210,7 @@ getNumberOfLikesByLearner <- function (learners, startDate, endDate, data) {
 }
 
 #gets the number of comment authors by date
-getNumberOfAuthorsByDate <- function (learners, startDate, endDate, data){
-	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d", tz = "GMT")
-	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
-	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
-	mdata <- melt(data, id = c("timestamp"))
-	mdata <- subset(mdata, variable == "author_id")
-	mdata <- unique(mdata)
-	pivot <- dcast(mdata, timestamp + variable ~ ., length)
-	colnames(pivot)[3] <- "authors"
-	return (pivot[c("timestamp", "authors")])
-}
+
 
 #returns time of enrolment and unenrolment of the specified learners
 getEnrolmentTime <- function (learners, startDate, endDate, data){
@@ -643,6 +632,20 @@ getFirstVisitedHeatMap <- function(stepData, startDate){
 	return(map)
 }
 
+getCommentsHeatMap <- function(commentsData, startDate){
+	data <- commentsData
+	data$week_step <- getWeekStep(data)
+	data <- data[,c("week_step", "timestamp")]
+	data$timestamp <- unlist(lapply(data$timestamp, function(x) substr(x,1,10)))
+	data$count <- 1
+	aggregateData <- aggregate(count ~., data, FUN = sum)
+	aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$timestamp)) >= startDate)
+	pivot <- dcast(aggregateData, timestamp ~ week_step)
+	pivot[is.na(pivot)] <- 0
+	map <- as.data.frame(pivot)
+	return(map)
+}
+
 getCommentsBarChart <- function(stepData,comments){
 	steps <- stepData
 	data <- comments
@@ -662,6 +665,37 @@ getCommentsBarChart <- function(stepData,comments){
 		plotData[plotData$week_step == replyCount$week_step[x],]$reply <- replyCount$freq[x]
 	}
 	return(plotData)
+}
+
+getCommentsBarChartWeek <- function(comments){
+	data <- comments
+	stepLevels <- unique(data$week_number)
+	plotData <-data.frame(week_number = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+	data <- data[,c("week_number", "parent_id")]
+	posts <- subset(data, is.na(data$parent_id))
+	replies <- subset(data, !is.na(data$parent_id))[,c("week_number")]
+	postCount <- count(posts)
+	replyCount <- count(replies)
+	replyCount$week_number <- as.character(replyCount$x)
+	for(x in c(1:length(postCount$freq))){
+		plotData[plotData$week_number == postCount$week_number[x],]$post <- postCount$freq[x]
+	}
+	for(x in c(1:length(replyCount$freq))){
+		plotData[plotData$week_number == replyCount$week_number[x],]$reply <- replyCount$freq[x]
+	}
+	return(plotData)
+}
+
+getNumberOfAuthorsByWeek <- function (comments){
+  data <- comments
+  stepLevels <- sort(unique(data$week_number))
+  plotData <-data.frame(week_number = stepLevels, authors = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+  for(x in c(1:max(length(stepLevels)))){
+    weekComments <- data[which(data$week_number == x),c("week_number","author_id")]
+    authorCount <- count(unique(weekComments)$week_number)
+    plotData[plotData$week_number == authorCount$x,]$authors <- authorCount$freq
+  }
+  return(plotData)
 }
 
 getGenderCount <- function(enrolmentData){

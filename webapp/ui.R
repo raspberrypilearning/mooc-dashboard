@@ -208,12 +208,18 @@ body <- dashboardBody(
 		tabItem(tabName = "commentsOverview",
 			fluidRow(
 				textInput("filteredLearners", ""),
+				box(uiOutput("runSelectorComments"),
+					title = "Run Selector",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+				),
 				box(showOutput("commentsBarChart", "highcharts"),
 					title = "Number of Comments by Step", 
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE),
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+				),
 				box(d3heatmapOutput("stepDateCommentsHeat"),
 					title = "Number of Comments by Step and Date", 
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+				)
 			),#fluidRow
 			fluidRow(
 				box(showOutput("commentsRepliesWeekBar", "highcharts"),
