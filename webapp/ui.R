@@ -271,15 +271,20 @@ body <- dashboardBody(
 		),
 		tabItem(tabName = "total_measures",
 			fluidRow(
+				box(uiOutput("totalMeasuresRunSelector"),
+					title = "Run Selector",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+			),
+			fluidRow(
+				box(showOutput("avgCommentsCompletionLine", "highcharts"),
+					title = "Average Number of Comments per Completion", 
+					status = "primary", solidHeader = TRUE, width = 12, height = 700 ,collapsible = TRUE)
+			),#fluidRow
+			fluidRow(
 				valueBoxOutput("totalComments", width = 6),
 				valueBoxOutput("avgComments", width = 6),
 				valueBoxOutput("totalReplies", width = 6),
 				valueBoxOutput("avgReplies", width = 6)
-			),#fluidRow
-			fluidRow(
-				box(showOutput("avgCommentsCompletionLine", "highcharts"),
-					title = "Average Number of Comments per Completion", 
-					status = "primary", solidHeader = TRUE, width = 12, height = 270 ,collapsible = TRUE)
 			)#fluidRow
 		),
 		tabItem(tabName = "correlations",

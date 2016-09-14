@@ -143,6 +143,7 @@ function(input, output, session) {
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
 	stepDependancy <- eventReactive(input$runChooserSteps, {})
 	commentDependancy <- eventReactive(input$runChooserComments, {})
+	measuresDependancy <- eventReactive(input$totalMeasuresRunChooser, {})
 
 	
 	#START: COURSE SELECTION UI AND VALUE BOXES
@@ -172,14 +173,14 @@ function(input, output, session) {
 	output$enrolmentCount <- renderValueBox({
 		chartDependency()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		count <- getEnrolmentCount(learners, startDate, endDate, enrolment_data$a)   
+		count <- getEnrolmentCount(enrolment_data[[1]])   
 		valueBox("Enrolled", count, icon = icon("line-chart"), color = "blue")
 	})
 	
 	output$completedCount <- renderValueBox({
 		chartDependency()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		count <- getCompletionCount(learners, startDate, endDate, step_data)
+		count <- getCompletionCount(step_data)
 		valueBox("Completed", count, icon = icon("list"), color = "purple")
 	})
 	
@@ -195,24 +196,27 @@ function(input, output, session) {
 	
 	output$totalComments <- renderValueBox({
 		chartDependency()
+		measuresDependancy()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		comments <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
+		comments <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
 		comments <- sum(comments$comments)
 		valueBox("Comments", paste(comments, "in total"), icon = icon("comment-o"), color = "red")
 	})
 	
 	output$totalReplies <- renderValueBox({
 		chartDependency()
+		measuresDependancy()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		replies <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
+		replies <- getNumberOfRepliesByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
 		replies <- sum(replies$replies)
 		valueBox("Replies", paste(replies, "in total"), icon = icon("reply"), color = "yellow")
 	})
 	
 	output$avgComments <- renderValueBox({
 		chartDependency()
+		measuresDependancy()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		comments <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
+		comments <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
 		comments <- median(comments$comments)
 		valueBox("Comments", paste(comments, "average per learner"), icon = icon("comment-o"), color = "green")
 	})
@@ -220,15 +224,16 @@ function(input, output, session) {
 	
 	output$avgReplies <- renderValueBox({
 		chartDependency()
+		measuresDependancy()
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		replies <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
+		replies <- getNumberOfRepliesByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
 		replies <- median(replies$replies)
 		valueBox("Replies", paste(replies, "average per learner"), icon = icon("reply"), color = "olive")
 	})
 	
 	output$learnerStream <- renderUI({
 		chartDependency()
-		stream <- getSetOfLearnersByDate(courseDates[[3]], courseDates[[1]], enrolment_data$a)
+		stream <- getSetOfLearnersByDate(enrolment_data[[which(names(enrolment_data_data)==input$totalMeasuresRunChooser)]])
 		sets <- unique(stream$set)
 		assign("streamData", stream, envir = .GlobalEnv)
 		selectInput("learnerStreamSelect", label = "Choose a learner stream", choices = sets)
@@ -1165,19 +1170,35 @@ function(input, output, session) {
 		)
 		return(histogram)
 	})
+
+	output$totalMeasuresRunSelector <- renderUI({
+		chartDependency()
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
+		print(selectInput("totalMeasuresRunChooser", label = "Run", choices = runs, width = "550px"))
+	})
 	
 	# Line chart of the average number of comments made per step completion percentage
 	output$avgCommentsCompletionLine <- renderChart2({
 		# Draw the chart when the "chooseCourseButton" is pressed by the user
 		chartDependency()
+		measuresDependancy()
 		# Get number of comments made and steps completed by learner
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
 		# JSR replaced
 		#assign("startDate", input$courseDates[1], envir = .GlobalEnv)
 		#assign("endDate", input$courseDates[2], envir = .GlobalEnv)
 		
-		comments <- getNumberOfCommentsByLearner(learners, input$courseDates[1], input$courseDates[2], comments_data)
-		steps <- getStepsCompleted(learners, input$courseDates[1], input$courseDates[2], step_data)
+		comments <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
+		steps <- getStepsCompleted(step_data[[which(names(step_data)==input$totalMeasuresRunChooser)]])
 		# Round the percentage 
 		steps$completed <- round(steps$completed)
 		# Merge the two data frame together
@@ -1190,7 +1211,7 @@ function(input, output, session) {
 		plotData <- ddply(plotData, ~completed, summarise, comments = mean(comments))
 		# Create the line chart and pass in some options
 		lineChart <- Highcharts$new()
-		lineChart$chart (type = "line", width = 380, height = 210)
+		lineChart$chart (type = "line", width = 1200, height = 600)
 		lineChart$series (
 			name = "Comments",
 			data = toJSONArray2(plotData, json = FALSE, names = FALSE),

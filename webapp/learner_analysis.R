@@ -33,20 +33,20 @@ getAllLearners <- function (data) {
 }
 
 #gets the number of enroled students during the specified period
-getEnrolmentCount <- function (learners, startDate, endDate, data) {
+getEnrolmentCount <- function (data) {
 	data$enrolled_at <- as.POSIXct(data$enrolled_at, format = "%Y-%m-%d", tz = "GMT")
 	data <- subset(data, enrolled_at >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	data <- subset(data, enrolled_at <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
 	learners <- as.vector(data$learner_id)
-	count <- length(learners)
+	# count <- length(learners)
 	return (count)
 }
 
-getEnrolmentByDateTime <- function (learners, startDate, endDate, data) {
+getEnrolmentByDateTime <- function (data) {
 	data$enrolled_at <- as.POSIXct(data$enrolled_at, format = "%Y-%m-%d %H", tz= "GMT")
 	data$unenrolled_at <- as.POSIXct(data$unenrolled_at, format = "%Y-%m-%d %H", tz= "GMT")
-	data <- subset(data, learner_id %in% learners)
-	data <- subset(data, enrolled_at >= as.POSIXct(startDate))
+	# data <- subset(data, learner_id %in% learners)
+	# data <- subset(data, enrolled_at >= as.POSIXct(startDate))
 	mdata <- melt(data, id = c("enrolled_at"), na.rm = TRUE)
 	pivotEnrolled <- dcast(mdata, enrolled_at ~., length)
 	colnames(pivotEnrolled) <- c("timestamp", "enroled") 
@@ -69,8 +69,8 @@ getEnrolmentByDateTime <- function (learners, startDate, endDate, data) {
 
 
 #gets the number of students who completed the course (at least 95% of the steps)
-getCompletionCount <- function (learners, startDate, endDate, data) {
-	completedCourse <- getStepsCompleted(learners, startDate, endDate, data)
+getCompletionCount <- function (data) {
+	completedCourse <- getStepsCompleted(data)
 	completedCourse <- subset(completedCourse, completed >= 95)
 	count <- nrow(completedCourse)
 	return (count)
@@ -78,11 +78,11 @@ getCompletionCount <- function (learners, startDate, endDate, data) {
 
 
 #for each learner in the parameter get the total number of comments made
-getNumberOfCommentsByLearner <- function (learners, startDate, endDate, data){
+getNumberOfCommentsByLearner <- function (data){
 	data$timestamp <- as.Date(data$timestamp, format = "%Y-%m-%d")
 #   data <- subset(data, timestamp >= startDate)
 #   data <- subset(data, timestamp <= endDate)
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("author_id", "step"))
 	mdata <- subset(mdata, variable == "id")
 	pivot <- dcast(mdata, author_id ~ ., length)
@@ -91,11 +91,11 @@ getNumberOfCommentsByLearner <- function (learners, startDate, endDate, data){
 }
 
 #gets the number of comments by step made by the specified learners
-getNumberOfCommentsByStep <- function (learners, startDate, endDate, data){
+getNumberOfCommentsByStep <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz= "GMT")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("author_id", "step"))
 	mdata <- subset(mdata, variable == "id")
 	pivot <- dcast(mdata, step ~ ., length)
@@ -104,7 +104,7 @@ getNumberOfCommentsByStep <- function (learners, startDate, endDate, data){
 }
 
 #date-time series of comments made by the specified learners
-getNumberOfCommentsByDate <- function (learners, data){
+getNumberOfCommentsByDate <- function (data){
 	mdata <- melt(data, id = c("author_id", "id"))
 	mdata <- subset(mdata, variable == "timestamp")
 	mdata$value <- as.POSIXct(mdata$value, format = "%Y-%m-%d %H", tz = "GMT")
@@ -118,7 +118,7 @@ getNumberOfCommentsByDate <- function (learners, data){
 
 #gets the number of comments by step and date made by the specified learner
 #the form of the table is ready for conversion to a matrix
-getNumberOfCommentsByDateStep <- function (learners, data){
+getNumberOfCommentsByDateStep <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
@@ -133,7 +133,7 @@ getNumberOfCommentsByDateStep <- function (learners, data){
 
 
 #gets the number of replies by date received by the specified learners
-getNumberOfRepliesByDate <- function (learners,data){
+getNumberOfRepliesByDate <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz = "GMT")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
@@ -146,11 +146,11 @@ getNumberOfRepliesByDate <- function (learners,data){
 }
 
 #gets the number of replies by step received by the specified learners
-getNumberOfRepliesByStep <- function (learners, startDate, endDate, data){
+getNumberOfRepliesByStep <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz = "GMT")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("step", "author_id", "id"), na.rm = TRUE)
 	mdata <- subset(mdata, variable == "parent_id")
 	pivot <- dcast(mdata, step + variable ~ ., length)
@@ -159,11 +159,11 @@ getNumberOfRepliesByStep <- function (learners, startDate, endDate, data){
 }
 
 #for each specified learner find the number of replies he has received
-getNumberOfRepliesByLearner <- function (learners, startDate, endDate, data){
+getNumberOfRepliesByLearner <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz = "GMT")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("step", "author_id", "id"), na.rm = TRUE)
 	mdata <- subset(mdata, variable == "parent_id")
 	pivot <- dcast(mdata, author_id + variable ~ ., length)
@@ -172,11 +172,11 @@ getNumberOfRepliesByLearner <- function (learners, startDate, endDate, data){
 }
 
 #gets the number of likes by step received by the specified learners
-getNumberOfLikesByStep <- function (learners, startDate, endDate, data){
+getNumberOfLikesByStep <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz = "GMT")
 	#data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
 	#data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("author_id", "step"))
 	mdata <- subset(mdata, variable == "likes")
 	mdata$value <- as.numeric(mdata$value)
@@ -186,11 +186,11 @@ getNumberOfLikesByStep <- function (learners, startDate, endDate, data){
 }
 
 #gets the number of likes by date received by the specified learners
-getNumberOfLikesByDate <- function (learners, startDate, endDate, data){
+getNumberOfLikesByDate <- function (data){
 	data$timestamp <- as.POSIXct(data$timestamp, format = "%Y-%m-%d %H", tz = "GMT")
  # data <- subset(data, timestamp >= as.POSIXct(startDate, format = "%Y-%m-%d", tz = "GMT"))
  # data <- subset(data, timestamp <= as.POSIXct(endDate, format = "%Y-%m-%d", tz = "GMT"))
-	data <- subset(data, author_id %in% learners)
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("author_id", "timestamp"))
 	mdata <- subset(mdata, variable == "likes")
 	mdata$value <- as.numeric(mdata$value)
@@ -199,8 +199,8 @@ getNumberOfLikesByDate <- function (learners, startDate, endDate, data){
 	return (pivot[c("timestamp", "likes")])
 }
 
-getNumberOfLikesByLearner <- function (learners, startDate, endDate, data) {
-	data <- subset(data, author_id %in% learners)
+getNumberOfLikesByLearner <- function (data) {
+	# data <- subset(data, author_id %in% learners)
 	mdata <- melt(data, id = c("author_id"))
 	mdata <- subset(mdata, variable == "likes")
 	mdata$value <- as.numeric(mdata$value)
@@ -213,18 +213,15 @@ getNumberOfLikesByLearner <- function (learners, startDate, endDate, data) {
 
 
 #returns time of enrolment and unenrolment of the specified learners
-getEnrolmentTime <- function (learners, startDate, endDate, data){
-	enrolment <- subset(data, learner_id %in% learners)
-	enrolment$enrolled_at <- as.POSIXct(enrolment$enrolled_at, format = "%Y-%m-%d %H", tz= "GMT")
+getEnrolmentTime <- function (data){
+	# enrolment <- subset(data, learner_id %in% learners)
+	enrolment$enrolled_at <- as.POSIXct(data$enrolled_at, format = "%Y-%m-%d %H", tz= "GMT")
 	#enrolment <- subset(enrolment, value >= as.POSIXct(startDate))
 	return (enrolment)
 }
 
 #date-time series of quiz answers submitted by the specified learners
-getNumberOfResponsesByDateTime <- function (learners, startDate, endDate, data){
-	
-	print(data)
-	
+getNumberOfResponsesByDateTime <- function (data){
 	
 	mdata <- melt(data, id = c("learner_id", "quiz_question"))
 	mdata <- subset(mdata, variable == "submitted_at")
@@ -242,13 +239,13 @@ getNumberOfResponsesByDateTime <- function (learners, startDate, endDate, data){
 	
 	pivot <- dcast(mdata, value + learner_id ~ ., length)
 	colnames(pivot)[c(1,3)] <- c("timestamp", "submits")
-	count <- subset(pivot, learner_id %in% learners)
+	# count <- subset(pivot, learner_id %in% learners)
 	count <- ddply(count, ~timestamp, summarise, submits = sum(submits))
 	return (count[c("timestamp", "submits")])
 }
 
-getNumberOfResponsesByLearner <- function (learners, startDate, endDate, data){
-	data <- subset(data, learner_id %in% learners)
+getNumberOfResponsesByLearner <- function (data){
+	# data <- subset(data, learner_id %in% learners)
 	mdata <- melt(data, id = c("learner_id"))
 	mdata <- subset(mdata, variable == "quiz_question")
 	pivot <- dcast(mdata, learner_id  ~ ., length)
@@ -256,9 +253,9 @@ getNumberOfResponsesByLearner <- function (learners, startDate, endDate, data){
 	return (pivot)
 }
 
-getPercentageOfAnsweredQuestions <- function (learners, startDate, endDate, data) {
+getPercentageOfAnsweredQuestions <- function (data) {
 	questions <- as.vector(unique(data$quiz_question))
-	mdata <- melt(data, id = c("learner_id"))
+	# mdata <- melt(data, id = c("learner_id"))
 	mdata <- subset(mdata, variable == "quiz_question")
 	mdata<- unique(mdata)
 	pivot <- dcast(mdata, learner_id ~ ., length)
@@ -268,7 +265,7 @@ getPercentageOfAnsweredQuestions <- function (learners, startDate, endDate, data
 }
 
 #gets the percentage of correct and wrong answers for the specified learners
-getResponsesPercentage <- function (learners, startDate, endDate, data){
+getResponsesPercentage <- function (data){
 	data$submitted_at <- as.POSIXct(data$submitted_at, format = "%Y-%m-%d %H", tz= "GMT")
 #  data <- subset(data, submitted_at >= as.POSIXct(startDate))
 	mdata <- melt(quiz_data, id = c("learner_id"))
@@ -282,13 +279,13 @@ getResponsesPercentage <- function (learners, startDate, endDate, data){
 	finalPivot <- merge(correctPivot, wrongPivot)
 	finalPivot$correct <- (finalPivot$correct_count / (finalPivot$wrong_count + finalPivot$correct_count)) * 100
 	finalPivot$wrong <- (finalPivot$wrong_count / (finalPivot$wrong_count + finalPivot$correct_count)) * 100
-	percentage <- subset(finalPivot, learner_id %in% learners)
+	# percentage <- subset(finalPivot, learner_id %in% learners)
 	return (percentage[c("learner_id", "correct", "wrong")])
 }
 
 #for each step and date-time, gets the number of students who have visited and completed it
-getStepActivity <- function(learners, startDate, endDate, data){
-	data <- subset(data, learner_id %in% learners)
+getStepActivity <- function(data){
+	# data <- subset(data, learner_id %in% learners)
 	mdata <- melt(data, id = c("step"), na.rm = TRUE)
 	visited <- subset(mdata, variable == c("first_visited_at"))
 	completed <- subset(mdata, variable == c("last_completed_at"))
@@ -307,9 +304,9 @@ getStepActivity <- function(learners, startDate, endDate, data){
 }
 
 #for the specified learners, gets the percentage of completed steps
-getStepsCompleted <- function (learners, startDate, endDate, data){
+getStepsCompleted <- function (data){
 	step_levels <- as.vector(unique(data$step))
-	data <- subset(data, learner_id %in% learners)  
+	# data <- subset(data, learner_id %in% learners)  
 #   data <- subset(data, as.Date(first_visited_at, format = "%Y-%m-%d") >= startDate)
 #   data <- subset(data, as.Date(first_visited_at, format = "%Y-%m-%d") <= endDate)
 	mdata <- melt(data, id = c("learner_id", "step"), na.rm = TRUE)
