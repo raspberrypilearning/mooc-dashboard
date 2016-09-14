@@ -1629,15 +1629,15 @@ function(input, output, session) {
 		}
 		withProgress(message = "Processing Comments",{
 			data <- getCommentViewerData(comments_data, viewPressed())
+			data$likes <- as.integer(data$likes)
 			DT::datatable(
-				data[,c("course","timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+				data[,c("timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 				colnames = c(
-					"Course" = 1,
-					"Date" = 2,
-					"Step" = 3,
-					"Comment" = 4,
-					"Part of a Thread?" = 5,
-					"Likes" = 6
+					"Date" = 1,
+					"Step" = 2,
+					"Comment" = 3,
+					"Part of a Thread?" = 4,
+					"Likes" = 5
 				),
 				options = list(
 					scrollY = "700px",
@@ -1672,55 +1672,57 @@ function(input, output, session) {
 		chartDependency()
 		viewPressed()
 		threadSelected()
-		data <- getCommentViewerData(comments_data, viewPressed())
-		selectedRow <- data[input$commentViewer_rows_selected,]
-		if(selectedRow$thread != "Yes"){
-			return()
-		}
-		reply = TRUE
-		parent = FALSE
-		if(is.na(selectedRow$parent_id)){
-			reply = FALSE
-			parent = TRUE
-		}
-		if(parent){
-			rows <- data[c(which(data$id == selectedRow$id), which(data$parent_id == selectedRow$id)),]
-		} else {
-			rows <- data[c(which(data$id == selectedRow$parent_id), which(data$parent_id == selectedRow$parent_id),  which(data$id == selectedRow$id)),]
-		}
+		withProgress(message = "Retrieving Thread",{
+			data <- getCommentViewerData(comments_data, viewPressed())
+			data$likes <- as.integer(data$likes)
+			selectedRow <- data[input$commentViewer_rows_selected,]
+			if(selectedRow$thread != "Yes"){
+				return()
+			}
+			reply = TRUE
+			parent = FALSE
+			if(is.na(selectedRow$parent_id)){
+				reply = FALSE
+				parent = TRUE
+			}
+			if(parent){
+				rows <- data[c(which(data$id == selectedRow$id), which(data$parent_id == selectedRow$id)),]
+			} else {
+				rows <- data[c(which(data$id == selectedRow$parent_id), which(data$parent_id == selectedRow$parent_id),  which(data$id == selectedRow$id)),]
+			}
 
-		rows <- rows[order(rows$timestamp),]
+			rows <- rows[order(rows$timestamp),]
 
-		DT::datatable(
-			rows[,c("course","timestamp","week_step","text","likes")], class = 'cell-border stripe', extensions = 'Buttons',
-			colnames = c(
-				"Course" = 1,
-				"Date" = 2,
-				"Step" = 3,
-				"Comment" = 4,
-				"Likes" = 5
-			),
-			options = list(
-				scrollY = "700px",
-				lengthMenu = list(c(10,20,30),c('10','20','30')),
-				pageLength = 20,
-				dom = 'lfrtBip',
-				buttons = list(
-					"print", 
-					list(
-						extend = 'pdf',
-						filename = 'Comment Thread',
-						text = 'Download pdf'
-					),
-					list(
-						extend = 'excel',
-						filename = 'Comment Thread',
-						text = 'Download Excel'
+			DT::datatable(
+				rows[,c("timestamp","week_step","text","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+				colnames = c(
+					"Date" = 1,
+					"Step" = 2,
+					"Comment" = 3,
+					"Likes" = 4
+				),
+				options = list(
+					scrollY = "700px",
+					lengthMenu = list(c(10,20,30),c('10','20','30')),
+					pageLength = 20,
+					dom = 'lfrtBip',
+					buttons = list(
+						"print", 
+						list(
+							extend = 'pdf',
+							filename = 'Comment Thread',
+							text = 'Download pdf'
+						),
+						list(
+							extend = 'excel',
+							filename = 'Comment Thread',
+							text = 'Download Excel'
+						)
 					)
-				)
-			),
-			rownames = FALSE
-		)
+				),
+				rownames = FALSE
+			)
+		})
 	})
 
 	wordcloud_rep <- repeatable(wordcloud)

@@ -265,7 +265,7 @@ body <- dashboardBody(
 				box(
 					DT::dataTableOutput("threadViewer"),
 					title = "Comment Thread Viewer", 
-					status = "primary", solidHeader = TRUE, width = 12, height = 950 ,collapsible = TRUE
+					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
 				)
 			)
 		),
