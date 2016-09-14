@@ -231,19 +231,11 @@ function(input, output, session) {
 		valueBox("Replies", paste(replies, "average per learner"), icon = icon("reply"), color = "olive")
 	})
 	
-	output$learnerStream <- renderUI({
-		chartDependency()
-		stream <- getSetOfLearnersByDate(enrolment_data[[which(names(enrolment_data_data)==input$totalMeasuresRunChooser)]])
-		sets <- unique(stream$set)
-		assign("streamData", stream, envir = .GlobalEnv)
-		selectInput("learnerStreamSelect", label = "Choose a learner stream", choices = sets)
-	})
-	
 	observeEvent(input$scatterSlopeValue, {
 		output$scatterSlope <- renderValueBox({
 			chartDependency()
 			input$plotScatterButton
-			valueBox("Slope", input$scatterSlopeValue, icon = icon("line-chart"), color = "red")
+			valueBox("Slope", input$scatterSlopeValue, icon = icon("line-chart"), color = "red", width = 12)
 		})
 	})
 	
@@ -1183,7 +1175,8 @@ function(input, output, session) {
 		if(input$run4 != "None"){
 			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
 		}
-		print(selectInput("totalMeasuresRunChooser", label = "Run", choices = runs, width = "550px"))
+		print(selectInput("totalMeasuresRunChooser", label = "Run",
+		 choices = runs, width = "550px"))
 	})
 	
 	# Line chart of the average number of comments made per step completion percentage
@@ -1224,86 +1217,105 @@ function(input, output, session) {
 	
 	#END: CHARTS - COMMENTS ORIENTATED
 	
+	measuresDependancy <- eventReactive(input$plotScatterButton, {})
+
+	output$correlationsRunSelector <-renderUI({
+		chartDependency()
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
+		print(selectInput("correlationsRunChooser", label = "Run",
+		 choices = runs, width = "550px"))
+	})
+
 	#START: CHARTS - OTHER
 	# Scatter plot
 	output$scatterPlot <- renderChart2({
 		# Draw the chart when the "chooseCourseButton" AND the "plotScatterButton" are pressed by the user
 		chartDependency()
-		input$plotScatterButton
+		measuresDependancy()
+		# input$plotScatterButton
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
 		# In case the user has selected the same values for x and y, display an error message
-		validate(
+		shiny::validate(
 			need(isolate(input$scatterX) != isolate(input$scatterY),
 					 "X and Y values cannot be identical. Please, choose different ones.")
 		)
 		# Check selected input for x and get the according data
 		if (isolate(input$scatterX) == "comments") {
-			x <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
+			x <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data) == input$correlationsRunChooser)]])
 			xAxisTitle <- "Comments"
 		}
 		else if (isolate(input$scatterX) == "replies") {
-			x <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
+			x <- getNumberOfRepliesByLearner(comments_data[[which(names(comments_data) == input$correlationsRunChooser)]])
 			xAxisTitle <- "Replies"
 		}
 		else if (isolate(input$scatterX) == "likes") {
-			x <- getNumberOfLikesByLearner(learners, startDate, endDate, comments_data)
+			x <- getNumberOfLikesByLearner(comments_data[[which(names(comments_data) == input$correlationsRunChooser)]])
 			xAxisTitle <- "Likes"
 		}
 		else if (isolate(input$scatterX) == "answers") {
-			x <- getNumberOfResponsesByLearner(learners, startDate, endDate, quiz_data)
+			x <- getNumberOfResponsesByLearner(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			xAxisTitle <- "Answers"
 		}
 		else if (isolate(input$scatterX) == "steps") {
-			x <- getStepsCompleted(learners, startDate, endDate, step_data)
+			x <- getStepsCompleted(step_data[[which(names(step_data) == input$correlationsRunChooser)]])
 			xAxisTitle <- "Completed (%)"
 		}
 		else if (isolate(input$scatterX) == "correct") {
-			x <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
+			x <- getResponsesPercentage(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			x <- x[c("learner_id", "correct")]
 			xAxisTitle <- "Correct (%)"
 		}
 		else if (isolate(input$scatterX) == "wrong") {
-			x <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
+			x <- getResponsesPercentage(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			x <- x[c("learner_id", "wrong")]
 			xAxisTitle <- "Wrong (%)"
 		}
 		else if (isolate(input$scatterX) == "questions") {
-			x <- getPercentageOfAnsweredQuestions(learners, startDate, endDate, quiz_data)
+			x <- getPercentageOfAnsweredQuestions(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			xAxisTitle <- "Questions (%)"
 		}
 		# Check selected input for y and get the according data
 		if (isolate(input$scatterY) == "comments") {
-			y <- getNumberOfCommentsByLearner(learners, startDate, endDate, comments_data)
+			y <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data) == input$correlationsRunChooser)]])
 			yAxisTitle <- "Comments"
 		}
 		else if (isolate(input$scatterY) == "replies") {
-			y <- getNumberOfRepliesByLearner(learners, startDate, endDate, comments_data)
+			y <- getNumberOfRepliesByLearner(comments_data[[which(names(comments_data) == input$correlationsRunChooser)]])
 			yAxisTitle <- "Replies"
 		}
 		else if (isolate(input$scatterY) == "likes") {
-			y <- getNumberOfLikesByLearner(learners, startDate, endDate, comments_data)
+			y <- getNumberOfLikesByLearner(comments_data[[which(names(comments_data) == input$correlationsRunChooser)]])
 			yAxisTitle <- "Likes"
 		}
 		else if (isolate(input$scatterY) == "answers") {
-			y <- getNumberOfResponsesByLearner(learners, startDate, endDate, quiz_data)
+			y <- getNumberOfResponsesByLearner(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			yAxisTitle <- "Answers"
 		}
 		else if (isolate(input$scatterY) == "steps") {
-			y <- getStepsCompleted(learners, startDate, endDate, step_data)
+			y <- getStepsCompleted(step_data[[which(names(step_data) == input$correlationsRunChooser)]])
 			yAxisTitle <- "Completed (%)"
 		}
 		else if (isolate(input$scatterY) == "correct") {
-			y <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
+			y <- getResponsesPercentage(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			y <- y[c("learner_id", "correct")]
 			yAxisTitle <- "Correct (%)"
 		}
 		else if (isolate(input$scatterY) == "wrong") {
-			y <- getResponsesPercentage(learners, startDate, endDate, quiz_data)
+			y <- getResponsesPercentage(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			y <- y[c("learner_id", "wrong")]
 			yAxisTitle <- "Wrong (%)"
 		}
 		else if (isolate(input$scatterY) == "questions") {
-			y <- getPercentageOfAnsweredQuestions(learners, startDate, endDate, quiz_data)
+			y <- getPercentageOfAnsweredQuestions(quiz_data[[which(names(quiz_data) == input$correlationsRunChooser)]])
 			yAxisTitle <- "Questions (%)"
 		}
 		# Merge the x and y data frames together and rename the columns
@@ -1328,7 +1340,7 @@ function(input, output, session) {
 		regressionData <- rbind(startPoint, endPoint)
 		# Create the scatter plot and pass in some options
 		scatter <- hPlot(x ~ y, data = plotData, type = "scatter", color = "completed")
-		scatter$chart (width = 1500)
+		scatter$chart (width = 1200, height = 600, zoomType = "xy")
 		scatter$series (list(
 			list(
 				data = toJSONArray2(regressionData, json = FALSE, names = FALSE), 
@@ -1339,7 +1351,6 @@ function(input, output, session) {
 		scatter$yAxis (title = list(text = xAxisTitle), ticks = 15, min = 0, max = 100)
 		scatter$tooltip (formatter = "#! function() { return 'Comments: '     + this.point.y + '<br />' +
 																 'Completed: '    + this.point.x.toFixed(2)  + '<br />'; } !#")
-		scatter$chart (zoomType = "xy")
 		
 		return (scatter)
 	})
@@ -1349,11 +1360,11 @@ function(input, output, session) {
 		learners <- unlist(strsplit(input$filteredStreams, "[,]"))
 		#calculate the comments, like and replies by date
 
-		comments <- getNumberOfCommentsByDate(learners, startDate, endDate, comments_data)
-		likes <-  getNumberOfLikesByDate(learners, startDate, endDate, comments_data)
-		replies <- getNumberOfRepliesByDate(learners, startDate, endDate, comments_data)
-		answers <- getNumberOfResponsesByDateTime(learners, startDate, endDate, quiz_data)
-		enrolment <- getEnrolmentByDateTime(learners, startDate, endDate, enrolment_data)
+		comments <- getNumberOfCommentsByDate(comments_data)
+		likes <-  getNumberOfLikesByDate(comments_data)
+		replies <- getNumberOfRepliesByDate(comments_data)
+		answers <- getNumberOfResponsesByDateTime(quiz_data)
+		enrolment <- getEnrolmentByDateTime(enrolment_data)
 		
 		#convert them to time series objects so dygraph can plot them
 		commentsXts <- xts(as.matrix(comments[,-1]),as.POSIXct(comments[,1],format='%Y-%m-%d %H', tz= "GMT"))

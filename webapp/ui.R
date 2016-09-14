@@ -289,26 +289,24 @@ body <- dashboardBody(
 		),
 		tabItem(tabName = "correlations",
 			fluidRow(
-				box(htmlOutput("scatterPlot"),
-					textInput("scatterSlopeValue", ""),
-					title = "Scatter plot", 
+				box(uiOutput("correlationsRunSelector"),
+					selectInput("scatterX", label = "Choose Series for y", 
+						choices = scatterChoices, selected = "comments",width = 550),
+					selectInput("scatterY", label = "Choose Series for x", 
+						choices = scatterChoices, selected = "steps", width = 550),
+					actionButton("plotScatterButton", label = "Plot"),
+					title = "Selector",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
 			),#fluidRow
 			fluidRow(
-				box(selectInput("scatterX", label = "Choose Series for y", 
-						choices = scatterChoices, selected = "comments"),
-					selectInput("scatterY", label = "Choose Series for x", 
-						choices = scatterChoices, selected = "steps"),
-					actionButton("plotScatterButton", label = "Plot"),
-					status = "primary", solidHeader = FALSE, width = 6, collapsible = TRUE),
-				box(uiOutput("learnerStream"),
-					textInput("filteredStreams", ""),
-					status = "primary", solidHeader = FALSE, width = 6, collapsible = TRUE
-				)
-			),#fluidRow
+				box(htmlOutput("scatterPlot"),
+					textInput("scatterSlopeValue", ""),
+					title = "Scatter plot", 
+					status = "primary", solidHeader = TRUE, width = 12,height = 700, collapsible = TRUE)
+			),
 			fluidRow(
 				valueBoxOutput("scatterSlope", width = 6)
-			)
+			)#fluidRow
 		),
 		tabItem(tabName = "cumulative_measures", 
 			fluidRow(
