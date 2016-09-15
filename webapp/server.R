@@ -47,6 +47,10 @@ function(input, output, session) {
 	# Executes after user has clicked the "chooseCourseButton"
 	
 	observeEvent(input$chooseCourseButton, {
+
+		withProgress(message = "Loading Data", value = 0, {
+
+		n <- 8
 		
 		output$pageTitle <- renderText(paste(input$course1, "- [", substr(input$run1,1,1), "]",
 		ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
@@ -60,23 +64,37 @@ function(input, output, session) {
 		stepDataFiles <- getData("Activity")
 		assign("step_data", stepDataFiles, envir = .GlobalEnv)
 
+		incProgress(1/n, detail = "Loaded Step Data")
+
 		commentsDataFiles <- getData("Comments")
 		assign("comments_data", commentsDataFiles, envir = .GlobalEnv)
+
+		incProgress(1/n, detail = "Loaded Comment Data")
 
 		quizDataFiles <- getData("Quiz")
 		assign("quiz_data", quizDataFiles, envir = .GlobalEnv)
 
+		incProgress(1/n, detail = "Loaded Quiz Data")
+
 		assignmentsDataFiles <- getData("Assignments")
 		assign("assignments_data", assignmentsDataFiles, envir = .GlobalEnv)
+
+		incProgress(1/n, detail = "Loaded assignment Data")
 
 		reviewsDataFiles <- getData("Reviews")
 		assign("reviews_data", reviewsDataFiles, envir = .GlobalEnv)
 
+		incProgress(1/n, detail = "Loaded Review Data")
+
 		enrolmentsDataFiles <- getData("Enrolments")
 		assign("enrolment_data", enrolmentsDataFiles, envir = .GlobalEnv)
 
+		incProgress(1/n, detail = "Loaded Enrolments Data")
+
 		courseMetaData <- getMetaData()
 		assign("course_data", courseMetaData, envir = .GlobalEnv)
+
+		incProgress(1/n, detail = "Loaded Meta Data")
 
 		# enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course1,input$run1,"enrolments.csv")
 		assign("pre_course_data", do.call("rbind",enrolment_data) , envir = .GlobalEnv)
@@ -86,6 +104,9 @@ function(input, output, session) {
 		assign("filtersEnabled", FALSE, envir = .GlobalEnv)
 		updateTextInput(session, "filteredLearners", value = allLearners)
 
+		incProgress(1/n, detail = "Finished")
+
+		})
 		
 	}, priority = 10)
 
