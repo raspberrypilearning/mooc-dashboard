@@ -1970,11 +1970,8 @@ function(input, output, session) {
 		return(a)
 	})
 
-	output$statementLearnerMap <- renderGvis({
-		chartDependency()
-		
-		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown"), ])
-		data <- data[which(data$purchased_statement_at != ""),]
+	output$statementLearnerMap <- renderGvis({		
+		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown" & pre_course_data$purchased_statement_at != ""), ])
 		assign("fullCountryData", data[[1]], envir = .GlobalEnv)
 		plotData <- data[[2]]
 		jscode <- "var sel = chart.getSelection();  

@@ -40,8 +40,9 @@ sidebar <- dashboardSidebar(
 		menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
 		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
 		menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart")),
-		menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag")),
-		menuItem("Debug", tabName = "debug")
+		menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
+		# ,
+		# menuItem("Debug", tabName = "debug")
 	)#sidebarMenu
 )
 
@@ -161,7 +162,6 @@ body <- dashboardBody(
 					title = "Country Data",
 					id = "statementsRegionalTabBox",
 					width = 12,
-					height = 1600,
 					tabPanel("Countrys", htmlOutput("statementLearnerMap")),
 					tabPanel("HDI", showOutput("allvsFPvsStateHDIColumn", "highcharts"))
 				)
@@ -329,13 +329,14 @@ body <- dashboardBody(
 						 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE)
 				)#column
 			)#fluidRow
-		),#tabItem
-		tabItem(tabName = "debug",
-			fluidRow(
-				box(textOutput("debug"),
-					width = 12)
-			)
 		)
+		# ,#tabItem
+		# tabItem(tabName = "debug",
+		# 	fluidRow(
+		# 		box(textOutput("debug"),
+		# 			width = 12)
+		# 	)
+		# )
 	),
 	tags$h5(textOutput("updatedTime"))
 )# dashboardBody
