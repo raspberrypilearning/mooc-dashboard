@@ -136,12 +136,12 @@ body <- dashboardBody(
 		),
 		tabItem(tabName = "statementDemographics",
 			fluidRow(
-				box(showOutput("AllvsFPvsStateAgeBar","highcharts"),
+				box(showOutput("stateAgeColumn","highcharts"),
 					title = "Statements Sold Age Ranges",
 					status = "primary", solidHeader = TRUE, width = 8, height = 500,collapsible = TRUE
 				),
 				box(
-					showOutput("AllvsFPvsStateGenderColumn","highcharts"),
+					showOutput("stateGenderColumn","highcharts"),
 					title = "Statements Sold Gender",
 					status = "primary", solidHeader = TRUE, width = 4, height = 500,collapsible = TRUE
 				)
@@ -152,9 +152,9 @@ body <- dashboardBody(
 					id = "StatementsEmploymentTabBox",
 					width = 12,
 					height = 730,
-					tabPanel("Area", showOutput("AllvsFPvsStateEmploymentAreaBar", "highcharts")),
-					tabPanel("Status", showOutput("AllvsFPvsStateEmploymentStatusBar", "highcharts")),
-					tabPanel("Degree", showOutput("AllvsFPvsStateDegreeBar", "highcharts"))
+					tabPanel("Area", showOutput("stateEmploymentAreaBar", "highcharts")),
+					tabPanel("Status", showOutput("stateEmploymentStatusColumn", "highcharts")),
+					tabPanel("Degree", showOutput("stateDegreeColumn", "highcharts"))
 				)
 			),
 			fluidRow(
@@ -162,8 +162,8 @@ body <- dashboardBody(
 					title = "Country Data",
 					id = "statementsRegionalTabBox",
 					width = 12,
-					tabPanel("Countrys", htmlOutput("statementLearnerMap")),
-					tabPanel("HDI", showOutput("allvsFPvsStateHDIColumn", "highcharts"))
+					tabPanel("Countrys", htmlOutput("stateLearnerMap")),
+					tabPanel("HDI", showOutput("stateHDIColumn", "highcharts"))
 				)
 			)
 		),

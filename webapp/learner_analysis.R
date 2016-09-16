@@ -3,6 +3,7 @@ library(RMySQL)
 library(xts)
 library(networkD3)
 
+# Unused function that used to take a csv filename and return the data.
 getRawData <- function (filename, type) {
 	if (type == "step" || type == "comments") {
 		data <- read.csv(filename, na.strings=c("","NA"), colClasses = "character")
@@ -20,6 +21,8 @@ getRawData <- function (filename, type) {
 	}
 }
 
+# Takes data with week numbers and step numbers, and returns a vector of the weeks and steps concatenated together.
+# Fixes the issue of steps 1.1 and 1.10 being equivalent when they're not.
 getWeekStep <- function(data){
 	weekStep <- paste0(data$week_number,".", sprintf("%02d",as.integer(data$step_number)), sep = "")
 	return(weekStep)
@@ -592,6 +595,7 @@ getSetOfLearnersByDate <- function(courseDuration, startDate, enrolment){
 
 }
 
+# Filters out step data that is not completed with week step.
 getStepsCompletedData <- function(stepData){
 	data <- stepData
 	completedSteps <- subset(data, last_completed_at != "")
@@ -600,6 +604,7 @@ getStepsCompletedData <- function(stepData){
 	return (stepsCount)
 }
 
+# Returns the heat map of step completion, requires step data and the start date of the run
 getStepCompletionHeatMap <- function(stepData, startDate){
 	data <-stepData
 	completedSteps <- subset(data, last_completed_at != "")
@@ -615,6 +620,7 @@ getStepCompletionHeatMap <- function(stepData, startDate){
 	return(map)
 }
 
+# Returns the heat map of first visited, requires step data and the start date of the run
 getFirstVisitedHeatMap <- function(stepData, startDate){
 	data <-stepData
 	data$week_step <- getWeekStep(data)
@@ -629,6 +635,7 @@ getFirstVisitedHeatMap <- function(stepData, startDate){
 	return(map)
 }
 
+# Returns the comments heat map, requires comments data and the start date of the run
 getCommentsHeatMap <- function(commentsData, startDate){
 	data <- commentsData
 	data$week_step <- getWeekStep(data)
@@ -643,6 +650,7 @@ getCommentsHeatMap <- function(commentsData, startDate){
 	return(map)
 }
 
+# Returns the plot data for comments per step, requires step data and comment data.
 getCommentsBarChart <- function(stepData,comments){
 	steps <- stepData
 	data <- comments
@@ -664,6 +672,7 @@ getCommentsBarChart <- function(stepData,comments){
 	return(plotData)
 }
 
+#Returns the plot data for comments per week, just requires the comments data.
 getCommentsBarChartWeek <- function(comments){
 	data <- comments
 	stepLevels <- unique(data$week_number)
@@ -683,6 +692,7 @@ getCommentsBarChartWeek <- function(comments){
 	return(plotData)
 }
 
+#Returns the plot data for number of authors per week, requires the comments data.
 getNumberOfAuthorsByWeek <- function (comments){
   data <- comments
   stepLevels <- sort(unique(data$week_number))
@@ -695,6 +705,7 @@ getNumberOfAuthorsByWeek <- function (comments){
   return(plotData)
 }
 
+# Takes enrolment data and returns counts for each gender.
 getGenderCount <- function(enrolmentData){
 	data <- enrolmentData
 	gender <- as.character(data$gender)
@@ -707,6 +718,7 @@ getGenderCount <- function(enrolmentData){
 	return(genderCount)
 }
 
+# Takes enrolment data and returns counts for each age group.
 getLearnerAgeCount <- function(enrolmentData){
 	data <- enrolmentData
 	age <- as.character(data$age_range)
@@ -719,6 +731,7 @@ getLearnerAgeCount <- function(enrolmentData){
 	return(ageCount)
 }
 
+# Takes enrolment data and returns counts for each employment area.
 getEmploymentAreaCount <- function(enrolmentData){
 	enrolments <- enrolmentData
 	employment <- as.character(enrolments$employment_area)
@@ -731,6 +744,7 @@ getEmploymentAreaCount <- function(enrolmentData){
 	return(employmentCount)
 }
 
+# Takes enrolments data and returns counts for each employment status.
 getEmploymentStatusCount <- function(enrolmentData){
 	enrolments <- enrolmentData
 	status <- as.character(enrolments$employment_status)
@@ -743,6 +757,7 @@ getEmploymentStatusCount <- function(enrolmentData){
 	return(statusCount)
 }
 
+# Takes enrolment data and returns counts for each education level.
 getEmploymentDegreeCount <- function(enrolmentData){
   enrolments <- enrolmentData
   status <- as.character(enrolments$highest_education_level)
@@ -754,6 +769,7 @@ getEmploymentDegreeCount <- function(enrolmentData){
   return(statusCount)
 }
 
+# Returns comment data in the format needed for the comment viewer, takes the overall comment data and which run.
 getCommentViewerData <- function(commentData, run){
 	data <- commentData[[which(names(commentData) == run)]]
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
@@ -778,6 +794,7 @@ getSurveyResponsesFromStatementBuyers <- function(enrolmentData){
 	return(responses)
 }
 
+# Unused, was used to count all data, fully participating data and statement sold data and present them together.
 getAllvsFPvsStateData <-function(all, fp, state){
 	allCount <- count(all)
 	allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
@@ -813,6 +830,7 @@ getAllvsFPvsStateData <-function(all, fp, state){
 	return(data)
 }
 
+# Converts two letter country code data to the corresponding HDI level, has a hard coded dictionary.
 countryCodesToHDI <- function(countryCodes){
   table <- data.frame(code = unlist(strsplit(
     "AF,AL,DZ,AD,AO,AG,AR,AM,AU,AT,AZ,BS,BH,BD,BB,BY,BE,BZ,BJ,BT,BO,BA,BW,BR,BN,BG,BF,BI,KH,CM,CA,CV,CF,TD,CL,CN,CO,KM,CG,CD,CR,HR,CU,CY,CZ,DK,DJ,DM,DO,EC,EG,SV,GQ,ER,EE,ET,FJ,FI,FR,GA,GM,GE,DE,GH,GR,GD,GT,GN,GW,GY,HT,HN,HK,HU,IS,IN,ID,IR,IQ,IE,IL,IT,JM,JP,JO,KZ,KE,KI,KR,KW,KG,LA,LV,LB,LS,LR,LY,LI,LT,LU,MK,MG,MW,MY,MV,ML,MT,MR,MU,MX,FM,MD,MN,ME,MA,MZ,MM,NA,NP,NL,NZ,NI,NE,NG,NO,OM,PK,PW,PS,PA,PG,PY,PE,PH,PL,PT,QA,RO,RU,RW,KN,LC,VC,WS,ST,SA,SN,RS,SC,SL,SG,SK,SI,SB,ZA,SS,ES,LK,SD,SR,SZ,SE,CH,SY,TJ,TZ,TH,TL,TG,TO,TT,TN,TR,TM,UG,UA,AE,GB,US,UY,UZ,VU,VE,VN,YE,ZM,ZW,JE,IM,GG,TW,BM,VI,XK,SO,PR,UM,CI,BV,RE,AQ,CW,TC,AN,AI,TV,FK,GS,MF,PF,KY,NU,GI,YT",

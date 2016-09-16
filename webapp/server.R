@@ -43,7 +43,9 @@ function(input, output, session) {
 	shinyjs::hide("filteredStreams")
 	shinyjs::hide("scatterSlopeValue")
 	
-	# Load the raw csv files for the selected course and assign them to global variables
+	# Load the necessary data from the SQL database for each of the runs, store the types of data,
+	# step data, comment data, enrolment data, quiz data, review data, course meta data, for each of the 
+	# runs in a list of data frames
 	# Executes after user has clicked the "chooseCourseButton"
 	
 	observeEvent(input$chooseCourseButton, {
@@ -96,7 +98,6 @@ function(input, output, session) {
 
 		incProgress(1/n, detail = "Loaded Meta Data")
 
-		# enrolmentDataFile <- file.path(getwd(),"../data",institution,input$course1,input$run1,"enrolments.csv")
 		assign("pre_course_data", do.call("rbind",enrolment_data) , envir = .GlobalEnv)
 
 		assign("allLearners", getAllLearners(enrolmentsDataFiles), envir = .GlobalEnv)
@@ -109,7 +110,8 @@ function(input, output, session) {
 		})
 		
 	}, priority = 10)
-
+	
+	# Queries the course meta data table
 	getMetaData <- function(){
 		run1 <- substr(input$run1,1,1)
 		if(run1 != "A"){
@@ -138,6 +140,8 @@ function(input, output, session) {
 		return(datasets)
 	}
 
+	# Runs SQL queries for each of the selected runs with the sql table to query as a parameter
+	# and returns the data as a list of dataframes
 	getData <- function(table){
 		data1 <- getTable(table, input$course1,input$run1)
 		name <- paste(c(input$course1,substr(input$run1,1,1)), collapse = " - ")
@@ -158,9 +162,11 @@ function(input, output, session) {
 		return(datasets)
 	}
 
+	#Needs to be converted to use getMetaData
 	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Deets","Courses-Data.csv"))
 	assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
+	# Various Dependencies which stop graphs from attemping to be created without the required data selected first.
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
 	stepDependancy <- eventReactive(input$runChooserSteps, {})
 	commentDependancy <- eventReactive(input$runChooserComments, {})
@@ -588,230 +594,9 @@ function(input, output, session) {
 		}
 	})
 
-	output$learnersAgeBar <- renderChart2({
-		chartDependency()
 
-		data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
-		data$levels <- as.character(data$levels)
-		for(x in names(enrolment_data)){
-			ageCount <- getLearnerAgeCount(enrolment_data[[x]])
-			data[[x]] <- numeric(7)
-			for(i in c(1:length(ageCount$age_group))){
-				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
-			}
-		}
-
-		a <- rCharts:::Highcharts$new()
-		a$chart(type = "column", width = 750)
-		a$xAxis(categories = data$levels)
-		a$yAxis(title = list(text = "Percentage of Population"))
-		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		a$plotOptions(
-			column = list(
-				dataLabels = list(
-				enabled = "true"
-				),
-				animation = FALSE
-			)
-		)
-		return(a)
-	})
-
-	output$learnersGender <- renderChart2({
-		chartDependency()
-		data <- data.frame(levels = c("male","female","other","non-binary"))
-		data$levels <- as.character(data$levels)
-
-		for(x in names(enrolment_data)){
-			genderCount <- getGenderCount(enrolment_data[[x]])
-			data[[x]] <- numeric(4)
-			for(i in c(1:length(genderCount$gender))){
-				data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$percentage[i]
-			}
-		}
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
-
-		a <- rCharts:::Highcharts$new()
-		a$chart(type = "column", width = 350)
-		a$xAxis(categories = data$levels)
-		a$yAxis(title = list(text = "Percentage of Population"))
-		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		a$plotOptions(
-			column = list(
-				dataLabels = list(
-					enabled = "true"
-				),
-				animation = FALSE
-			)
-		)
-		return(a)
-	})
-
-	output$employmentBar <-renderChart2({
-		chartDependency()
-		data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
-										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
-										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
-										 "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
-										 "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
-										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
-		data$area <- as.character(data$area)
-
-		for(x in names(enrolment_data)){
-		  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
-		  data[[x]] <- numeric(21)
-		  for(i in c(1:length(areaCount$employment))){
-			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
-		  }
-		}
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
-		a <- rCharts:::Highcharts$new()
-		a$chart(type = "bar", width = 1200, height = 650)
-		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		a$xAxis(categories = gsub( "_"," ",(data$area)))
-		a$yAxis(title = list(text = "Percentage of Population"))
-		a$plotOptions(
-		  bar = list(
-			dataLabels = list(
-			  enabled = "true"
-			),
-			animation = FALSE
-		  )
-		)
-		return(a)
-	})	
-
-	output$employmentStatus <- renderChart2({
-		chartDependency()
-
-		data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
-			"not_working","full_time_student","self_employed","looking_for_work")))
-		data$levels <- as.character(data$levels)
-		for(x in names(enrolment_data)){
-			statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
-			data[[x]] <- numeric(8)
-			for(i in c(1:length(statusCount$status))){
-			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
-		  }
-		}
-		
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
-
-		a <- rCharts:::Highcharts$new()
-		a$chart(type = "bar", width = 1200, height = 650)
-		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
-		a$yAxis(title = list(text = "Percentage of Population"))
-		a$plotOptions(
-			bar = list(
-				dataLabels = list(
-				enabled = "true"
-				),
-				animation = FALSE
-			)
-		)
-		return(a)
-	})
 	
-	output$degreeLevel <- renderChart2({
-		chartDependency()
-		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
-		"tertiary","university_degree","university_masters","university_doctorate"))
-		data$level <- as.character(data$level)
 
-		for(x in names(enrolment_data)){
-		  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
-		  data[[x]] <- numeric(8)
-		  for(i in c(1:length(degreeCount$degree))){
-			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
-		  }
-		}
-
-
-		a <- rCharts:::Highcharts$new()
-		a$chart(type = "column", width = 1200, height = 650)
-		a$data(data[c(names(enrolment_data))])
-		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		a$xAxis(categories = gsub( "_"," ",data$level))
-		a$yAxis(title = list(text = "Percentage of Population"))
-		a$plotOptions(
-			column = list(
-				dataLabels = list(
-					enabled = "true"
-				),
-				animation = FALSE
-			)
-		)
-		return(a)
-	})
-	
-	output$learnerMap <- renderGvis({
-		chartDependency()
-		
-		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown"), ])
-		assign("fullCountryData", data[[1]], envir = .GlobalEnv)
-		plotData <- data[[2]]
-		jscode <- "var sel = chart.getSelection();  
-								var row = sel[0].row;
-								var country = data.getValue(row, 0);
-								$('input#selected').val(country);
-								$('input#selected').trigger('change');"
-		
-		map <- gvisGeoChart(plotData, locationvar = "country", colorvar = "learners",
-												options = list(
-													gvis.listener.jscode = jscode,
-													width = 1100,
-													height = 600,
-													keepAspectRatio = "false",
-													colorAxis = "{colors:['#91BFDB', '#FC8D59']}"
-												)
-		)
-		return (map)
-	})
-
-	output$HDIColumn <- renderChart2({
-		chartDependency()
-		data <- data.frame(levels = c("Very High","High","Medium","Low"))
-
-		for(x in names(enrolment_data)){
-		  enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
-		  countries<- as.character(enrolments$country)
-		  hdilevels <- countryCodesToHDI(countries)
-		  all <- as.factor(hdilevels)
-		  allCount <- count(all)
-		  allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
-		  allCount$percentage <- round(allCount$percentage,2)
-		  allCount$x <- as.character(allCount$x)
-		  allCount <- allCount[,c("x","percentage")]
-		  allCount <- allCount[order(-allCount$percentage),]
-		  data[[x]] <- numeric(4)
-		  
-		  for(i in c(1:length(allCount$x))){
-			data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
-		  }
-		}
-
-		chart <- Highcharts$new()
-		chart$chart(type = 'column', width = 1200)
-		chart$data(data[c(names(enrolment_data))])
-		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		chart$xAxis(categories = data$levels)
-		chart$yAxis(title = list(text = "Percentage of Population"))
-		chart$plotOptions(
-		  column = list(
-			dataLabels = list(
-			  enabled = "true"
-			),
-			animation = FALSE
-		  )
-		)
-		return(chart)
-	})
-	
 	output$howFoundCourse <- renderChart2({
 		chartDependency()
 		# Check whether the survey for the selected course had this question
@@ -1104,11 +889,261 @@ function(input, output, session) {
 		)
 		return (histogram)
 	})
-	#END: LEARNER FITLERS - CHARTS
+	# END: LEARNER FITLERS - CHARTS
 	
+	# START OF ENROLMENTS TABLE GRAPHS
 
+	# Produces graph of the percentages of learners age groups
+	output$learnersAgeBar <- renderChart2({
+		chartDependency()
+
+		data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
+		data$levels <- as.character(data$levels)
+		for(x in names(enrolment_data)){
+			ageCount <- getLearnerAgeCount(enrolment_data[[x]])
+			data[[x]] <- numeric(7)
+			for(i in c(1:length(ageCount$age_group))){
+				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+			}
+		}
+
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = 750)
+		a$xAxis(categories = data$levels)
+		a$yAxis(title = list(text = "Percentage of Population"))
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+		a$plotOptions(
+			column = list(
+				dataLabels = list(
+				enabled = "true"
+				),
+				animation = FALSE
+			)
+		)
+		return(a)
+	})
+
+	# Produces graph of the percentages of learners gender groups
+	output$learnersGender <- renderChart2({
+		chartDependency()
+		data <- data.frame(levels = c("male","female","other","non-binary"))
+		data$levels <- as.character(data$levels)
+
+		for(x in names(enrolment_data)){
+			genderCount <- getGenderCount(enrolment_data[[x]])
+			data[[x]] <- numeric(4)
+			for(i in c(1:length(genderCount$gender))){
+				data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$percentage[i]
+			}
+		}
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
+
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = 350)
+		a$xAxis(categories = data$levels)
+		a$yAxis(title = list(text = "Percentage of Population"))
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+		a$plotOptions(
+			column = list(
+				dataLabels = list(
+					enabled = "true"
+				),
+				animation = FALSE
+			)
+		)
+		return(a)
+	})
+
+	# Produces graph of the percentages of the learners employment area
+	output$employmentBar <-renderChart2({
+		chartDependency()
+		data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
+										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
+										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
+										 "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
+										 "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
+										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
+		data$area <- as.character(data$area)
+
+		for(x in names(enrolment_data)){
+		  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
+		  data[[x]] <- numeric(21)
+		  for(i in c(1:length(areaCount$employment))){
+			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+		  }
+		}
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "bar", width = 1200, height = 650)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+		a$xAxis(categories = gsub( "_"," ",(data$area)))
+		a$yAxis(title = list(text = "Percentage of Population"))
+		a$plotOptions(
+		  bar = list(
+			dataLabels = list(
+			  enabled = "true"
+			),
+			animation = FALSE
+		  )
+		)
+		return(a)
+	})	
+	
+	# Produces graph of the percentages of the learners employment status
+	output$employmentStatus <- renderChart2({
+		chartDependency()
+
+		data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
+			"not_working","full_time_student","self_employed","looking_for_work")))
+		data$levels <- as.character(data$levels)
+		for(x in names(enrolment_data)){
+			statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
+			data[[x]] <- numeric(8)
+			for(i in c(1:length(statusCount$status))){
+			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+		  }
+		}
+		
+		data <- data[order(-data[[names(enrolment_data[1])]]),]
+
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "bar", width = 1200, height = 650)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
+		a$yAxis(title = list(text = "Percentage of Population"))
+		a$plotOptions(
+			bar = list(
+				dataLabels = list(
+				enabled = "true"
+				),
+				animation = FALSE
+			)
+		)
+		return(a)
+	})
+	
+	# Produces graph of the percentages of the learners education level
+	output$degreeLevel <- renderChart2({
+		chartDependency()
+		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
+		"tertiary","university_degree","university_masters","university_doctorate"))
+		data$level <- as.character(data$level)
+
+		for(x in names(enrolment_data)){
+		  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
+		  data[[x]] <- numeric(8)
+		  for(i in c(1:length(degreeCount$degree))){
+			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+		  }
+		}
+
+
+		a <- rCharts:::Highcharts$new()
+		a$chart(type = "column", width = 1200, height = 650)
+		a$data(data[c(names(enrolment_data))])
+		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+		a$xAxis(categories = gsub( "_"," ",data$level))
+		a$yAxis(title = list(text = "Percentage of Population"))
+		a$plotOptions(
+			column = list(
+				dataLabels = list(
+					enabled = "true"
+				),
+				animation = FALSE
+			)
+		)
+		return(a)
+	})
+	
+	# Produces map of which countries the learners are from and in what quantities
+	output$learnerMap <- renderGvis({
+		chartDependency()
+		
+		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown"), ])
+		assign("fullCountryData", data[[1]], envir = .GlobalEnv)
+		plotData <- data[[2]]
+		jscode <- "var sel = chart.getSelection();  
+								var row = sel[0].row;
+								var country = data.getValue(row, 0);
+								$('input#selected').val(country);
+								$('input#selected').trigger('change');"
+		
+		map <- gvisGeoChart(plotData, locationvar = "country", colorvar = "learners",
+												options = list(
+													gvis.listener.jscode = jscode,
+													width = 1100,
+													height = 600,
+													keepAspectRatio = "false",
+													colorAxis = "{colors:['#91BFDB', '#FC8D59']}"
+												)
+		)
+		return (map)
+	})
+
+	#Produces map of which HDI level the learners are from based on their country data
+	output$HDIColumn <- renderChart2({
+		chartDependency()
+		data <- data.frame(levels = c("Very High","High","Medium","Low"))
+
+		for(x in names(enrolment_data)){
+		  enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
+		  countries<- as.character(enrolments$country)
+		  hdilevels <- countryCodesToHDI(countries)
+		  all <- as.factor(hdilevels)
+		  allCount <- count(all)
+		  allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
+		  allCount$percentage <- round(allCount$percentage,2)
+		  allCount$x <- as.character(allCount$x)
+		  allCount <- allCount[,c("x","percentage")]
+		  allCount <- allCount[order(-allCount$percentage),]
+		  data[[x]] <- numeric(4)
+		  
+		  for(i in c(1:length(allCount$x))){
+			data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
+		  }
+		}
+
+		chart <- Highcharts$new()
+		chart$chart(type = 'column', width = 1200)
+		chart$data(data[c(names(enrolment_data))])
+		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+		chart$xAxis(categories = data$levels)
+		chart$yAxis(title = list(text = "Percentage of Population"))
+		chart$plotOptions(
+		  column = list(
+			dataLabels = list(
+			  enabled = "true"
+			),
+			animation = FALSE
+		  )
+		)
+		return(chart)
+	})
+
+	# END DEMOGRAPHIC TAB
 	
 	#START: CHARTS - COMMENTS ORIENTATED
+
+	# Selector for which run to display comment related things
+	
+	output$runSelectorComments <- renderUI({
+		chartDependency()
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
+		print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
+	})
 
 	output$commentsBarChart <- renderChart2({
 		chartDependency()
@@ -1238,7 +1273,9 @@ function(input, output, session) {
 	
 	#END: CHARTS - COMMENTS ORIENTATED
 	
-	measuresDependancy <- eventReactive(input$plotScatterButton, {})
+	#START: CHARTS - OTHER
+
+	scatterDependency <- eventReactive(input$plotScatterButton, {})
 
 	output$correlationsRunSelector <-renderUI({
 		chartDependency()
@@ -1256,12 +1293,11 @@ function(input, output, session) {
 		 choices = runs, width = "550px"))
 	})
 
-	#START: CHARTS - OTHER
 	# Scatter plot
 	output$scatterPlot <- renderChart2({
 		# Draw the chart when the "chooseCourseButton" AND the "plotScatterButton" are pressed by the user
 		chartDependency()
-		measuresDependancy()
+		scatterDependency()
 		# input$plotScatterButton
 		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
 		# In case the user has selected the same values for x and y, display an error message
@@ -1424,7 +1460,6 @@ function(input, output, session) {
 									highlightSeriesOpts = list(strokeWidth = 2))
 	})
 	
-	
 	output$network <- renderForceNetwork({
 		chartDependency()
 		
@@ -1507,8 +1542,9 @@ function(input, output, session) {
 		dygraph(plotData, main = 'Degree(top 7 learners)', x = 'Date') %>%  
 			dyLegend(show = 'onmouseover', hideOnMouseOut = T) %>%
 			dyRangeSelector()
-	})  
+	})
 
+	# Data table showing learner information for each run.
 	output$aggregateEnrolmentData <- renderDataTable({
 
 		aggregateEnrol <- aggregateEnrol[, !(colnames(aggregateEnrol) %in% c("course","course_run"))]
@@ -1551,11 +1587,13 @@ function(input, output, session) {
 			rownames = FALSE
 		)
 	})
-
+	
+	# Valuebox aggregating the number of joiners in all courses
 	output$totalJoiners <- renderValueBox({
 		valueBox("Total Joiners", subtitle = sum(aggregateEnrol$joiners), icon = icon("group"), color = "red")
 	})
 
+	# Valuebox aggregating the number of learners in all courses
 	output$totalLearners <- renderValueBox({
 		learners <- subset(aggregateEnrol , learners != "N/A")
 		learners2 <- sapply(learners$learners, function(x) strsplit(toString(x), "-"))
@@ -1563,10 +1601,16 @@ function(input, output, session) {
 		valueBox("Total Learners", subtitle = sum(learners3), icon = icon("group"), color = "red")
 	})
 
+	#Valuebox aggregating the number of statements sold in all courses
 	output$totalStatementsSold <- renderValueBox({
 		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$statements_sold), icon = icon("certificate"), color = "red")
 	})
 
+	# END AGGREGATE ENROLMENT TAB
+
+	# START STEP COMPLETION TAB
+
+	# Selector for which run to display on the step tab
 	output$runSelectorSteps <- renderUI({
 		chartDependency()
 		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
@@ -1582,7 +1626,7 @@ function(input, output, session) {
 		print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
 	})
 
-	
+	# Step completed column chart
 	output$stepsCompleted <- renderChart2({
 		chartDependency()
 		stepDependancy()
@@ -1600,6 +1644,7 @@ function(input, output, session) {
 		return(a)
 	})
 
+	# Step completion heat map
 	output$stepCompletionHeat <- renderD3heatmap({
 		chartDependency()
 		stepDependancy()
@@ -1614,6 +1659,7 @@ function(input, output, session) {
 		)
 	})
 
+	# First Visited Heat Map
 	output$firstVisitedHeat <- renderD3heatmap({
 		chartDependency()
 		stepDependancy()
@@ -1628,23 +1674,11 @@ function(input, output, session) {
 		)
 	})
 
-	output$runSelectorComments <- renderUI({
-		chartDependency()
-		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-		if(input$run2 != "None"){
-			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-		}
-		if(input$run3 != "None"){
-			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-		}
-		if(input$run4 != "None"){
-			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-		}
-		print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
-	})
+	# END STEP COMPLETION TAB
 
-	
+	# START COMMENT VIEWR TAB
 
+	#Selector to choose which run to view comments of
 	output$runSelector <- renderUI({
 		chartDependency()
 		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
@@ -1660,20 +1694,24 @@ function(input, output, session) {
 		print(selectInput("runChooser", label = "Run", choices = runs, width = "550px"))
 	})
 
+	# View comments button
 	output$viewButton <- renderUI({
 		chartDependency()
 		print(actionButton("viewButton","View Comments"))
 	})
 
+	# Load cloud button
 	output$loadCloud <- renderUI({
 		chartDependency()
 		print(actionButton("loadCloud", "Load Cloud"))
 	})
 
+	# Dependency for the data table to only load after the view comments button has been pressed
 	viewPressed <- eventReactive(input$viewButton, {
 		return(input$runChooser)
 	})
 
+	# Produces a data table for the comments
 	output$commentViewer <- renderDataTable({
 		chartDependency()
 		viewPressed()
@@ -1717,10 +1755,12 @@ function(input, output, session) {
 		})
 	})
 
+	# Checks if a comment has been selected
 	threadSelected <- eventReactive( input$commentViewer_rows_selected, {
 		runif(input$commentViewer_rows_selected)
 	})
 
+	#Produced a data table of the thread for the comment selected
 	output$threadViewer <- renderDataTable({
 		chartDependency()
 		viewPressed()
@@ -1777,18 +1817,16 @@ function(input, output, session) {
 			)
 		})
 	})
-
+	
+	#Makes the wordcloud code repeatable.
 	wordcloud_rep <- repeatable(wordcloud)
 
+	#Generates the terms for the word cloud
 	terms <- reactive({
 		isolate({
 			withProgress(message = "Processing Word Cloud",{
 				data <- comments_data[[which(names(comments_data) == input$runChooser)]]
 				data$week_step <- getWeekStep(data)
-				# stepChoice <- input$stepChoice
-				# if(stepChoice != "All"){
-				# 	data <- subset(data, data$week_step == stepChoice)
-				# }
 				data <- data[c("text","likes")]
 				data$likes <- as.numeric(data$likes)
 				data <- data[order(-data$likes),]
@@ -1801,14 +1839,16 @@ function(input, output, session) {
 				                  c(stopwords("SMART")))
 				myDTM = TermDocumentMatrix(myCorpus,
 				                           control = list(minWordLength = 1))
-				m = as.matrix(myDTM)
+				m <- as.matrix(myDTM)
 				m <- sort(rowSums(m), decreasing = TRUE)
 			})
 		})
 	})
 
+	#Cloud depends on having pushed the load cloud button
 	cloudDependancy <- eventReactive(input$loadCloud, {})
 
+	#Produced the word cloud
 	output$stepWordCloud <- renderPlot({
 		chartDependency()
 		cloudDependancy()
@@ -1820,7 +1860,12 @@ function(input, output, session) {
 			rot.per = 0)
 	})
 
-	output$AllvsFPvsStateGenderColumn <- renderChart2({
+	# END COMMENT VIEWER TAB
+
+	# START STATEMENT DEMOGRAPHICS TAB
+
+	# Column chart of statement purchaser's genders
+	output$stateGenderColumn <- renderChart2({
 		chartDependency()
 		data <- data.frame(levels = c("male","female","other","non-binary"))
 		data$levels <- as.character(data$levels)
@@ -1854,8 +1899,9 @@ function(input, output, session) {
 		)
 		return(a)
 	})
-
-	output$AllvsFPvsStateAgeBar <- renderChart2({
+	
+	# Column chart of statement purchaser's age groups
+	output$stateAgeColumn <- renderChart2({
 		chartDependency()
 
 		data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
@@ -1886,7 +1932,8 @@ function(input, output, session) {
 		return(a)
 	})
 
-	output$AllvsFPvsStateEmploymentAreaBar <- renderChart2({
+	# Bar chart of statement purchaser's employment area
+	output$stateEmploymentAreaBar <- renderChart2({
 		chartDependency()
 
 		chartDependency()
@@ -1923,8 +1970,9 @@ function(input, output, session) {
 		)
 		return(a)
 	})
-
-	output$AllvsFPvsStateEmploymentStatusBar <- renderChart2({
+	
+	# Column chart of statement purchaser's employment status
+	output$stateEmploymentStatusColumn <- renderChart2({
 		chartDependency()
 
 		data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
@@ -1957,8 +2005,9 @@ function(input, output, session) {
 		)
 		return(a)
 	})
-
-	output$AllvsFPvsStateDegreeBar <- renderChart2({
+	
+	# Column chart of statement purchaser's education level
+	output$stateDegreeColumn <- renderChart2({
 		chartDependency()
 		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
 		"tertiary","university_degree","university_masters","university_doctorate"))
@@ -1990,8 +2039,9 @@ function(input, output, session) {
 		)
 		return(a)
 	})
-
-	output$statementLearnerMap <- renderGvis({		
+	
+	# Map of what countries the statement purchaser's came from
+	output$stateLearnerMap <- renderGvis({		
 		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown" & pre_course_data$purchased_statement_at != ""), ])
 		assign("fullCountryData", data[[1]], envir = .GlobalEnv)
 		plotData <- data[[2]]
@@ -2013,7 +2063,8 @@ function(input, output, session) {
 		return (map)
 	})
 
-	output$allvsFPvsStateHDIColumn <- renderChart2({
+	# Column graph for the HDI levels of statement purchaser's
+	output$stateHDIColumn <- renderChart2({
 		chartDependency()
 		data <- data.frame(levels = c("Very High","High","Medium","Low"))
 		for(x in names(enrolment_data)){
@@ -2050,6 +2101,11 @@ function(input, output, session) {
 		return(chart)
 	})
 
+	# END STATEMENT DEMOGRAPHICS TAB
+
+	# START SIGN UPS AND STATEMENTS SOLD TAB
+
+	# Line showing sign ups over time
 	output$signUpsLine <- renderChart2({
 		chartDependency()
 		freqs <- list()
@@ -2084,7 +2140,8 @@ function(input, output, session) {
 		chart$yAxis(title = list(text = "Frequency"))
 		return(chart)
 	})
-
+	
+	# Line showing statements sold over time
 	output$statementsSoldLine <- renderChart2({
 		chartDependency()
 
@@ -2126,9 +2183,12 @@ function(input, output, session) {
 		return(chart)
 	})
 
+
+	# END SIGN UPS AND STATEMENTS SOLD TAB
+	
+	# Debug tool for essentailly print statements.
 	output$debug <- renderText({
-		chartDependency()
-		print(unlist(getNumberOfAuthorsByWeek(comments_data[[1]])))
+
 	})
 	
 
