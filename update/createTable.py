@@ -1,3 +1,9 @@
+"""
+Creates the necessary tables in the database for each of the csv data files types. requires createDatabase.py to be run first.
+Could be combined with createDatabase.py.
+"""
+
+
 import datetime,mysql.connector,json
 
 credential_data = open('config.json').read()

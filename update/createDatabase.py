@@ -1,3 +1,7 @@
+"""
+Creates the MySQL database with which to store the csv data files. Could be combined with createTable.py
+"""
+
 import mysql.connector,json
 
 credential_data = open('config.json').read()
