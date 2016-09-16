@@ -6,16 +6,21 @@ class CSV_TO_SQL:
 	def __init__(self,database):
 		self.__database = database
 
-# accept a file and import it into mysql
 	def insertIntoTable(self,f,course_run,uni):
+		""" 
+		Inserts a csv file into the corresponding mysql table.
+
+		:param:
+			f: The file to be inserted.
+			course_run: The run number.
+			uni: The University the course belongs to.
+
+		"""
 		_file = open(f)
 		_reader = csv.reader(_file)
 		head  = next(_reader)
 		blank1,blank2,_filename, _extend = f.split('.')
-		# course , datatype = _filename.split('_')
 		dots,data,uni,course, otherDeets, datatype = _filename.split("/")
-		# c = course.split('/')
-		# course = course[]
 		cursor = self.__database.cursor()
 		delete = ''
 		load = ''

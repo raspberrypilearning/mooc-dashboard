@@ -36,6 +36,12 @@ https://www.futurelearn.com/admin/courses
 Usage
 -----
 
+First Time setup:
+$ python createDatabase.py
+$ python createTable.py
+$ python update.py
+
+All future usage:
 $ python update.py
 
 

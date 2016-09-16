@@ -55,7 +55,7 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					tags$div(style="display:inline-block; margin-right:15px", 
-						selectInput("course1", label = "Courses", width = "450px", choices = c("All",courses))),
+						selectInput("course1", label = "Courses", width = "450px", choices = c("All",courses), selected = courses[1])),
 					tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs1", inline = TRUE)),
 					title = "Course selection",
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE

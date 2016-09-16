@@ -85,8 +85,10 @@ class FLCourses:
 	def getDatasets(self, stats_dashboard_url):
 		""" Assemble URL to datasets (CSV files)
 
-		:param stats_dashboard_url:
+		:param:
+			stats_dashboard_url: Url for the stats dashboard for the run.
 		:return:
+			data (Dictionary) : A dictionary keyed on the link to the respective filename.
 		"""
 
 		data = {}
@@ -102,15 +104,17 @@ class FLCourses:
 					link = li.find('a')['href']
 					split = str.split(str(link),'/')
 					link = self.__mainsite + link
-					#course_run = split[4]
-					#filename = split[3]  + '_' + split[7].replace('_','-') + course_run + '.csv'
 					filename = split[7].replace('_', '-')+'.csv'
 					data[link] = filename
 			return data
 
 	def getEnrolmentData(self, stats_dashboard_url):
-		""" Assemble CSV file of enrolment data for the run
+		""" Assemble URL to datasets (CSV files)
 
+		:param:
+			stats_dashboard_url: Url for the stats dashboard for the run.
+		:return:
+			enrolmentData (Dictionary) : A dictionary returning the FutureLearn enrolment learner data.
 		"""
 		print "Looking up enrolment data: %s" % stats_dashboard_url
 
@@ -166,7 +170,6 @@ class FLCourses:
 					else:
 						enrolmentData[rowName] = ' - '.join((numeric,percent))
 
-			print enrolmentData
 			return enrolmentData
 
 	def getRunDuration(self, _run_details_url):
@@ -174,6 +177,7 @@ class FLCourses:
 
 		:param _run_details_url:
 		:return:
+			duration
 		"""
 		print "Looking up duration: %s" % _run_details_url
 
