@@ -4,9 +4,10 @@ webapp/.RData
 webapp/.RHistory
 update/config.json
 update/fail
-update/*.pyc
+*.pyc
 update/.idea
 data/*
 data/!.gitkeep
 log/*
 log/!.gitkeep
+*nohup.out
