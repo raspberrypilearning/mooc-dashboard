@@ -91,7 +91,13 @@ server {
 ########## END /etc/shiny-server/shiny-server.conf #################
 
 
-6. Configure the Dashboard:
+6. Install mysql
+
+$ sudo apt-get-install mysql-server
+
+Set a mysql root password.
+
+7. Configure the Dashboard:
 
 Copy / rename /home/mooc/mooc-dashboard/webpapp/config.R.template to config.R 
 Set variables therein as indicated.
