@@ -63,7 +63,14 @@ $ wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.2.786-
 $ sudo gdebi shiny-server-1.4.2.786-amd64.deb
 
 
-5. Configure Shiny Server (edit /etc/shiny-server/shiny-server.conf as follows, assuming your username is 'mooc'):
+5. Install mysql
+
+$ sudo apt-get update
+$ sudo apt-get install mysql-server
+
+Set a mysql root password.
+
+6. Configure Shiny Server (edit /etc/shiny-server/shiny-server.conf as follows, assuming your username is 'mooc'):
 
 ########## START /etc/shiny-server/shiny-server.conf #################
 
@@ -89,13 +96,6 @@ server {
   }
 }
 ########## END /etc/shiny-server/shiny-server.conf #################
-
-
-6. Install mysql
-
-$ sudo apt-get-install mysql-server
-
-Set a mysql root password.
 
 7. Configure the Dashboard:
 

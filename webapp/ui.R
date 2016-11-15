@@ -12,7 +12,7 @@ source("config.R")
 source("learner_filters.R")
 source("courses.R")
 
-courses  <-getListOfCourses()
+# courses  <-getListOfCourses()
 
 scatterChoices <- list("Number of comments" = "comments", "Number of replies" = "replies",
 											 "Number of likes" = "likes",

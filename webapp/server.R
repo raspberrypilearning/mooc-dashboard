@@ -24,7 +24,7 @@ function(input, output, session) {
 	
 	output$institution <- renderText({"soton"})
 	output$pageTitle <- renderText("Welcome to the MOOC Dashboard! Select the course(s) and run(s) you wish to visualise")
-	output$updatedTime <- renderText(paste("Data last updated  -  ",getUpdatedTime()))
+	# output$updatedTime <- renderText(paste("Data last updated  -  ",getUpdatedTime()))
 	
 	# Make the text inputs of the active filters read-only and hide the dummy inputs
 	shinyjs::disable("gender")
@@ -163,8 +163,8 @@ function(input, output, session) {
 	}
 
 	#Needs to be converted to use getMetaData
-	aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Deets","Courses-Data.csv"))
-	assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
+	# aggregateEnrol <- read.csv(file.path(getwd(),"../data",institution,"Courses Data","Deets","Courses-Data.csv"))
+	# assign("aggregateEnrol", aggregateEnrol, envir = .GlobalEnv) 
 	
 	# Various Dependencies which stop graphs from attemping to be created without the required data selected first.
 	chartDependency <- eventReactive(input$chooseCourseButton, {})
@@ -1547,14 +1547,14 @@ function(input, output, session) {
 	# Data table showing learner information for each run.
 	output$aggregateEnrolmentData <- renderDataTable({
 
-		aggregateEnrol <- aggregateEnrol[, !(colnames(aggregateEnrol) %in% c("course","course_run"))]
-		aggregateEnrol$run_id <- gsub( "-", " ", as.character(aggregateEnrol$run_id))
-		aggregateEnrol$run_id <- capitalize(aggregateEnrol$run_id)
-		aggregateEnrol <- aggregateEnrol[order(aggregateEnrol$run_id),]
-		aggregateEnrol$start_date <- as.Date(aggregateEnrol$start_date)
+		courseMetaData <- courseMetaData[, !(colnames(courseMetaData) %in% c("course","course_run"))]
+		courseMetaData$run_id <- gsub( "-", " ", as.character(courseMetaData$run_id))
+		courseMetaData$run_id <- capitalize(courseMetaData$run_id)
+		courseMetaData <- courseMetaData[order(courseMetaData$run_id),]
+		courseMetaData$start_date <- as.Date(courseMetaData$start_date)
 
 		DT::datatable(
-			aggregateEnrol, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+			courseMetaData, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 			colnames = c('Course' = 1,
 			'Start Date' = 2,
 			'Weeks' = 3,
@@ -1590,12 +1590,12 @@ function(input, output, session) {
 	
 	# Valuebox aggregating the number of joiners in all courses
 	output$totalJoiners <- renderValueBox({
-		valueBox("Total Joiners", subtitle = sum(aggregateEnrol$joiners), icon = icon("group"), color = "red")
+		valueBox("Total Joiners", subtitle = sum(courseMetaData$joiners), icon = icon("group"), color = "red")
 	})
 
 	# Valuebox aggregating the number of learners in all courses
 	output$totalLearners <- renderValueBox({
-		learners <- subset(aggregateEnrol , learners != "N/A")
+		learners <- subset(courseMetaData , learners != "N/A")
 		learners2 <- sapply(learners$learners, function(x) strsplit(toString(x), "-"))
 		learners3 <- sapply(learners2, function(x) as.numeric(x[[1]]))
 		valueBox("Total Learners", subtitle = sum(learners3), icon = icon("group"), color = "red")
@@ -1603,7 +1603,7 @@ function(input, output, session) {
 
 	#Valuebox aggregating the number of statements sold in all courses
 	output$totalStatementsSold <- renderValueBox({
-		valueBox("Total Statements Sold", subtitle = sum(aggregateEnrol$statements_sold), icon = icon("certificate"), color = "red")
+		valueBox("Total Statements Sold", subtitle = sum(courseMetaData$statements_sold), icon = icon("certificate"), color = "red")
 	})
 
 	# END AGGREGATE ENROLMENT TAB
