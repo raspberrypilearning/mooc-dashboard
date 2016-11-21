@@ -48,6 +48,7 @@ def update(email,password):
 				run_enrol_data = info['enrolmentData']
 				run_enrol_data['no_of_weeks'] = info['duration_weeks']
 				enrolmentData.append(run_enrol_data)
+				print len(info['datasets'])
 				if(not len(info['datasets']) == 0):
 					download(loginInfo, cos.getUniName(), course_name, run, info)
 					
@@ -55,7 +56,7 @@ def update(email,password):
 						files[dir_path+"/"+filename] = run
 
 
-		courses_path = "../data/" +cos.getUniName()+ "/Courses Data/Deets"
+		courses_path = "../data/" +cos.getUniName()+ "/Courses Data/Data"
 		courses_filename = "/Courses-Data.csv"
 		if not os.path.exists(courses_path):
 			os.makedirs(courses_path)
@@ -74,7 +75,7 @@ def update(email,password):
 			f.close()
 
 		files[courses_path+courses_filename] = 1
-
+		print len(files)
 		# JSR Disable import as unused
 		importData(files,cos.getUniName())
 

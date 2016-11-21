@@ -16,6 +16,7 @@ class FLCourses:
 		admin_url = self.__mainsite + '/admin/courses'
 		self.__rep = self.__session.get(admin_url, allow_redirects=True)
 		
+
 		if(self.__rep.status_code == 200):
 			self.__isAdmin = True
 			soup = BeautifulSoup(self.__rep.content,'html.parser')
@@ -38,6 +39,7 @@ class FLCourses:
 
 			for table in tables:
 				for course in table.find_all('tbody'):
+
 					try:
 						course_name = course.a['title']
 						print "Found course: %s ..." %course_name
@@ -53,10 +55,16 @@ class FLCourses:
 							print "...start date: %s " % _start_date
 							_status = l[1].text.lower()
 							print "...status: %s " % _status
+							# print course_run.find('a').get('href')
+
 							_stats_path = course_run.find(title = 'View stats')['href']
 							_run_details_path = course_run.find(title = 'Run details')['href']
 
-							# Fetch data of finished courses only
+							# _course_path = course_run.find('a').get('href')
+							# _stats_path = _course_path+'/stats-dashboard'
+							# _run_details_path = _course_path.replace("/admin","")
+
+							# Fetch data of finished and in progress courses only.
 							if( _status == 'finished' or _status == 'in progress' ):
 
 								run_duration_weeks = self.getRunDuration(self.__mainsite + _run_details_path)
@@ -70,9 +78,9 @@ class FLCourses:
 								end_date = start_date + datetime.timedelta(weeks=int(run_duration_weeks))
 								print "...end date: %s" %end_date
 
-								run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path + "/overview")}
+								run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path + "/overview",course_name)}
 								course_info[str(run_count)] = run_data
-						
+								
 							run_count-=1
 
 						courses[course_name] = course_info
@@ -98,7 +106,7 @@ class FLCourses:
 		
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
-			datasets = soup.find('ul',class_ = 'datasets')
+			datasets = soup.find_all('ul')[3]
 
 			if(datasets):	
 				links = datasets.find_all('li')
@@ -111,7 +119,7 @@ class FLCourses:
 					data[link] = filename
 			return data
 
-	def getEnrolmentData(self, stats_dashboard_url):
+	def getEnrolmentData(self, stats_dashboard_url,courseName):
 		""" Assemble URL to datasets (CSV files)
 
 		:param:
@@ -143,14 +151,11 @@ class FLCourses:
 			while soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb') is None:
 				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 
-			table = soup.find('table', class_ = "table table-condensed table-striped table-fixed run-stats-dashboard-table")
-
+			table = soup.find('table', class_ = "m-table m-table--condensed")
 			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-4], stats_dashboard_url.split("/")[-3]]).encode('ascii','ignore')
 			startDate = soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
-			# print(soup.find_all("ul"))
-			enrolmentData["course"] = soup.find_all("h1")[1].get_text().encode('ascii','ignore')
+			enrolmentData["course"] = courseName
 			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-3].encode('ascii','ignore')
-
 			if len(startDate[1]) == 1:
 				day = ''.join(['0',startDate[1]])
 			else:
@@ -162,7 +167,6 @@ class FLCourses:
 
 			if(table):
 				trs = table.find_all('tr')
-
 				for tr in trs:
 					rowName = tr.find('th').get_text().strip().encode('ascii','ignore').lower().replace(" ", "_")
 					tds = tr.find_all('td')

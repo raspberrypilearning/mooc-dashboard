@@ -42,17 +42,20 @@ function(input, output, session) {
 	shinyjs::hide("filteredLearners")
 	shinyjs::hide("filteredStreams")
 	shinyjs::hide("scatterSlopeValue")
+
+	# Load the meta data.
+	courseMetaData <- getCourseMetaData()
 	
 	# Load the necessary data from the SQL database for each of the runs, store the types of data,
 	# step data, comment data, enrolment data, quiz data, review data, course meta data, for each of the 
 	# runs in a list of data frames
 	# Executes after user has clicked the "chooseCourseButton"
-	
+
 	observeEvent(input$chooseCourseButton, {
 
 		withProgress(message = "Loading Data", value = 0, {
 
-		n <- 8
+		n <- 7
 		
 		output$pageTitle <- renderText(paste(input$course1, "- [", substr(input$run1,1,1), "]",
 		ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
@@ -93,11 +96,6 @@ function(input, output, session) {
 
 		incProgress(1/n, detail = "Loaded Enrolments Data")
 
-		courseMetaData <- getMetaData()
-		assign("course_data", courseMetaData, envir = .GlobalEnv)
-
-		incProgress(1/n, detail = "Loaded Meta Data")
-
 		assign("pre_course_data", do.call("rbind",enrolment_data) , envir = .GlobalEnv)
 
 		assign("allLearners", getAllLearners(enrolmentsDataFiles), envir = .GlobalEnv)
@@ -111,35 +109,9 @@ function(input, output, session) {
 		
 	}, priority = 10)
 	
-	# Queries the course meta data table
-	getMetaData <- function(){
-		run1 <- substr(input$run1,1,1)
-		if(run1 != "A"){
-			data1 <- getCourseMetaData(input$course1,run1)
-			name <- paste(c(input$course1,run1), collapse = " - ")
-			datasets <- list("1"= data1)
-			names(datasets)[which(names(datasets) == "1")] <- name
-		} else {
-			datasets <- list()
-		}
-		run2 <- substr(input$run2,1,1)
-		if(input$run2 != "None" &  run2 != "A"){
-			data2 <- getCourseMetaData(input$course2, run2)
-			datasets[[paste(c(input$course2,run2), collapse = " - ")]] <- data2
-		}
-		run3 <- substr(input$run3,1,1)
-		if(input$run3 != "None" & run3 != "A"){
-			data3 <- getCourseMetaData(input$course3, run3)
-			datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
-		}
-		run4 <- substr(input$run4,1,1)
-		if(input$run4 != "None" & run4 != "A"){
-			data4 <- getCourseMetaData(input$course4, run4)
-			datasets[[paste(c(input$course4,run4), collapse = " - ")]] <- data4
-		}
-		return(datasets)
-	}
+	
 
+	
 	# Runs SQL queries for each of the selected runs with the sql table to query as a parameter
 	# and returns the data as a list of dataframes
 	getData <- function(table){
@@ -1547,10 +1519,10 @@ function(input, output, session) {
 	# Data table showing learner information for each run.
 	output$aggregateEnrolmentData <- renderDataTable({
 
-		courseMetaData <- courseMetaData[, !(colnames(courseMetaData) %in% c("course","course_run"))]
-		courseMetaData$run_id <- gsub( "-", " ", as.character(courseMetaData$run_id))
-		courseMetaData$run_id <- capitalize(courseMetaData$run_id)
-		courseMetaData <- courseMetaData[order(courseMetaData$run_id),]
+		courseMetaData <- courseMetaData[, !(colnames(courseMetaData) %in% c("course","run"))]
+		courseMetaData$course_run <- gsub( "-", " ", as.character(courseMetaData$course_run))
+		courseMetaData$course_run <- capitalize(courseMetaData$course_run)
+		courseMetaData <- courseMetaData[order(courseMetaData$course_run),]
 		courseMetaData$start_date <- as.Date(courseMetaData$start_date)
 
 		DT::datatable(
@@ -2187,9 +2159,9 @@ function(input, output, session) {
 	# END SIGN UPS AND STATEMENTS SOLD TAB
 	
 	# Debug tool for essentailly print statements.
-	output$debug <- renderText({
-
-	})
+	# output$debug <- renderText({
+		
+	# })
 	
 
 	getPage<-function() {

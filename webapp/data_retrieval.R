@@ -20,10 +20,10 @@ getTable <- function(table,course,course_run){
 	return(data)
 }
 
-getCourseMetaData <- function(course,course_run){
+getCourseMetaData <- function(){
 	m<-dbDriver("MySQL");
 	con<-dbConnect(m,user='root',password=sqlPassword,host='localhost',dbname='moocs');
-	query <- paste0('Select * FROM Courses WHERE course = "', course, '" And run = ', course_run)
+	query <- 'Select * FROM Courses'
 	data <- dbGetQuery(con,query)
 	dbDisconnect(con)
 	return(data)

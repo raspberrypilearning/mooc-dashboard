@@ -38,13 +38,14 @@ def download(s, uni_name, course_name, run, info):
 
 		#fetch the CSVs
 		for url,filename in info['datasets'].items():
-				print "Downloading %s to %s ..." % (url, dir_path)
-				dow = s.get(url)
-				f = open(dir_path+"/"+filename,'wb')
-				f.write(dow.content)
-				print "...done"
-				f.close()
-				s.close()
+			print filename
+			print "Downloading %s to %s ..." % (url, dir_path)
+			dow = s.get(url)
+			f = open(dir_path+"/"+filename,'wb')
+			f.write(dow.content)
+			print "...done"
+			f.close()
+			s.close()
 	else:
 			print "output directory: %s exists and course is finished - skipping download " % dir_path
 
