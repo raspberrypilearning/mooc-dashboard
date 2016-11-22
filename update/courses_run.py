@@ -106,6 +106,9 @@ class FLCourses:
 		
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
+			while soup.find_all('ul')[3] == None:
+				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
+			
 			datasets = soup.find_all('ul')[3]
 
 			if(datasets):	
