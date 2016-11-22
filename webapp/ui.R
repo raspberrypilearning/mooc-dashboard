@@ -38,11 +38,10 @@ sidebar <- dashboardSidebar(
 		menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
 		menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
 		menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
-		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
-		menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart")),
-		menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
-		# ,
-		# menuItem("Debug", tabName = "debug")
+		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece"))
+		# ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
+		# ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
+		# ,menuItem("Debug", tabName = "debug")
 	)#sidebarMenu
 )
 
@@ -307,29 +306,29 @@ body <- dashboardBody(
 			fluidRow(
 				valueBoxOutput("scatterSlope", width = 6)
 			)#fluidRow
-		),
-		tabItem(tabName = "cumulative_measures", 
-			fluidRow(
-				box(dygraphOutput("dateTimeSeries"),
-					title = "Course Evolution",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
-			)
-		),
-		tabItem(tabName = "social_network_analysis",
-			fluidRow(
-				box(forceNetworkOutput("network", width = "100%", height = "900px"),
-						title = "Learner Network",
-						status = "primary", solidHeader = TRUE, width = 6, height = 950, collapsible = TRUE),
-				column(width = 6,
-				 box(dygraphOutput("densityAndReciprocity"),
-						 title = "Density and Reciprocity",
-						 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE),
-				 box(dygraphOutput("degreeGraph"),
-						 title = "Degree Centrality",
-						 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE)
-				)#column
-			)#fluidRow
 		)
+		# ,tabItem(tabName = "cumulative_measures", 
+		# 	fluidRow(
+		# 		box(dygraphOutput("dateTimeSeries"),
+		# 			title = "Course Evolution",
+		# 			status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+		# 	)
+		# ),
+		# tabItem(tabName = "social_network_analysis",
+		# 	fluidRow(
+		# 		box(forceNetworkOutput("network", width = "100%", height = "900px"),
+		# 				title = "Learner Network",
+		# 				status = "primary", solidHeader = TRUE, width = 6, height = 950, collapsible = TRUE),
+		# 		column(width = 6,
+		# 		 box(dygraphOutput("densityAndReciprocity"),
+		# 				 title = "Density and Reciprocity",
+		# 				 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE),
+		# 		 box(dygraphOutput("degreeGraph"),
+		# 				 title = "Degree Centrality",
+		# 				 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE)
+		# 		)#column
+		# 	)#fluidRow
+		# )
 		# ,#tabItem
 		# tabItem(tabName = "debug",
 		# 	fluidRow(
