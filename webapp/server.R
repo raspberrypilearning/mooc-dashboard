@@ -55,7 +55,7 @@ function(input, output, session) {
 
 		withProgress(message = "Loading Data", value = 0, {
 
-		n <- 7
+		n <- 8
 		
 		output$pageTitle <- renderText(paste(input$course1, "- [", substr(input$run1,1,1), "]",
 		ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
@@ -95,6 +95,11 @@ function(input, output, session) {
 		assign("enrolment_data", enrolmentsDataFiles, envir = .GlobalEnv)
 
 		incProgress(1/n, detail = "Loaded Enrolments Data")
+		
+		courseMetaData <- getCourseData()
+		assign("course_data", courseMetaData, envir = .GlobalEnv)
+		incProgress(1/n, detail = "Loaded Meta Data")
+
 
 		assign("pre_course_data", do.call("rbind",enrolment_data) , envir = .GlobalEnv)
 
@@ -130,6 +135,35 @@ function(input, output, session) {
 		if(input$run4 != "None"){
 			data4 <- getTable(table, input$course4,input$run4)
 			datasets[[paste(c(input$course4,substr(input$run4,1,1)), collapse = " - ")]] <- data4
+		}
+		return(datasets)
+	}
+
+	# Queries the course meta data table
+	getCourseData <- function(){
+		run1 <- substr(input$run1,1,1)
+		if(run1 != "A"){
+			data1 <- getCourseMetaDataSpecific(input$course1,run1)
+			name <- paste(c(input$course1,run1), collapse = " - ")
+			datasets <- list("1"= data1)
+			names(datasets)[which(names(datasets) == "1")] <- name
+		} else {
+			datasets <- list()
+		}
+		run2 <- substr(input$run2,1,1)
+		if(input$run2 != "None" &  run2 != "A"){
+			data2 <- getCourseMetaDataSpecific(input$course2, run2)
+			datasets[[paste(c(input$course2,run2), collapse = " - ")]] <- data2
+		}
+		run3 <- substr(input$run3,1,1)
+		if(input$run3 != "None" & run3 != "A"){
+			data3 <- getCourseMetaDataSpecific(input$course3, run3)
+			datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
+		}
+		run4 <- substr(input$run4,1,1)
+		if(input$run4 != "None" & run4 != "A"){
+			data4 <- getCourseMetaDataSpecific(input$course4, run4)
+			datasets[[paste(c(input$course4,run4), collapse = " - ")]] <- data4
 		}
 		return(datasets)
 	}
