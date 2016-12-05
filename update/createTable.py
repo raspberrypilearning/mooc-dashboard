@@ -136,11 +136,21 @@ createCourses = "CREATE TABLE Courses(" \
 		"PRIMARY KEY (university,course_run)" \
 		");"
 
+createTeamMembers= "CREATE TABLE TeamMembers(" \
+		"id VARCHAR(40) NOT NULL," \
+		"first_name VARCHAR(20) NOT NULL," \
+		"last_name VARCHAR(20) NOT NULL," \
+		"team_role VARCHAR(20) NOT NULL," \
+		"user_role VARCHAR(20) NOT NULL," \
+		"PRIMARY KEY (id)" \
+		");"
+
 #create all tables, if tables exist, will be deleted
 drops = ['DROP TABLE IF EXISTS Comments','DROP TABLE IF EXISTS Enrolments','DROP TABLE IF EXISTS Assignments', \
-		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity', 'DROP TABLE IF EXISTS Courses']
+		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity', 'DROP TABLE IF EXISTS Courses', \
+		'DROP TABLE IF EXISTS TeamMembers']
 
-creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses]
+creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers]
 
 for d in drops:
 	cursor.execute(d)

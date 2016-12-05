@@ -38,7 +38,8 @@ sidebar <- dashboardSidebar(
 		menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
 		menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
 		menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
-		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece"))
+		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
+		menuItem("Team Members", tabName = "team_members", icon = icon("users"))
 		# ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
 		# ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
 		# ,menuItem("Debug", tabName = "debug")
@@ -306,6 +307,12 @@ body <- dashboardBody(
 			fluidRow(
 				valueBoxOutput("scatterSlope", width = 6)
 			)#fluidRow
+		)
+		,#tabItem
+		tabItem(tabName = "team_members",
+			fluidRow(
+				
+			)
 		)
 		# ,tabItem(tabName = "cumulative_measures", 
 		# 	fluidRow(

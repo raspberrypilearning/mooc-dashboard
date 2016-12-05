@@ -118,6 +118,13 @@ class CSV_TO_SQL:
 			"IGNORE 1 LINES " + col + \
 			"Set university = " + "'" + uni + "';"
 
+		elif 'team-members' in datatype:
+			col = '(id,first_name,last_name,team_role,user_role)'
+
+			load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE TeamMembers ' \
+			"FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
+			'IGNORE 1 LINES '  + col +";"
+
 	
 			
 		cursor.execute(load)
