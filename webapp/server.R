@@ -1558,6 +1558,7 @@ function(input, output, session) {
 		courseMetaData$course_run <- capitalize(courseMetaData$course_run)
 		courseMetaData <- courseMetaData[order(courseMetaData$course_run),]
 		courseMetaData$start_date <- as.Date(courseMetaData$start_date)
+		courseMetaData <- courseMetaData[ , !(names(courseMetaData) %in% c("university"))]
 
 		DT::datatable(
 			courseMetaData, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
@@ -1639,20 +1640,27 @@ function(input, output, session) {
 		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200)
-		a$data(stepsCount[c("freq")])
-		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])))
+		a$series(
+			name = input$runChooserSteps,
+			type = column,
+			data = stepsCount$freq
+			)
+		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
 		a$yAxis(title = list(text = "Frequency"))
 		a$plotOptions(
 			column = list(
 				animation = FALSE
-			)
+			),
+			line = list(
+				animation = FALSE)
 		)
-		fit <- predict(lm(y~x, data=stepsCount[,2]))
-		a$series(
-			name = "Best Fit",
-        	type = "line",
-        	data = fit
-        )
+		# model <- lm(stepsCount[,2] ~ stepsCount$week_step)
+		# fit <- predict(model,newData = stepsCount)
+		# a$series(
+		# 	name = "Best Fit",
+  #       	type = line,
+  #       	data = fit
+  #       )
 		return(a)
 	})
 
@@ -2203,9 +2211,9 @@ function(input, output, session) {
 		chartDependency()
 		stepDependancy()
 		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
-		fit <- lm(data = stepsCount)
-		regressionData <- fortify(fit)
-		print(unlist(regressionData))
+		model <- lm(stepsCount[,2] ~ stepsCount$week_step)
+		fit <- predict(model,newData = stepsCount)
+		print(fit)
 	})
 	
 
