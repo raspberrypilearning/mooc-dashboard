@@ -909,14 +909,14 @@ function(input, output, session) {
 			ageCount <- getLearnerAgeCount(enrolment_data[[x]])
 			data[[x]] <- numeric(7)
 			for(i in c(1:length(ageCount$age_group))){
-				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
 			}
 		}
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 750)
 		a$xAxis(categories = data$levels)
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
@@ -940,7 +940,7 @@ function(input, output, session) {
 			genderCount <- getGenderCount(enrolment_data[[x]])
 			data[[x]] <- numeric(4)
 			for(i in c(1:length(genderCount$gender))){
-				data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$percentage[i]
+				data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$freq[i]
 			}
 		}
 		data <- data[order(-data[[names(enrolment_data[1])]]),]
@@ -948,7 +948,7 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
 		a$xAxis(categories = data$levels)
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
@@ -977,7 +977,7 @@ function(input, output, session) {
 		  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
 		  data[[x]] <- numeric(21)
 		  for(i in c(1:length(areaCount$employment))){
-			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
 		  }
 		}
 		data <- data[order(-data[[names(enrolment_data[1])]]),]
@@ -986,7 +986,7 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",(data$area)))
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$plotOptions(
 		  bar = list(
 			dataLabels = list(
@@ -1009,7 +1009,7 @@ function(input, output, session) {
 			statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
 			data[[x]] <- numeric(8)
 			for(i in c(1:length(statusCount$status))){
-			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
 		  }
 		}
 		
@@ -1020,7 +1020,7 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$plotOptions(
 			bar = list(
 				dataLabels = list(
@@ -1043,7 +1043,7 @@ function(input, output, session) {
 		  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
 		  data[[x]] <- numeric(8)
 		  for(i in c(1:length(degreeCount$degree))){
-			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
 		  }
 		}
 
@@ -1053,7 +1053,7 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",data$level))
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -1118,7 +1118,7 @@ function(input, output, session) {
 		chart$data(data[c(names(enrolment_data))])
 		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		chart$xAxis(categories = data$levels)
-		chart$yAxis(title = list(text = "Percentage of Population"))
+		chart$yAxis(title = list(text = "Percentage of Countries"))
 		chart$plotOptions(
 		  column = list(
 			dataLabels = list(
@@ -1647,6 +1647,12 @@ function(input, output, session) {
 				animation = FALSE
 			)
 		)
+		fit <- predict(lm(y~x, data=stepsCount[,2]))
+		a$series(
+			name = "Best Fit",
+        	type = "line",
+        	data = fit
+        )
 		return(a)
 	})
 
@@ -1883,7 +1889,7 @@ function(input, output, session) {
 		  
 		  data[[x]] <- numeric(4)
 		  for(i in c(1:length(statementsSoldCount$gender))){
-			data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$percentage[i]
+			data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$freq[i]
 		  }
 		}
 
@@ -1892,7 +1898,7 @@ function(input, output, session) {
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
 		a$xAxis(categories = data$levels)
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
@@ -1917,14 +1923,14 @@ function(input, output, session) {
 			ageCount <- getLearnerAgeCount(ageCount)
 			data[[x]] <- numeric(7)
 			for(i in c(1:length(ageCount$age_group))){
-				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
 			}
 		}
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 750)
 		a$xAxis(categories = data$levels)
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$plotOptions(
@@ -1956,7 +1962,7 @@ function(input, output, session) {
 			areaCount <- getEmploymentAreaCount(areaCount)
 			data[[x]] <- numeric(21)
 			for(i in c(1:length(areaCount$employment))){
-			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
 		  }
 		}
 		data <- data[order(-data[[names(enrolment_data[1])]]),]
@@ -1965,7 +1971,7 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",(data$area)))
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$plotOptions(
 		  bar = list(
 			dataLabels = list(
@@ -1989,7 +1995,7 @@ function(input, output, session) {
 			statusCount <- getEmploymentStatusCount(statusCount)
 			data[[x]] <- numeric(8)
 			for(i in c(1:length(statusCount$status))){
-			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
 		  }
 		}
 
@@ -2000,7 +2006,7 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$plotOptions(
 			bar = list(
 				dataLabels = list(
@@ -2024,7 +2030,7 @@ function(input, output, session) {
 			degreeCount <- getEmploymentDegreeCount(degreeCount)
 			data[[x]] <- numeric(8)
 			for(i in c(1:length(degreeCount$degree))){
-				data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+				data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
 			}
 		}
 
@@ -2034,7 +2040,7 @@ function(input, output, session) {
 		a$data(data[c(names(enrolment_data))])
 		a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
 		a$xAxis(categories = gsub( "_"," ",data$level))
-		a$yAxis(title = list(text = "Percentage of Population"))
+		a$yAxis(title = list(text = "Population"))
 		a$plotOptions(
 			column = list(
 				dataLabels = list(
@@ -2193,9 +2199,14 @@ function(input, output, session) {
 	# END SIGN UPS AND STATEMENTS SOLD TAB
 	
 	# Debug tool for essentailly print statements.
-	# output$debug <- renderText({
-		
-	# })
+	output$debug <- renderText({
+		chartDependency()
+		stepDependancy()
+		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
+		fit <- lm(data = stepsCount)
+		regressionData <- fortify(fit)
+		print(unlist(regressionData))
+	})
 	
 
 	getPage<-function() {

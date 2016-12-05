@@ -20,8 +20,8 @@ class FLCourses:
 		if(self.__rep.status_code == 200):
 			self.__isAdmin = True
 			soup = BeautifulSoup(self.__rep.content,'html.parser')
-			uni = soup.find(class_ = 'org_name')
-			self.__uni = uni.text
+			uni = soup.find_all(class_ = 'a-heading')[0]
+			self.__uni = uni.text.strip()
 
 	def getCourses(self):
 		"""	Scrape the course metadata
@@ -34,7 +34,9 @@ class FLCourses:
 			webpage = self.__rep.content
 			soup = BeautifulSoup(webpage,'html.parser')
 			# get all courses info 
-			tables = soup.findAll("table",{'class': 'table course-runs'})
+			# tables = soup.findAll("table",{'class': 'm-table m-table--manage-courses m-table--bookend'})
+			tables = soup.findAll("table")
+			
 			courses = {}
 
 			for table in tables:
@@ -51,7 +53,8 @@ class FLCourses:
 
 						for course_run in course_runs:
 							l = course_run.find_all('span')
-							_start_date = l[0].text
+							
+							_start_date = l[2].text
 							print "...start date: %s " % _start_date
 							_status = l[1].text.lower()
 							print "...status: %s " % _status
@@ -66,7 +69,6 @@ class FLCourses:
 
 							# Fetch data of finished and in progress courses only.
 							if( _status == 'finished' or _status == 'in progress' ):
-
 								run_duration_weeks = self.getRunDuration(self.__mainsite + _run_details_path)
 
 								# Convert to Date type and compute end date
@@ -85,7 +87,7 @@ class FLCourses:
 
 						courses[course_name] = course_info
 					except:
-						print "Course was in an invalid format. HTML: {!r}".format(course)
+						print "Course was in an invalid format."
 		
 			return courses
 		
