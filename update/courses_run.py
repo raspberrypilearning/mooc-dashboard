@@ -1,4 +1,4 @@
-import requests,os,datetime,unicodedata
+import requests,os,datetime,unicodedata,sys,traceback
 from bs4 import BeautifulSoup
 
 class FLCourses:
@@ -58,14 +58,10 @@ class FLCourses:
 							print "...start date: %s " % _start_date
 							_status = l[1].text.lower()
 							print "...status: %s " % _status
-							# print course_run.find('a').get('href')
 
-							_stats_path = course_run.find(title = 'View stats')['href']
-							_run_details_path = course_run.find(title = 'Run details')['href']
+							_run_details_path = course_run.find_all('a')[1].get('href')
+							_stats_path = course_run.find_all('a')[2].get('href')
 
-							# _course_path = course_run.find('a').get('href')
-							# _stats_path = _course_path+'/stats-dashboard'
-							# _run_details_path = _course_path.replace("/admin","")
 
 							# Fetch data of finished and in progress courses only.
 							if( _status == 'finished' or _status == 'in progress' ):
@@ -88,6 +84,7 @@ class FLCourses:
 						courses[course_name] = course_info
 					except:
 						print "Course was in an invalid format."
+						traceback.print_exc(file = sys.stdout)
 		
 			return courses
 		
