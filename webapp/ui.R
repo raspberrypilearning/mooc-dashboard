@@ -42,7 +42,7 @@ sidebar <- dashboardSidebar(
 		menuItem("Team Members", tabName = "team_members", icon = icon("users"))
 		# ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
 		# ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
-		# ,menuItem("Debug", tabName = "debug")
+		,menuItem("Debug", tabName = "debug")
 	)#sidebarMenu
 )
 
@@ -104,11 +104,13 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					showOutput("learnersAgeBar", "highcharts"),
+					downloadButton('downloadLearnerAge', 'Download'),
 					title = "Age Distribution", 
 					status = "primary", solidHeader = TRUE, width = 8, collapsible = TRUE
 				),
 				box(
 					showOutput("learnersGender", "highcharts"),
+					downloadButton('downloadLearnerGender', 'Download'),
 					title = "Gender",
 					status = "primary", solidHeader = TRUE, width = 4, collapsible = TRUE
 				)
@@ -119,9 +121,24 @@ body <- dashboardBody(
 					id = "employmentTabBox",
 					width = 12,
 					height = 730,
-					tabPanel("Area", showOutput("employmentBar", "highcharts")),
-					tabPanel("Status", showOutput("employmentStatus", "highcharts")),
-					tabPanel("Degree", showOutput("degreeLevel", "highcharts"))
+					tabPanel("Area", 
+						fluidRow(
+							column(1,downloadButton('downloadLearnerEmployment','Download')),
+							column(12,showOutput("employmentBar", "highcharts"))
+						)
+					),
+					tabPanel("Status", 
+						fluidRow(
+							column(1,downloadButton('downloadLearnerStatus','Download')),
+							column(12,showOutput("employmentStatus", "highcharts"))
+						)
+					),
+					tabPanel("Degree", 
+						fluidRow(
+							column(1,downloadButton('downloadLearnerEducation','Download')),
+							column(12,showOutput("degreeLevel", "highcharts"))
+						)
+					)
 				)
 			),#fluidRow
 			fluidRow(
@@ -129,8 +146,18 @@ body <- dashboardBody(
 					title = "Regional",
 					id = "regionalTabBox",
 					width = 12,
-					tabPanel("Country", htmlOutput("learnerMap")),
-					tabPanel("HDI", showOutput("HDIColumn", "highcharts"))
+					tabPanel("Country", 
+						fluidRow(
+							column(1,downloadButton('downloadCountryData', 'Download')),
+							column(12,htmlOutput("learnerMap"))
+						)
+					),
+					tabPanel("HDI", 
+						fluidRow(
+							column(1,downloadButton('downloadHDIData','Download')),
+							column(12,showOutput("HDIColumn", "highcharts"))
+						)
+					)
 				)
 			)#fluidRow
 		),
@@ -336,13 +363,13 @@ body <- dashboardBody(
 		# 		)#column
 		# 	)#fluidRow
 		# )
-		# ,#tabItem
-		# tabItem(tabName = "debug",
-		# 	fluidRow(
-		# 		box(textOutput("debug"),
-		# 			width = 12)
-		# 	)
-		# )
+		,#tabItem
+		tabItem(tabName = "debug",
+			fluidRow(
+				box(textOutput("debug"),
+					width = 12)
+			)
+		)
 	),
 	tags$h5(textOutput("updatedTime"))
 )# dashboardBody

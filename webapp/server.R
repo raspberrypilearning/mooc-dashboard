@@ -903,15 +903,7 @@ function(input, output, session) {
 	output$learnersAgeBar <- renderChart2({
 		chartDependency()
 
-		data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
-		data$levels <- as.character(data$levels)
-		for(x in names(enrolment_data)){
-			ageCount <- getLearnerAgeCount(enrolment_data[[x]])
-			data[[x]] <- numeric(7)
-			for(i in c(1:length(ageCount$age_group))){
-				data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
-			}
-		}
+		data <- learnersAgeData()
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 750)
@@ -930,20 +922,18 @@ function(input, output, session) {
 		return(a)
 	})
 
+	output$downloadLearnerAge <- downloadHandler(
+		filename = function() { paste("learner_age", '.csv', sep='') },
+    	content = function(file) {
+    		data <- learnersAgeData()
+      		write.csv(data, file)
+    	}
+	)
+
 	# Produces graph of the percentages of learners gender groups
 	output$learnersGender <- renderChart2({
 		chartDependency()
-		data <- data.frame(levels = c("male","female","other","non-binary"))
-		data$levels <- as.character(data$levels)
-
-		for(x in names(enrolment_data)){
-			genderCount <- getGenderCount(enrolment_data[[x]])
-			data[[x]] <- numeric(4)
-			for(i in c(1:length(genderCount$gender))){
-				data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$freq[i]
-			}
-		}
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
+		data <- learnersGenderData()
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 350)
@@ -962,25 +952,21 @@ function(input, output, session) {
 		return(a)
 	})
 
+	output$downloadLearnerGender <- downloadHandler(
+		
+		filename = function() { paste("learner_gender", '.csv', sep='') },
+    	content = function(file) {
+    		
+			data <- learnersGenderData()
+      		write.csv(data, file)
+    	}
+	)
+
 	# Produces graph of the percentages of the learners employment area
 	output$employmentBar <-renderChart2({
 		chartDependency()
-		data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
-										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
-										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
-										 "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
-										 "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
-										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
-		data$area <- as.character(data$area)
-
-		for(x in names(enrolment_data)){
-		  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
-		  data[[x]] <- numeric(21)
-		  for(i in c(1:length(areaCount$employment))){
-			data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
-		  }
-		}
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
+		
+		data <- learnersEmploymentData()
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
@@ -996,25 +982,21 @@ function(input, output, session) {
 		  )
 		)
 		return(a)
-	})	
+	})
+
+	output$downloadLearnerEmployment <- downloadHandler(
+
+		filename = function() { paste("learner_employment", '.csv', sep='') },
+    	content = function(file) {
+    		data <- learnersEmploymentData()
+    		write.csv(data, file)
+    	}
+	)	
 	
 	# Produces graph of the percentages of the learners employment status
 	output$employmentStatus <- renderChart2({
 		chartDependency()
-
-		data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
-			"not_working","full_time_student","self_employed","looking_for_work")))
-		data$levels <- as.character(data$levels)
-		for(x in names(enrolment_data)){
-			statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
-			data[[x]] <- numeric(8)
-			for(i in c(1:length(statusCount$status))){
-			data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
-		  }
-		}
-		
-		data <- data[order(-data[[names(enrolment_data[1])]]),]
-
+		data<-learnersStatusData
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
 		a$data(data[c(names(enrolment_data))])
@@ -1031,22 +1013,22 @@ function(input, output, session) {
 		)
 		return(a)
 	})
-	
+
+	output$downloadLearnerStatus <- downloadHandler(
+
+		
+		filename = function() { paste("learner_status", '.csv', sep='') },
+    	content = function(file) {
+
+			data <- learnersStatusData()
+	      	write.csv(data, file)
+    	}
+	)	
+
 	# Produces graph of the percentages of the learners education level
 	output$degreeLevel <- renderChart2({
 		chartDependency()
-		data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
-		"tertiary","university_degree","university_masters","university_doctorate"))
-		data$level <- as.character(data$level)
-
-		for(x in names(enrolment_data)){
-		  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
-		  data[[x]] <- numeric(8)
-		  for(i in c(1:length(degreeCount$degree))){
-			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
-		  }
-		}
-
+		data<-learnersEducationData()
 
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "column", width = 1200, height = 650)
@@ -1064,6 +1046,18 @@ function(input, output, session) {
 		)
 		return(a)
 	})
+
+
+
+	output$downloadLearnerEducation <- downloadHandler(
+
+		
+		filename = function() { paste("learner_education", '.csv', sep='') },
+    	content = function(file) {
+    		data <- learnersEducationData()
+	      	write.csv(data, file)
+    	}
+	)	
 	
 	# Produces map of which countries the learners are from and in what quantities
 	output$learnerMap <- renderGvis({
@@ -1090,28 +1084,18 @@ function(input, output, session) {
 		return (map)
 	})
 
+	output$downloadCountryData <- downloadHandler(	
+		filename = function() { paste("learner_country", '.csv', sep='') },
+    	content = function(file) {
+    		data <- getLearnersByCountry(pre_course_data[which(pre_course_data$country != "Unknown"), ])[[2]]		
+	      	write.csv(data, file)
+    	}
+	)	
+
 	#Produces map of which HDI level the learners are from based on their country data
 	output$HDIColumn <- renderChart2({
 		chartDependency()
-		data <- data.frame(levels = c("Very High","High","Medium","Low"))
-
-		for(x in names(enrolment_data)){
-		  enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
-		  countries<- as.character(enrolments$country)
-		  hdilevels <- countryCodesToHDI(countries)
-		  all <- as.factor(hdilevels)
-		  allCount <- count(all)
-		  allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
-		  allCount$percentage <- round(allCount$percentage,2)
-		  allCount$x <- as.character(allCount$x)
-		  allCount <- allCount[,c("x","percentage")]
-		  allCount <- allCount[order(-allCount$percentage),]
-		  data[[x]] <- numeric(4)
-		  
-		  for(i in c(1:length(allCount$x))){
-			data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
-		  }
-		}
+		data <- learnersHDIData()
 
 		chart <- Highcharts$new()
 		chart$chart(type = 'column', width = 1200)
@@ -1130,6 +1114,13 @@ function(input, output, session) {
 		return(chart)
 	})
 
+	output$downloadHDIData <- downloadHandler(	
+		filename = function() { paste("learner_HDI", '.csv', sep='') },
+    	content = function(file) {
+    		data <- learnersHDIData()
+	      	write.csv(data, file)
+    	}
+	)
 	# END DEMOGRAPHIC TAB
 	
 	#START: CHARTS - COMMENTS ORIENTATED
@@ -2130,6 +2121,7 @@ function(input, output, session) {
 		chartDependency()
 		freqs <- list()
 		maxLength <- 0
+		startDays <- list()
 		for(i in c(1:length(names(enrolment_data)))){
 			learners <- enrolment_data[[names(enrolment_data)[i]]]
 			learners <- learners[which(learners$role == "learner"),]
@@ -2142,6 +2134,8 @@ function(input, output, session) {
 				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
 			}
 			freqs[[i]] <- dates
+			startDay <- substr(as.character(course_data[[names(course_data)[i]]]$start_date),start = 1, stop = 10)
+			startDays[i] <- as.Date(startDay) - as.Date(signUpCount$x[1])
 		}
 		data <- data.frame(day = seq(from = 1, to = maxLength))
 		for(x in c(1:length(freqs))){
@@ -2156,7 +2150,116 @@ function(input, output, session) {
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
 		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		chart$xAxis(categories = data$day)
+		if(length(startDays == 1)){
+			chart$xAxis(
+				title = list(text = "Day"),
+				categories = data$day, plotLines = list(
+					list(
+	      				value = startDays[1],
+	      				color = "#7cb5ec",
+	      				width = 3,
+	      				zIndex = 4,
+	      				label = list(
+	      					text = paste(names(enrolment_data)[1],
+	      						"Start", sep = " "),
+	                		style = list( color = 'black')
+	      				)
+	      			)
+				)
+			)
+		} else if (length(startDays == 2)){
+			chart$xAxis(
+				title = list(text = "Day"),
+				categories = data$day, plotLines = list(
+					list(
+	      				value = startDays[1],
+	      				color = "#7cb5ec",
+	      				width = 3,
+	      				zIndex = 4,
+	      				label = list(
+	      					text = paste(names(enrolment_data)[1],
+	      						"Start", sep = " "),
+	                		style = list( color = 'black')
+	      				)
+	      			),
+	      			list(
+	      				value = startDays[2],
+	      				color = "#434348",
+	      				width = 3,
+	      				zIndex = 4,
+	      				label = list(
+	      					text = paste(names(enrolment_data)[2],
+	      						"Start", sep = " "),
+	                		style = list( color = 'black')
+	      				)
+	      			)
+				)
+			)
+		}else if (length(startDays == 3)){
+			chart$xAxis(
+				title = list(text = "Day"),
+				categories = data$day, plotLines = list(list(
+	      		value = startDays[1],
+	      		color = "#7cb5ec",
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[1],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	)),
+				list(
+	      		value = startDays[2],
+	      		color = '#434348',
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[2],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	)),
+				list(
+	      		value = startDays[3],
+	      		color = '#8085e9',
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[3],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	))
+	      	))
+		}else if (length(startDays == 4)){
+			chart$xAxis(
+				title = list(text = "Day"),
+				categories = data$day, plotLines = list(list(
+	      		value = startDays[1],
+	      		color = "#7cb5ec",
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[1],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	)),
+				list(
+	      		value = startDays[2],
+	      		color = '#434348',
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[2],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	)),
+				list(
+	      		value = startDays[3],
+	      		color = '#8085e9',
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[3],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	)),
+				list(
+	      		value = startDays[4],
+	      		color = '#00ffcc',
+	      		width = 3,
+	      		zIndex = 4,
+	      		label = list(text = paste(names(enrolment_data)[4],"Start", sep = " "),
+	                   style = list( color = 'black')
+	      	))
+	      	))
+		}
 		chart$yAxis(title = list(text = "Frequency"))
 		return(chart)
 	})
@@ -2206,14 +2309,27 @@ function(input, output, session) {
 
 	# END SIGN UPS AND STATEMENTS SOLD TAB
 	
-	# Debug tool for essentailly print statements.
+	# Debug tool print statements.
 	output$debug <- renderText({
-		chartDependency()
-		stepDependancy()
-		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
-		model <- lm(stepsCount[,2] ~ stepsCount$week_step)
-		fit <- predict(model,newData = stepsCount)
-		print(fit)
+		freqs <- list()
+		maxLength <- 0
+		startDays <- list()
+		for(i in c(1:length(names(enrolment_data)))){
+			learners <- enrolment_data[[names(enrolment_data)[i]]]
+			learners <- learners[which(learners$role == "learner"),]
+			signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
+			dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+			if(length(dates[[1]]) > maxLength){
+				maxLength <- length(dates[[1]])
+			}
+			for(x in c(1:length(signUpCount$x))){
+				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+			}
+			freqs[[i]] <- dates
+			startDay <- substr(as.character(course_data[[names(course_data)[i]]]$start_date),start = 1, stop = 10)
+			startDays[i] <- as.Date(startDay) - as.Date(signUpCount$x[1])
+		}
+		print(unlist(startDays))
 	})
 	
 
