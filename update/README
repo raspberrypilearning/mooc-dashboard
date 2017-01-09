@@ -10,7 +10,7 @@ Overview
 This script fetches (meta)data about Massive Open Online Courses (MOOCs) from FutureLearn.com for further processing and presentation by the R/Shiny based web application.
 Collection is achieved by a combination of HTML scraping and assembling paths to CSV files.  Reliance on fixed URL paths and the naming of HTML elements makes this script fragile and liable to irreversible breakage without notice. As soon as FutureLearn make an API available, this script should be replaced.
 
-The original author included the facility to export outputs to a MySQL databases (createTable.py, csvToSQL.py).  This facility is currently unused and untested.
+The CSV files are stored inside a MYSQL database from which the R/Shiny web application pulls the necessary data from.
 
 Datasets are typically updated by FutureLearn on a daily basis, so this script would typically be run by cron, e.g.
 
@@ -48,7 +48,9 @@ $ python update.py
 Outputs
 -------
 
-Outputs are text/csv files stored under the following directory structure:
+The main output is the MYSQL database which stores all of the data downloaded.
+
+Outputs include the original text/csv files stored under the following directory structure:
 
 ../data/INSTITUTION/COURSE_NAME/COURSE_RUN-START_DATE-END_DATE/
 
@@ -57,6 +59,7 @@ enrolments.csv
 metadata.csv
 question-response.csv
 step-activity.csv
+team-members.csv
 
 See FutureLearn Stats dashboard documentation for details of the types of data in these files.
 
