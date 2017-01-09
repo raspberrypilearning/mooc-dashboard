@@ -164,11 +164,13 @@ body <- dashboardBody(
 		tabItem(tabName = "statementDemographics",
 			fluidRow(
 				box(showOutput("stateAgeColumn","highcharts"),
+					downloadButton("downloadStateLearnerAge","Download"),
 					title = "Statements Sold Age Ranges",
 					status = "primary", solidHeader = TRUE, width = 8, height = 500,collapsible = TRUE
 				),
 				box(
 					showOutput("stateGenderColumn","highcharts"),
+					downloadButton("downloadStateLearnerGender","Download"),
 					title = "Statements Sold Gender",
 					status = "primary", solidHeader = TRUE, width = 4, height = 500,collapsible = TRUE
 				)
@@ -179,9 +181,24 @@ body <- dashboardBody(
 					id = "StatementsEmploymentTabBox",
 					width = 12,
 					height = 730,
-					tabPanel("Area", showOutput("stateEmploymentAreaBar", "highcharts")),
-					tabPanel("Status", showOutput("stateEmploymentStatusColumn", "highcharts")),
-					tabPanel("Degree", showOutput("stateDegreeColumn", "highcharts"))
+					tabPanel("Area", 
+						fluidRow(
+							column(1,downloadButton("downloadStateLearnerEmployment","Download")),
+							column(12,showOutput("stateEmploymentAreaBar", "highcharts"))
+						)
+					),
+					tabPanel("Status", 
+						fluidRow(
+							column(1,downloadButton("downloadStateLearnerStatus","Download")),
+							column(12, showOutput("stateEmploymentStatusColumn", "highcharts"))
+						)
+					),
+					tabPanel("Degree", 
+						fluidRow(
+							column(1,downloadButton("downloadStateLearnerEducation","Download")),
+							column(12,showOutput("stateDegreeColumn", "highcharts"))
+						)
+					)
 				)
 			),
 			fluidRow(
@@ -189,8 +206,18 @@ body <- dashboardBody(
 					title = "Country Data",
 					id = "statementsRegionalTabBox",
 					width = 12,
-					tabPanel("Countrys", htmlOutput("stateLearnerMap")),
-					tabPanel("HDI", showOutput("stateHDIColumn", "highcharts"))
+					tabPanel("Countrys", 
+						fluidRow(
+							column(1,downloadButton("downloadStateLearnerCountry","Download")),
+							column(12,htmlOutput("stateLearnerMap"))
+						)
+					),
+					tabPanel("HDI", 
+						fluidRow(
+							column(1,downloadButton("downloadStateLearnerHDI","Download")),
+							column(12,showOutput("stateHDIColumn", "highcharts"))
+						)
+					)
 				)
 			)
 		),

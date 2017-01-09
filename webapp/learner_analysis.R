@@ -951,3 +951,113 @@ learnersHDIData <- function(){
 	}
 	return(data)
 }
+
+stateGenderData <- function(){
+	data <- data.frame(levels = c("male","female","other","non-binary"))
+	data$levels <- as.character(data$levels)
+
+	for(x in names(enrolment_data)){
+	  statementsSoldCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+	  statementsSoldCount <- getGenderCount(statementsSoldCount)
+	  print(statementsSoldCount)
+	  
+	  data[[x]] <- numeric(4)
+	  for(i in c(1:length(statementsSoldCount$gender))){
+		data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$freq[i]
+	  }
+	}
+
+	data <- data[order(-data[[names(enrolment_data[1])]]),]
+	return(data)
+}
+
+stateAgeData <-function(){
+	data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
+	data$levels <- as.character(data$levels)
+	for(x in names(enrolment_data)){
+		ageCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		ageCount <- getLearnerAgeCount(ageCount)
+		data[[x]] <- numeric(7)
+		for(i in c(1:length(ageCount$age_group))){
+			data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		}
+	}
+	return(data)
+}
+
+stateEmploymentData<-function(){
+	data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
+										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
+										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
+										 "hospitality_tourism_and_sport","it_and_information_services","law","marketing_advertising_and_pr","media_and_publishing",               
+										 "property_and_construction","public_sector","recruitment_and_pr","retail_and_sales",
+										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
+	data$area <- as.character(data$area)
+
+	for(x in names(enrolment_data)){
+		areaCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		areaCount <- getEmploymentAreaCount(areaCount)
+		data[[x]] <- numeric(21)
+		for(i in c(1:length(areaCount$employment))){
+		data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+	  }
+	}
+	data <- data[order(-data[[names(enrolment_data[1])]]),]
+	return(data)
+}
+
+stateStatusData<-function(){
+	data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
+			"not_working","full_time_student","self_employed","looking_for_work")))
+	data$levels <- as.character(data$levels)
+	for(x in names(enrolment_data)){
+		statusCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		statusCount <- getEmploymentStatusCount(statusCount)
+		data[[x]] <- numeric(8)
+		for(i in c(1:length(statusCount$status))){
+		data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
+	  }
+	}
+
+	data <- data[order(-data[[names(enrolment_data[1])]]),]
+	return(data)
+}
+
+stateEducationData<-function(){
+	data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
+		"tertiary","university_degree","university_masters","university_doctorate"))
+	data$level <- as.character(data$level)
+
+	for(x in names(enrolment_data)){
+		degreeCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		degreeCount <- getEmploymentDegreeCount(degreeCount)
+		data[[x]] <- numeric(8)
+		for(i in c(1:length(degreeCount$degree))){
+			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+		}
+	}
+	return(data)
+}
+
+stateHDIData <-function(){
+	data <- data.frame(levels = c("Very High","High","Medium","Low"))
+		for(x in names(enrolment_data)){
+			enrolments <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+			enrolments <- enrolments[which(enrolments$country != "Unknown"), ]
+			countries<- as.character(enrolments$country)
+			hdilevels <- countryCodesToHDI(countries)
+			all <- as.factor(hdilevels)
+			allCount <- count(all)
+			allCount$percentage <- allCount$freq / sum(allCount$freq) * 100
+			allCount$percentage <- round(allCount$percentage,2)
+			allCount$x <- as.character(allCount$x)
+			allCount <- allCount[,c("x","percentage")]
+			allCount <- allCount[order(-allCount$percentage),]
+			data[[x]] <- numeric(4)
+			
+			for(i in c(1:length(allCount$x))){
+				data[[x]][which(data$levels == allCount$x[i])] <- allCount$percentage[i]
+				}
+		}
+	return(data)
+}
