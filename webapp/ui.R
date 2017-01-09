@@ -50,6 +50,7 @@ body <- dashboardBody(
 	useShinyjs(),
 	tags$h2(paste(institution)),
 	tags$h4(textOutput("pageTitle")),
+	tags$p("Loading data for all courses may take a few minutes."),
 	tabItems( 
 		tabItem(tabName = "home",
 			fluidRow(
@@ -225,11 +226,13 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					showOutput("signUpsLine", "highcharts"),
+					downloadButton("downloadSignUps","Download"),
 					title = "Sign Ups per day",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
 				),
 				box(
 					showOutput("statementsSoldLine", "highcharts"),
+					downloadButton("downloadStatementsSold","Download"),
 					title = "Statements Sold per day",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
 				)

@@ -1061,3 +1061,65 @@ stateHDIData <-function(){
 		}
 	return(data)
 }
+
+signUpData<-function(){
+	freqs <- list()
+	maxLength <- 0
+	startDays <- list()
+	for(i in c(1:length(names(enrolment_data)))){
+		learners <- enrolment_data[[names(enrolment_data)[i]]]
+		learners <- learners[which(learners$role == "learner"),]
+		signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
+		dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+		if(length(dates[[1]]) > maxLength){
+			maxLength <- length(dates[[1]])
+		}
+		for(x in c(1:length(signUpCount$x))){
+			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+		}
+		freqs[[i]] <- dates
+		startDay <- substr(as.character(course_data[[names(course_data)[i]]]$start_date),start = 1, stop = 10)
+		startDays[i] <- as.Date(startDay) - as.Date(signUpCount$x[1])
+	}
+	data <- data.frame(day = seq(from = 1, to = maxLength))
+	for(x in c(1:length(freqs))){
+		d <- numeric(maxLength)
+		for(i in c(1:length(freqs[[x]][[2]]))){
+			if(!is.na(freqs[[x]][[2]][i]))
+			d[i] <- freqs[[x]][[2]][i]
+		}
+		data[[names(enrolment_data[x])]] <- d
+	}
+	return(list(data,startDays))
+}
+
+statementsSoldData<-function(){
+	freqs <- list()
+
+	maxLength <- 0
+	for(i in c(1:length(names(enrolment_data)))){
+		learners <- enrolment_data[[names(enrolment_data)[i]]]
+		learners <- learners[which(learners$role == "learner"),]
+		learners <- learners[which(learners$purchased_statement_at != ""),]
+		signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
+		dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+		if(length(dates[[1]]) > maxLength){
+			maxLength <- length(dates[[1]])
+		}
+		for(x in c(1:length(signUpCount$x))){
+			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+		}
+		freqs[[i]] <- dates
+	}
+
+	data <- data.frame(day = seq(from = 1, to = maxLength))
+	for(x in c(1:length(freqs))){
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(enrolment_data[x])]] <- d
+	}
+	return(data)
+}

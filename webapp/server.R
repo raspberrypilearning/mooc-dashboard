@@ -1050,8 +1050,6 @@ function(input, output, session) {
 
 
 	output$downloadLearnerEducation <- downloadHandler(
-
-		
 		filename = function() { paste("learner_education", '.csv', sep='') },
     	content = function(file) {
     		data <- learnersEducationData()
@@ -1939,8 +1937,6 @@ function(input, output, session) {
 	# Bar chart of statement purchaser's employment area
 	output$stateEmploymentAreaBar <- renderChart2({
 		chartDependency()
-
-		chartDependency()
 		data<- stateEmploymentData()
 		a <- rCharts:::Highcharts$new()
 		a$chart(type = "bar", width = 1200, height = 650)
@@ -2093,33 +2089,11 @@ function(input, output, session) {
 	# Line showing sign ups over time
 	output$signUpsLine <- renderChart2({
 		chartDependency()
-		freqs <- list()
-		maxLength <- 0
-		startDays <- list()
-		for(i in c(1:length(names(enrolment_data)))){
-			learners <- enrolment_data[[names(enrolment_data)[i]]]
-			learners <- learners[which(learners$role == "learner"),]
-			signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
-			dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-			if(length(dates[[1]]) > maxLength){
-				maxLength <- length(dates[[1]])
-			}
-			for(x in c(1:length(signUpCount$x))){
-				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-			}
-			freqs[[i]] <- dates
-			startDay <- substr(as.character(course_data[[names(course_data)[i]]]$start_date),start = 1, stop = 10)
-			startDays[i] <- as.Date(startDay) - as.Date(signUpCount$x[1])
-		}
-		data <- data.frame(day = seq(from = 1, to = maxLength))
-		for(x in c(1:length(freqs))){
-			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
-			}
-			data[[names(enrolment_data[x])]] <- d
-		}
+		
+		analysis <- signUpData()
+		data<- analysis[[1]]
+		startDays <- analysis[[2]]
+
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
@@ -2237,40 +2211,19 @@ function(input, output, session) {
 		chart$yAxis(title = list(text = "Frequency"))
 		return(chart)
 	})
+
+	output$downloadSignUps <- downloadHandler(
+		filename = function() { paste("signUps", '.csv', sep='') },
+    	content = function(file) {
+			data <- signUpData()[[1]]
+			write.csv(data, file)
+    	}
+	)
 	
 	# Line showing statements sold over time
 	output$statementsSoldLine <- renderChart2({
 		chartDependency()
-
-		freqs <- list()
-
-		maxLength <- 0
-		for(i in c(1:length(names(enrolment_data)))){
-			learners <- enrolment_data[[names(enrolment_data)[i]]]
-			learners <- learners[which(learners$role == "learner"),]
-			learners <- learners[which(learners$purchased_statement_at != ""),]
-			signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
-			dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-			if(length(dates[[1]]) > maxLength){
-				maxLength <- length(dates[[1]])
-			}
-			for(x in c(1:length(signUpCount$x))){
-				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-			}
-			freqs[[i]] <- dates
-		}
-
-		data <- data.frame(day = seq(from = 1, to = maxLength))
-
-		for(x in c(1:length(freqs))){
-			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
-			}
-			data[[names(enrolment_data[x])]] <- d
-		}
-
+		data<-statementsSoldData()
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
@@ -2279,6 +2232,15 @@ function(input, output, session) {
 		chart$yAxis(title = list(text = "Frequency"))
 		return(chart)
 	})
+
+
+	output$downloadStatementsSold <- downloadHandler(
+		filename = function() { paste("statements_sold", '.csv', sep='') },
+    	content = function(file) {
+			data <- statementsSoldData()
+			write.csv(data, file)
+    	}
+	)
 
 
 	# END SIGN UPS AND STATEMENTS SOLD TAB
