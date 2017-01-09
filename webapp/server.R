@@ -2150,7 +2150,7 @@ function(input, output, session) {
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
 		chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-		if(length(startDays == 1)){
+		if(length(startDays) == 1){
 			chart$xAxis(
 				title = list(text = "Day"),
 				categories = data$day, plotLines = list(
@@ -2167,7 +2167,7 @@ function(input, output, session) {
 	      			)
 				)
 			)
-		} else if (length(startDays == 2)){
+		} else if (length(startDays) == 2){
 			chart$xAxis(
 				title = list(text = "Day"),
 				categories = data$day, plotLines = list(
@@ -2195,7 +2195,7 @@ function(input, output, session) {
 	      			)
 				)
 			)
-		}else if (length(startDays == 3)){
+		}else if (length(startDays) == 3){
 			chart$xAxis(
 				title = list(text = "Day"),
 				categories = data$day, plotLines = list(list(
@@ -2223,7 +2223,7 @@ function(input, output, session) {
 	                   style = list( color = 'black')
 	      	))
 	      	))
-		}else if (length(startDays == 4)){
+		}else if (length(startDays) == 4){
 			chart$xAxis(
 				title = list(text = "Day"),
 				categories = data$day, plotLines = list(list(
@@ -2310,27 +2310,27 @@ function(input, output, session) {
 	# END SIGN UPS AND STATEMENTS SOLD TAB
 	
 	# Debug tool print statements.
-	output$debug <- renderText({
-		freqs <- list()
-		maxLength <- 0
-		startDays <- list()
-		for(i in c(1:length(names(enrolment_data)))){
-			learners <- enrolment_data[[names(enrolment_data)[i]]]
-			learners <- learners[which(learners$role == "learner"),]
-			signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
-			dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-			if(length(dates[[1]]) > maxLength){
-				maxLength <- length(dates[[1]])
-			}
-			for(x in c(1:length(signUpCount$x))){
-				dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-			}
-			freqs[[i]] <- dates
-			startDay <- substr(as.character(course_data[[names(course_data)[i]]]$start_date),start = 1, stop = 10)
-			startDays[i] <- as.Date(startDay) - as.Date(signUpCount$x[1])
-		}
-		print(unlist(startDays))
-	})
+	# output$debug <- renderText({
+	# 	freqs <- list()
+	# 	maxLength <- 0
+	# 	startDays <- list()
+	# 	for(i in c(1:length(names(enrolment_data)))){
+	# 		learners <- enrolment_data[[names(enrolment_data)[i]]]
+	# 		learners <- learners[which(learners$role == "learner"),]
+	# 		signUpCount <- count(substr(as.character(learners$enrolled_at),start = 1, stop = 10))
+	# 		dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+	# 		if(length(dates[[1]]) > maxLength){
+	# 			maxLength <- length(dates[[1]])
+	# 		}
+	# 		for(x in c(1:length(signUpCount$x))){
+	# 			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+	# 		}
+	# 		freqs[[i]] <- dates
+	# 		startDay <- substr(as.character(course_data[[names(course_data)[i]]]$start_date),start = 1, stop = 10)
+	# 		startDays[i] <- as.Date(startDay) - as.Date(signUpCount$x[1])
+	# 	}
+	# 	print(length(startDays))
+	# })
 	
 
 	getPage<-function() {

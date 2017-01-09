@@ -42,7 +42,7 @@ sidebar <- dashboardSidebar(
 		menuItem("Team Members", tabName = "team_members", icon = icon("users"))
 		# ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
 		# ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
-		,menuItem("Debug", tabName = "debug")
+		# ,menuItem("Debug", tabName = "debug")
 	)#sidebarMenu
 )
 
@@ -363,13 +363,13 @@ body <- dashboardBody(
 		# 		)#column
 		# 	)#fluidRow
 		# )
-		,#tabItem
-		tabItem(tabName = "debug",
-			fluidRow(
-				box(textOutput("debug"),
-					width = 12)
-			)
-		)
+		# ,#tabItem
+		# tabItem(tabName = "debug",
+		# 	fluidRow(
+		# 		box(textOutput("debug"),
+		# 			width = 12)
+		# 	)
+		# )
 	),
 	tags$h5(textOutput("updatedTime"))
 )# dashboardBody
