@@ -65,6 +65,7 @@ def update(email,password):
 			writer = csv.writer(f)
 			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,course_run".split(','))
 			for row in enrolmentData:
+				print(row)
 				if 'learners' not in row:
 					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5},{6},{7}'.format(row['run_id'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold'], row['course'],row['course_run']) 
 				elif 'statements_sold' in row:
