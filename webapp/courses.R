@@ -1,5 +1,5 @@
 getListOfCourses <- function() {
-  outputPath <- file.path(getwd(),"../data",institution)
+  outputPath <- file.path(getwd(),"../data-layer/data",institution)
   courses <- list.dirs(path = outputPath, full.names = FALSE, recursive = FALSE)
   courses <- courses[which(courses != "Courses Data")]
   return(courses)
@@ -7,7 +7,7 @@ getListOfCourses <- function() {
 
 getRuns <- function (course) {
   print("Getting list of runs")
-  runsPath <- file.path(getwd(),"../data",institution,course)
+  runsPath <- file.path(getwd(),"../data-layer/data",institution,course)
   print(runsPath)
   runs <- list.dirs(path = runsPath, full.names = FALSE, recursive = FALSE)
   return(runs)

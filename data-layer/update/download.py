@@ -1,6 +1,7 @@
-import requests,datetime,mysql.connector,os,errno,json
+import requests,datetime,os,errno,json
+#import mysql.connector
 from login import login
-from csvToSQL import CSV_TO_SQL
+#from csvToSQL import CSV_TO_SQL
 
 def download(s, uni_name, course_name, run, info):
 	""" Fetch all the datasets (CSV) for a given iteration (run) of a course
@@ -50,6 +51,8 @@ def download(s, uni_name, course_name, run, info):
 			print "output directory: %s exists and course is finished - skipping download " % dir_path
 
 
+'''importData Moved to Database Layer
+
 def importData(files,uni):
 
 	credential_data = open('config.json').read()
@@ -63,3 +66,5 @@ def importData(files,uni):
 		convert.insertIntoTable(f,course_run,uni)
 		# os.remove(f)
 		# Lets not delete the csv files until the sql conversion is finished.d
+'''
+

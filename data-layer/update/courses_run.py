@@ -20,7 +20,7 @@ class FLCourses:
 		if(self.__rep.status_code == 200):
 			self.__isAdmin = True
 			soup = BeautifulSoup(self.__rep.content,'html.parser')
-			uni = soup.find_all(class_ = 'a-heading')[0]
+			uni = soup.find_all(class_ = 'm-action-bar__title')[0]
 			self.__uni = uni.text.strip()
 
 	def getCourses(self):
@@ -150,12 +150,13 @@ class FLCourses:
 
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
-			while soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb') is None:
+			while soup.find("ul", class_ = 'm-breadcrumb-old-list breadcrumb') is None:
+				print("Soup failed")
 				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 
 			table = soup.find('table', class_ = "m-table m-table--condensed")
 			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-4], stats_dashboard_url.split("/")[-3]]).encode('ascii','ignore')
-			startDate = soup.find("ul", class_ = 'm-breadcrumb-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
+			startDate = soup.find("ul", class_ = 'm-breadcrumb-old-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-old-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
 			enrolmentData["course"] = courseName
 			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-3].encode('ascii','ignore')
 			if len(startDate[1]) == 1:

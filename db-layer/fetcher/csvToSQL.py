@@ -19,12 +19,12 @@ class CSV_TO_SQL:
 		_file = open(f)
 		_reader = csv.reader(_file)
 		head  = next(_reader)
-		blank1,blank2,_filename, _extend = f.split('.')
-		dots,data,uni,course, otherDeets, datatype = _filename.split("/")
+		blank1,blank2,blank3,blank4,_filename, _extend = f.split('.')
+		dots,module,data,uni,course, otherDeets, datatype = _filename.split("/")
+
 		cursor = self.__database.cursor()
 		delete = ''
 		load = ''
-	
 
 		if 'comments' in datatype:
 			col = ''
