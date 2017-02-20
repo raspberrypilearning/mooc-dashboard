@@ -4,12 +4,11 @@
 This script fetches (meta)data about Massive Open Online Courses (MOOCs) from FutureLearn.com for further processing
 and presentation by the R/Shiny based web application.
 
-Collection is achieved by a combination of HTML scraping and assembling paths to CSV files.  Reliance on fixed URL paths
-and the naming of HTML elements makes this script fragile and liable to irreversible breakage without notice. As soon as
+Collection is achieved by a combination of HTML scraping and assembling paths to CSV files. The script then inserts the CSV files into a MYSQL database.
+Reliance on fixed URL paths and the naming of HTML elements makes this script fragile and liable to irreversible breakage without notice. As soon as
 FutureLearn make an API available, this script should be replaced.
 
-The original author included the facility import outputs to a MySQL databases (createTable.py, csvToSQL.py).
-This facility is currently unused."""
+"""
 
 import datetime, json, csv, os
 from download import download, importData
@@ -66,7 +65,9 @@ def update(email,password):
 			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,course_run".split(','))
 			for row in enrolmentData:
 				print(row)
-				if 'learners' not in row:
+				if 'joiners' not in row:
+					line = '{0},{1},{2},N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,{3},{4}'.format(row['run_id'],row['start_date'], row['no_of_weeks'], row['course'],row['course_run']) 
+				elif 'learners' not in row:
 					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5},{6},{7}'.format(row['run_id'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold'], row['course'],row['course_run']) 
 				elif 'statements_sold' in row:
 					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['statements_sold'], row['course'],row['course_run'])
