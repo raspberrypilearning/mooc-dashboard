@@ -291,9 +291,9 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					fluidRow(
-						tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runSelector", inline = TRUE)),
-						tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runSteps", inline = TRUE)),
-						tags$div(style = "display:inline-block; margin-left:15px", uiOutput("commentDateRange")),
+						tags$div(style = "display:inline-block; margin-left:15px", uiOutput("commentRunSelector", inline = TRUE)),
+						# tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runSteps", inline = TRUE)),
+						# tags$div(style = "display:inline-block; margin-left:15px", uiOutput("commentDateRange")),
 						tags$div(style = "margin-left:15px", uiOutput("viewButton")),
 						tags$br(),
 						tags$div(style = "display:inline-block; margin-left:15px", sliderInput("commentCloudFreq", "Minimum Frequency of Words:",

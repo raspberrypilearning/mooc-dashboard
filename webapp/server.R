@@ -1688,7 +1688,7 @@ function(input, output, session) {
 	# START COMMENT VIEWR TAB
 
 	#Selector to choose which run to view comments of
-	output$runSelector <- renderUI({
+	output$commentRunSelector <- renderUI({
 		chartDependency()
 		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
 		if(input$run2 != "None"){
@@ -1728,16 +1728,16 @@ function(input, output, session) {
 			return()
 		}
 		withProgress(message = "Processing Comments",{
-			data <- getCommentViewerData(comments_data, viewPressed())
-			data$likes <- as.integer(data$likes)
+			data <- getCommentViewerData(comments_data, viewPressed(), courseMetaData)
 			DT::datatable(
-				data[,c("timestamp","week_step","text","thread","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+				data[,c("timestamp","week_step","text","thread","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 				colnames = c(
 					"Date" = 1,
 					"Step" = 2,
 					"Comment" = 3,
 					"Part of a Thread?" = 4,
-					"Likes" = 5
+					"Likes" = 5,
+					"Link" = 6
 				),
 				options = list(
 					scrollY = "700px",
