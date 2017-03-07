@@ -1775,7 +1775,7 @@ function(input, output, session) {
 		viewPressed()
 		threadSelected()
 		withProgress(message = "Retrieving Thread",{
-			data <- getCommentViewerData(comments_data, viewPressed())
+			data <- getCommentViewerData(comments_data, viewPressed(),courseMetaData)
 			data$likes <- as.integer(data$likes)
 			selectedRow <- data[input$commentViewer_rows_selected,]
 			if(selectedRow$thread != "Yes"){
@@ -1796,12 +1796,13 @@ function(input, output, session) {
 			rows <- rows[order(rows$timestamp),]
 
 			DT::datatable(
-				rows[,c("timestamp","week_step","text","likes")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+				rows[,c("timestamp","week_step","text","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 				colnames = c(
 					"Date" = 1,
 					"Step" = 2,
 					"Comment" = 3,
-					"Likes" = 4
+					"Likes" = 4,
+					"Link" = 5
 				),
 				options = list(
 					scrollY = "700px",
