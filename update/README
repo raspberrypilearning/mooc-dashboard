@@ -23,7 +23,7 @@ Prerequisites
  - Python 2.7+
  - BeautifulSoup 4.x (inlcuded)
  - requests HTTP library (included)
- - MySQL Connector/Python (included / optiona, currently unused)
+ - MySQL Connector/Python (included)
 
 
 Configuration

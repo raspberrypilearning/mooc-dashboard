@@ -1,7 +1,7 @@
 Overview
 =========
 
-The MOOC-Dashbaord has two components:  A data retrieval (update) script written in Python that downloads (meta)data about Massive Open Online Courses (MOOCs) from Futurelearn.com and a web application, written in R, that performs analysis and renders charts based on that data.
+The MOOC-Dashbaord has three components:  A data retrieval (update) script written in Python that downloads (meta)data about Massive Open Online Courses (MOOCs) from Futurelearn.com, a mysql database which stores the data and a web application, written in R, that performs analysis and renders charts based on that data.
 
 
 Data retrieval
