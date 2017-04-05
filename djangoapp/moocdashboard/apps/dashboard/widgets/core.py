@@ -45,12 +45,11 @@ class WidgetCore():
         return queryset
 
     def update(self):
-    	self.values()
+        self.values()
 
 class Widget(WidgetCore):
     width = 12 #100% width default for widgets
     template_name_prefix = 'widgets'
-
 
 class ItemList(Widget):
     list_display = None
@@ -58,3 +57,13 @@ class ItemList(Widget):
     template_name = 'itemlist.html'
     empty_message = 'No items to display'
     sortable = False
+
+class ValueBox(Widget):
+    template_name = 'valuebox.html'
+    empty_message = 'This value is not available'
+    width = 6
+    value = None
+    descriptor = 'total'
+
+    icon = 'bag'
+    color = 'red'

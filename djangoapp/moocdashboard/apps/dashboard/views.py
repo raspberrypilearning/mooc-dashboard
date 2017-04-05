@@ -11,15 +11,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import json, datetime
 
 from ..data.models import AggregateCourse
-from .models import AggregateCourseTable, Dashboard, DemographicsDashboard, StatementDemographicsDashboard, SignUpsStatementsSoldDashboard
+from .models import AggregateCourseTable, Dashboard, DemographicsDashboard, StatementDemographicsDashboard, SignUpsStatementsSoldDashboard, StepCompletionDashboard
 from .forms import CourseRunForm
 
 # Create your views here.
 
 class CourseList(LoginRequiredMixin,SortableListView):
     allowed_sort_fields = {'course_run': {'default_direction': '',
-						 				  'verbose_name': 'Course Run'},
-						 	'start_date': {'default_direction': '',
+                      'verbose_name': 'Course Run'},
+              'start_date': {'default_direction': '',
                                     'verbose_name': 'Start Date'},
                            'no_of_weeks': {'default_direction': '',
                                               'verbose_name': 'Weeks'},
@@ -81,7 +81,7 @@ class CompareView(LoginRequiredMixin,FormView):
             #course4 = request.POST['course4']
             #run4 = request.POST['run4']
 
-            url = '/dashboard/?'
+            url = '/demographics/?'
 
             if courserun1:
                 url += 'course1=' + courserun1[0] + '&run1=' + courserun1[1]
@@ -152,22 +152,6 @@ class DashboardView(LoginRequiredMixin,TemplateView):
         self.retrieveCourseRuns()
         self.dashboard.updateCharts()
         return context
-'''
-    def get(self, request, *args, **kwargs):
-        if 'course1' in request.GET:
-          self.dashboard.course1 = request.GET['course1']
-        if 'run1' in request.GET:
-          self.dashboard.run1 = request.GET['run1']
-
-        pass
-
-    def get_context_data(self, **kwargs):
-        context = super(DashboardView, self).\
-            get_context_data(**kwargs)
-        context['first_names'] = ['Nathan', 'Richard']
-
-        return context'''
-
 
 class DemographicsView(DashboardView):
     dashboard = DemographicsDashboard()
@@ -177,3 +161,6 @@ class StatementDemographicsView(DashboardView):
 
 class SignUpsStatementsSoldView(DashboardView):
     dashboard = SignUpsStatementsSoldDashboard()
+
+class StepCompletionView(DashboardView):
+    dashboard = StepCompletionDashboard()

@@ -5,19 +5,6 @@ import dashboardwidgets
 import django_tables2 as tables
 
 # Create your models here.
-'''
-class Course(AggregateCourse):
-	def __str__(self):
-		return AggregateCourse.course
-
-class Run(AggregateCourse):
-	def __str__(self):
-		return AggregateCourse.run
-
-class CourseRun(AggregateCourse):
-	def __str__(self):
-		return AggregateCourse.course + AggregateCourse.run'''
-
 class AggregateCourseTable(tables.Table):
     class Meta:
         model = AggregateCourse
@@ -27,7 +14,7 @@ class AggregateCourseTable(tables.Table):
 class Dashboard():
 	title = 'Dashboard';
 	course1='All'
-	run1=None
+	run1='A'
 	course2=None
 	run2=None
 	course3=None
@@ -72,3 +59,7 @@ class StatementDemographicsDashboard(Dashboard):
 class SignUpsStatementsSoldDashboard(Dashboard):
 	title = 'Sign Ups and Statements Sold'
 	widgets = [dashboardwidgets.SignUpsPerDayWidget(),dashboardwidgets.StatementsSoldPerDayWidget()]
+
+class StepCompletionDashboard(Dashboard):
+	title = 'Steps Completion'
+	widgets = [dashboardwidgets.StepsMarkedAsComplete(),dashboardwidgets.StepsCompleted(),dashboardwidgets.StepsCompleted()]

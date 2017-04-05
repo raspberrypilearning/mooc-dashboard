@@ -20,7 +20,7 @@ class AggregateCourse(models.Model):
 	social_learners = models.CharField(max_length=20)
 	fully_participating_learners = models.CharField(max_length=20)
 	statements_sold = models.IntegerField()
-	university = models.CharField(max_length=40)
+	university = models.CharField(max_length=40, primary_key=True)
 
 	class Meta:
 		db_table = 'Courses'
@@ -30,7 +30,6 @@ class AggregateCourse(models.Model):
 
 	def get_course(self):
 		return self.course
-
 
 class LearnerEnrolment(models.Model):
 	_DATABASE = "mooc_data"
@@ -48,7 +47,7 @@ class LearnerEnrolment(models.Model):
 	employment_area = models.CharField(max_length=50)
 	university = models.CharField(max_length=40, primary_key=True)
 	course = models.CharField(max_length=70, primary_key=True)
-	course_run = models.CharField(max_length=11, primary_key=True)
+	course_run = models.IntegerField(primary_key=True)
 
 	class Meta:
 		db_table = 'Enrolments'
@@ -56,19 +55,20 @@ class LearnerEnrolment(models.Model):
 	def __str__(self):
 		return self.course_run
 
-class Learner(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    score = models.BigIntegerField()
+class LearnerActivity(models.Model):
+	_DATABASE = "mooc_data"
+	learner_id = models.CharField(max_length=50, primary_key=True)
+	step = models.CharField(max_length=5)
+	week_number = models.IntegerField(primary_key=True)
+	step_number = models.IntegerField(primary_key=True)
+	first_visited_at = models.DateTimeField()
+	last_completed_at = models.DateTimeField()
+	university = models.CharField(max_length=40, primary_key=True)
+	course = models.CharField(max_length=70, primary_key=True)
+	course_run = models.IntegerField(primary_key=True)
 
-    def __str__(self):
-        return self.name
+	class Meta:
+		db_table = 'Activity'
 
-
-class Pizza(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    price = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
+	def __str__(self):
+		return self.step
