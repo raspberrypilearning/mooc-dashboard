@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+import django_tables2 as tables
 
 # Create your models here.
 
@@ -27,6 +28,10 @@ class AggregateCourse(models.Model):
 	def __str__(self):
 		return self.course_run
 
+	def get_course(self):
+		return self.course
+
+
 class LearnerEnrolment(models.Model):
 	_DATABASE = "mooc_data"
 	learner_id = models.CharField(max_length=50, primary_key=True)
@@ -50,3 +55,20 @@ class LearnerEnrolment(models.Model):
 
 	def __str__(self):
 		return self.course_run
+
+class Learner(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    score = models.BigIntegerField()
+
+    def __str__(self):
+        return self.name
+
+
+class Pizza(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    price = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+

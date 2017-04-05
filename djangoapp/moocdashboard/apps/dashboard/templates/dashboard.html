@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ view.dashboard.title }}{% endblock %}
+{% block scripts %}
+            <!--Load the AJAX API-->
+            <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+            <script type="text/javascript">
+                // Load the Visualization API and the corechart package.
+                google.charts.load('current', {'packages':['corechart']});
+                urlappend = ''
+                {% if view.dashboard.course1 != None %}
+                urlappend += '?course1={{ view.dashboard.course1 }}&run1={{ view.dashboard.run1 }}'
+                {% endif %}
+                {% if view.dashboard.course2 != None %}
+                urlappend += '&course2={{ view.dashboard.course2 }}&run2={{ view.dashboard.run2 }}'
+                {% endif %}
+                {% if view.dashboard.course3 != None %}
+                urlappend += '&course3={{ view.dashboard.course3 }}&run3={{ view.dashboard.run3 }}'
+                {% endif %}
+                {% if view.dashboard.course4 != None %}
+                urlappend += '&course4={{ view.dashboard.course4 }}&run4={{ view.dashboard.run4 }}'
+                {% endif %}
+
+                function updateUrls(id) {
+                    new_url = $(id).attr('href') + urlappend
+                    $(id).attr('href',new_url);
+                }
+
+                $(document).ready(function() {
+                    updateUrls('#demographics')
+                    updateUrls('#statement-demographics')
+                    updateUrls('#sign-ups-statements-sold')
+                });
+            </script>
+{% endblock %}
+
+
+{% block description %}
+    {% if view.dashboard.course1 != None %}
+    {{ view.dashboard.course1 }} [{{ view.dashboard.run1 }}]
+    {% endif %}
+    {% if view.dashboard.course2 != None %}
+     vs {{ view.dashboard.course2 }} [{{ view.dashboard.run2 }}]
+    {% endif %}
+    {% if view.dashboard.course3 != None %}
+     vs {{ view.dashboard.course3 }} [{{ view.dashboard.run3 }}]
+    {% endif %}
+    {% if view.dashboard.course4 != None %}
+     vs {{ view.dashboard.course4 }} [{{ view.dashboard.run4 }}]
+    {% endif %}
+{% endblock %}
+{% block content %}
+                    <!--<div class="tab-content">
+                        <div role="tabpanel" class="tab-pane" id="tab-demographics">-->
+                            <div class="row">  
+                                {% for widget in view.dashboard.widgets %}
+                                    {% include widget.get_template_name %}
+                                {% endfor %}
+                            </div>
+                            <!-- /.row -->
+                        <!--</div>-->
+                        <!-- /.tab-pane -->
+
+                    <!--</div>-->
+                    <!-- ./tab-content -->
+
+{% endblock %}

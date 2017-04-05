@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+						<div class="row">
+                            <div class="col-sm-12">
+                                <div class="box box-solid box-primary">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">Login</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                    	<form method="post">
+                                    		{% csrf_token %}
+	                                        <div class="form-group">
+	                                            {{ form.as_p }}
+	                                            <button type="submit">Login</button>
+	                                        </div>
+	                                    </form>
+                                    </div>
+                                    <!-- ./box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+                            <!-- /.col -->
+                        </div>
+                        <!-- /.row -->
+{% endblock %}

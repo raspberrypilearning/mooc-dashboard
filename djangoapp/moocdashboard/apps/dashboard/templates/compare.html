@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}MOOC Dashboard{% endblock %}
+
+{%block scripts %}
+    <script type="text/javascript">
+
+        function updateCourseRunBox(select,id) {
+            var course_name = select.value;
+            
+            $(id).find('option').remove().end();
+            $(id).append('<option value=""></option>');
+            $(id).append('<option value="A">All</option>');
+            $.ajax({
+                type: 'POST',
+                url: '/get_runs/',
+                data: "course=" + course_name,
+                success: function(data) {
+                    data = $.parseJSON(data);
+                    for(var run in data) {
+                        if(data.hasOwnProperty(run)) {
+                            $(id).append('<option value="' + run + '">' + data[run] + '</option>');
+                        }
+                    }
+                }
+            })
+        }
+
+        $(document).ready(function() {
+            $('#tabs li a').on('click', function() {
+                $('#content-alert').show();
+                $('#content-alert').hide();
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block description %}Welcome to the MOOC Dashboard! Select the course(s) and run(s) you wish to visualise{% endblock %}
+
+{% block errors %}
+                    <div class="alert alert-warning alert-dismissible" id="content-alert" style="margin: 0 15px; display: none;">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-warning"></i> No course/runs selected!</h4>
+                        You must select at least 1 course to be able to view this data. 
+                    </div>
+{% endblock %}
+
+{% block content %}
+
+                    <form method="post" action=".">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-sm-10">
+                                <div class="box box-solid box-primary">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">Course selection</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="course1">Courses</label>
+                                                <div>
+                                                    <select id="course1" class="form-control course_select" name="course1" onchange="updateCourseRunBox(this,'#run1')" required>
+                                                        <option value=""></option>
+                                                        <option value="All">All</option>
+                                                    {% for course in form.courses_queryset %}
+                                                        <option value="{{ course| safe }}">{{ course| safe }}</option>
+                                                    {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="run1">Run</label>
+                                                <div>
+                                                    <select id="run1" class="form-control course_select" name="run1" required>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- ./box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+                            <!-- /.col -->
+
+                            <div class="col-sm-2">
+                                <div class="box box-solid box-primary">
+                                    <div class="box-header">
+                                        <h3 class="box-title">Go</h3>
+                                    </div>
+                                    <div class="box-body">
+                                        <div>
+                                            <input type="submit" value="Go" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.col -->
+
+                            <div class="col-sm-10">
+                                <div class="box box-solid box-primary">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">Course selection</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="course2">Courses</label>
+                                                <div>
+                                                    <select id="course2" class="form-control course_select" name="course2" onchange="updateCourseRunBox(this,'#run2')">
+                                                        <option value=""></option>
+                                                        <option value="All">All</option>
+                                                    {% for course in form.courses_queryset %}
+                                                        <option value="{{ course| safe }}">{{ course| safe }}</option>
+                                                    {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="run2">Run</label>
+                                                <div>
+                                                    <select id="run2" class="form-control course_select" name="run2">
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- ./box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+                            <!-- /.col -->
+
+                            <div class="col-sm-10">
+                                <div class="box box-solid box-primary">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">Course selection</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="course3">Courses</label>
+                                                <div>
+                                                    <select id="course3" class="form-control course_select" name="course3" onchange="updateCourseRunBox(this,'#run3')">
+                                                        <option value=""></option>
+                                                        <option value="All">All</option>
+                                                    {% for course in form.courses_queryset %}
+                                                        <option value="{{ course| safe }}">{{ course| safe }}</option>
+                                                    {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="run3">Run</label>
+                                                <div>
+                                                    <select id="run3" class="form-control course_select" name="run3">
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- ./box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+                            <!-- /.col -->
+
+                            <div class="col-sm-10">
+                                <div class="box box-solid box-primary">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">Course selection</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="course4">Courses</label>
+                                                <div>
+                                                    <select id="course4" class="form-control course_select" name="course4" onchange="updateCourseRunBox(this,'#run4')">
+                                                        <option value=""></option>
+                                                        <option value="All">All</option>
+                                                    {% for course in form.courses_queryset %}
+                                                        <option value="{{ course| safe }}">{{ course| safe }}</option>
+                                                    {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display:inline-block; margin-right:15px">
+                                            <div class="form-group" style="width: 450px;">
+                                                <label class="control-label" for="run4">Run</label>
+                                                <div>
+                                                    <select id="run4" class="form-control course_select" name="run4">
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- ./box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+                            <!-- /.col -->
+
+                        </div>
+                        <!-- /.row -->
+                    </form>
+
+
+{% endblock %}

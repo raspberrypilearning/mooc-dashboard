@@ -1,0 +1,54 @@
+                                <div class="col-md-{{ widget.width }}">
+                                    <div class="box box-solid box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">{{ widget.title }}</h3>
+                                            <div class="box-tools pull-right">
+                                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /.box-header -->
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div id="chart_{{ widget.uniqid }}"></div>
+                                                    <script type="text/javascript">
+                                                        google.charts.setOnLoadCallback(drawChart{{ widget.uniqid }});
+                                                        function drawChart{{ widget.uniqid }}() {
+
+                                                            // Create the data table.
+                                                            {{ widget.chartdata|safe }}
+
+                                                            // Set chart options
+                                                            var options = {
+                                                                height:{{ widget.height }},
+                                                                {% if widget.chart_type == 'Geo' %}
+                                                                colors: ['#91BFDB', '#FC8D59'],
+                                                                {% else %}
+                                                                colors: ['#91BFDB', '#FC8D59', '#EE6055', '#60D394', '#3066BE'],
+                                                                legend: 'bottom',
+                                                                {% endif %}
+                                                                {% if widget.options != None %}
+                                                                {{ widget.options|safe }}
+                                                                {% endif %}
+                                                            };
+
+                                                            // Instantiate and draw our chart, passing in some options.
+                                                            var chart = new google.visualization.{{ widget.chart_type }}Chart(document.getElementById('chart_{{ widget.uniqid }}'));
+                                                            chart.draw(data, options);
+                                                        }
+                                                    </script>
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- ./box-body -->
+                                        <!--<div class="box-footer">
+                                        </div>-->
+                                        <!-- /.box-footer -->
+                                    </div>
+                                    <!-- /.box -->
+                                </div>
+                                <!-- /.col -->
