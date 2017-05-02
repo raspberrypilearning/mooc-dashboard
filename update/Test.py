@@ -6,6 +6,7 @@ import os, os.path
 
 import os
 import re
+import subprocess
 
 def Test():
     files = {}
@@ -15,6 +16,8 @@ def Test():
 
 
 def printCsv():
+    print "Chaning the csv hex to unix style"
+    output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
     filesDictionary = {}
     p = re.compile('([0-9]+) - [0-9]{4}-[0-9]{2}-[0-9]{2}')
     for root, dirs, files in os.walk('../data/'):
@@ -32,6 +35,13 @@ def printCsv():
         print(courseRuns)
     print("Loading Csvs into Database")
     importData(filesDictionary,"University of Southampton")
+
+
+
+def removeCarrige():
+    print("Perfrom a shel script")
+    output = subprocess.call(['../../TestCoding/removeCarrigeReturn.sh', '../../TestCoding/'])
+    print("Done!")
 
 
 

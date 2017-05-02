@@ -14,7 +14,7 @@ import datetime, json, csv, os
 from download import download, importData
 from login import login
 from courses_run import FLCourses
-
+import subprocess
 
 def update(email,password):
 
@@ -81,8 +81,9 @@ def update(email,password):
 		files[courses_path+courses_filename] = 1
 		print len(files)
 		# JSR Disable import as unused
+		print "Chaning the csv hex to unix style"
+		output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
 		importData(files,cos.getUniName())
-
 		f_update_time = open("../data/"+cos.getUniName()+"/updated.txt",'w')
 		f_update_time.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
 		f_update_time.close()
