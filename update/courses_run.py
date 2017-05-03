@@ -64,7 +64,7 @@ class FLCourses:
 
 
 							# Fetch data of finished and in progress courses only.
-							if( _status == 'finished' or _status == 'in progress' ):
+							if( _status == 'finished' or _status == 'in progress' or _status == 'upcoming' ):
 								run_duration_weeks = self.getRunDuration(self.__mainsite + _run_details_path)
 
 								# Convert to Date type and compute end date
