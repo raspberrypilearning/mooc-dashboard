@@ -79,9 +79,9 @@ def update(email,password):
 			f.close()
 
 		files[courses_path+courses_filename] = 1
-		print len(files)
+		print "Number of csv files to be inserted into database: " + len(files)
 		# JSR Disable import as unused
-		print "Chaning the csv hex to unix style"
+		print "Changing the csv hex to unix style"
 		output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
 		importData(files,cos.getUniName())
 		f_update_time = open("../data/"+cos.getUniName()+"/updated.txt",'w')

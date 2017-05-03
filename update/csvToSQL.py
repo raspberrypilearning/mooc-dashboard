@@ -41,8 +41,9 @@ class CSV_TO_SQL:
             else:
                 col = "(id,author_id,@parent_id,step,week_number,step_number,text,@timestamp,@likes,@first_reported_at,@first_reported_reason,@moderation_state,@moderated) "
 
-            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Comments ' \
-            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '///\r' " \
+            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Comments "' \
+            "CHARACTER SET UTF8 " \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '\n' " \
             'IGNORE 1 LINES ' + col +\
             "Set parent_id = nullif(@parent_id,' '), "+ setting +" timestamp = REPLACE(@timestamp, ' UTC', ''), moderated = nullif(REPLACE(@moderated, ' UTC', ''),' '), likes = nullif(@likes,' '), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
@@ -66,7 +67,7 @@ class CSV_TO_SQL:
 
 
             load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Assignments ' \
-            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '///\r' "  \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '\n' "  \
             'IGNORE 1 LINES '  + col + \
             "Set first_viewed_at=REPLACE(@first_viewed_at, ' UTC', ''), submitted_at=REPLACE(@submitted_at, ' UTC', ''), moderated = nullif(REPLACE(@moderated, ' UTC', ''),' '), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
@@ -78,7 +79,7 @@ class CSV_TO_SQL:
 
 
             load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Reviews ' \
-            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '///\r' "  \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '\n' "  \
             'IGNORE 1 LINES '  + col  + \
             "Set university = " + "'" + uni + "'," + "created_at = REPLACE (@created_at,' UTC', '')," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
