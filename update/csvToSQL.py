@@ -49,7 +49,7 @@ class CSV_TO_SQL:
         elif 'enrolments' in datatype:
 
 
-            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Enrolments ' \
+            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Enrolments ' \
             "FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' "  +  \
             'IGNORE 1 LINES ' \
             "(learner_id,@enrolled_at,@unenrolled_at,role,@fully_participated_at,@purchased_statement_at,gender,country,age_range,highest_education_level,employment_status,employment_area,detected_country) "\
@@ -63,7 +63,7 @@ class CSV_TO_SQL:
             col = 	"(id,step,step_number,week_number,author_id,text,@first_viewed_at,@submitted_at,@moderated,review_count) "
 
 
-            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Assignments ' \
+            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Assignments ' \
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '\n' "  \
             'IGNORE 1 LINES '  + col + \
             "Set first_viewed_at=REPLACE(@first_viewed_at, ' UTC', ''), submitted_at=REPLACE(@submitted_at, ' UTC', ''), moderated = nullif(REPLACE(@moderated, ' UTC', ''),' '), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
@@ -75,7 +75,7 @@ class CSV_TO_SQL:
             col = '(id,step,week_number,step_number,reviewer_id,assignment_id,guideline_one_feedback,guideline_two_feedback,guideline_three_feedback,@created_at)'
 
 
-            load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Reviews ' \
+            load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Reviews ' \
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '\n' "  \
             'IGNORE 1 LINES '  + col  + \
             "Set university = " + "'" + uni + "'," + "created_at = REPLACE (@created_at,' UTC', '')," + "course = " + "'" + course + "'," + "course_run = " \
@@ -85,14 +85,14 @@ class CSV_TO_SQL:
         elif 'question' in datatype:
 
             if(len(head) == 8):
-                load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Quiz ' \
+                load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Quiz ' \
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
             'IGNORE 1 LINES ' + "(learner_id,quiz_question,week_number,step_number,question_number,response,@submitted_at,@correct)" +\
             "Set correct = STRCMP(UPPER(@correct),'TRUE') + 1, submitted_at=REPLACE(@submitted_at, ' UTC', ''), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
 
             else:
-                load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Quiz ' \
+                load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Quiz ' \
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
             'IGNORE 1 LINES ' + "(learner_id,quiz_question,question_type,week_number,step_number,question_number,response,@cloze_response,@submitted_at,@correct)" +\
             "Set correct = STRCMP(UPPER(@correct),'TRUE') + 1, cloze_response = @cloze_response, submitted_at=REPLACE(@submitted_at, ' UTC', ''), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
@@ -115,7 +115,7 @@ class CSV_TO_SQL:
                 col = '(learner_id,step,week_number,step_number,@first_visited_at,@last_completed_at)'
 
 
-            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Activity ' \
+            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Activity ' \
             "FIELDS TERMINATED BY ',' "  \
             "IGNORE 1 LINES " + col +\
             "Set " + setting + "last_completed_at = nullif(REPLACE (@last_completed_at, ' UTC', ''),' '),  first_visited_at = nullif(REPLACE(@first_visited_at,' UTC', ''), ' '), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
@@ -124,7 +124,7 @@ class CSV_TO_SQL:
         elif 'Courses' in datatype:
 
             col = '(course_run,start_date,no_of_weeks,joiners,leavers,learners,active_Learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,run)'
-            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Courses ' \
+            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Courses ' \
             "FIELDS TERMINATED BY ',' " \
             "IGNORE 1 LINES " + col + \
             "Set university = " + "'" + uni + "';"
@@ -132,7 +132,7 @@ class CSV_TO_SQL:
         elif 'team-members' in datatype:
             col = '(id,first_name,last_name,team_role,user_role)'
 
-            load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE TeamMembers ' \
+            load = 	'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE TeamMembers ' \
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
             'IGNORE 1 LINES '  + col +";"
 
