@@ -16,18 +16,19 @@ def Test():
 
 
 def printCsv():
-    print "Chaning the csv hex to unix style"
-    output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
+    # print "Chaning the csv hex to unix style"
+    # output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
     filesDictionary = {}
     p = re.compile('([0-9]+) - [0-9]{4}-[0-9]{2}-[0-9]{2}')
     for root, dirs, files in os.walk('../data/'):
         for f in files:
             fullpath = os.path.join(root, f)
             if os.path.splitext(fullpath)[1] == '.csv':
-                if "metadata.csv" not in fullpath:
+                if "metadata.csv" not in fullpath and "comments.csv" in fullpath:
                     matchObj = re.search(r'([0-9]+) - [0-9]+-[0-9]+-[0-9]+',fullpath)
                     if matchObj:
                         filesDictionary[fullpath] = matchObj.group(1)
+
 
 
     for fileDir, courseRuns in filesDictionary.items():

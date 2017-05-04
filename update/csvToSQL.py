@@ -9,12 +9,10 @@ class CSV_TO_SQL:
     def insertIntoTable(self,f,course_run,uni):
         """
         Inserts a csv file into the corresponding mysql table.
-
         :param:
             f: The file to be inserted.
             course_run: The run number.
             uni: The University the course belongs to.
-
         """
         _file = open(f)
         _reader = csv.reader(_file)
@@ -41,8 +39,7 @@ class CSV_TO_SQL:
             else:
                 col = "(id,author_id,@parent_id,step,week_number,step_number,text,@timestamp,@likes,@first_reported_at,@first_reported_reason,@moderation_state,@moderated) "
 
-            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Comments "' \
-            "CHARACTER SET UTF8 " \
+            load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Comments CHARACTER SET UTF8 ' \
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\'' + " LINES TERMINATED BY '\n' " \
             'IGNORE 1 LINES ' + col +\
             "Set parent_id = nullif(@parent_id,' '), "+ setting +" timestamp = REPLACE(@timestamp, ' UTC', ''), moderated = nullif(REPLACE(@moderated, ' UTC', ''),' '), likes = nullif(@likes,' '), university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
