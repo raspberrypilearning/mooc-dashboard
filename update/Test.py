@@ -24,7 +24,7 @@ def printCsv():
         for f in files:
             fullpath = os.path.join(root, f)
             if os.path.splitext(fullpath)[1] == '.csv':
-                if "metadata.csv" not in fullpath:
+                if "saud" not in fullpath:
                     matchObj = re.search(r'([0-9]+) - [0-9]+-[0-9]+-[0-9]+',fullpath)
                     if matchObj:
                         filesDictionary[fullpath] = matchObj.group(1)

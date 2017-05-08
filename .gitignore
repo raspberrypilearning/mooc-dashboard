@@ -9,6 +9,7 @@ update/.idea
 data/*
 data/!.gitkeep
 log/*
+*.csv
 log/!.gitkeep
 *nohup.out
 !removeCarrigeReturn.sh

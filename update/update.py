@@ -61,7 +61,7 @@ def update(email,password):
 			os.makedirs(courses_path)
 
 		with open(courses_path + courses_filename, 'w') as f:
-			writer = csv.writer(f)
+			writer = csv.writer(f, lineterminator='\n')
 			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,course_run".split(','))
 			for row in enrolmentData:
 				print(row)
@@ -79,7 +79,7 @@ def update(email,password):
 			f.close()
 
 		files[courses_path+courses_filename] = 1
-		print "Number of csv files to be inserted into database: " + len(files)
+		print "Number of csv files to be inserted into database: " + str(len(files))
 		# JSR Disable import as unused
 		print "Changing the csv hex to unix style"
 		output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])

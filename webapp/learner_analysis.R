@@ -770,13 +770,21 @@ getEmploymentDegreeCount <- function(enrolmentData){
 }
 
 # Returns comment data in the format needed for the comment viewer, takes the overall comment data and which run.
-getCommentViewerData <- function(commentData, run){
+getCommentViewerData <- function(commentData, run,courseMetaData){
 	data <- commentData[[which(names(commentData) == run)]]
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
 	data$week_step <- getWeekStep(data)
 	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
 	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
 	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
+	data$likes <- as.numeric(data$likes)
+	data$likes <- as.integer(data$likes)
+	runsplit <- strsplit(run,"-")
+	course <- trimws(runsplit[[1]])
+	courseRun <- as.character(courseMetaData$course_run[[which(courseMetaData$course == course[[1]] & courseMetaData$run == course[[2]])]])
+	shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
+	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
 	sorted <- data[order(-data$likes),]
 	return(sorted)
 }
