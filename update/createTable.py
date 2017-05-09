@@ -15,9 +15,9 @@ cursor = sql.cursor()
 
 createComment = "CREATE TABLE Comments (" \
 		"id int(11) NOT NULL," \
-		"author_id varchar(50) NOT NULL," \
+		"author_id varchar(50) CHARACTER SET utf8 NOT NULL," \
 		"parent_id int(11) DEFAULT NULL," \
-		"step varchar(5) NOT NULL," \
+		"step varchar(5) CHARACTER SET utf8 NOT NULL," \
 		"week_number int(11) NOT NULL," \
 		"step_number int(11) NOT NULL," \
 		"text text CHARACTER SET utf8 NOT NULL," \
