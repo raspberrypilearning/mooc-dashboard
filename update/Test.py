@@ -37,7 +37,12 @@ def printCsv():
     print("Loading Csvs into Database")
     importData(filesDictionary,"University of Southampton")
 
-
+def processCourses():
+    filesDictionary = {}
+    filesDictionary["../data/University of Southampton/Courses Data/Data/Courses-Data.csv"] = 1
+    print("Inserying courses data csv")
+    importData(filesDictionary,"University of Southampton")
+    print("Finished loading!")
 
 def removeCarrige():
     print("Perfrom a shel script")
@@ -46,4 +51,5 @@ def removeCarrige():
 
 
 
-printCsv()
+# printCsv()
+processCourses()
