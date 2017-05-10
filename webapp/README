@@ -70,6 +70,22 @@ $ sudo apt-get install mysql-server
 
 Set a mysql root password.
 
+You may need to configure mysql to handle utf-8 through my.cnf
+
+##########START edit /etc/mysql/my.cnf #################
+[client]
+default-character-set = utf8
+
+[mysqld]
+character_set_server = utf8
+collation_server = utf8_general_ci
+
+[mysql]
+default-character-set = utf8
+
+##########END edit /etc/mysql/my.cnf #################
+
+
 6. Configure Shiny Server (edit /etc/shiny-server/shiny-server.conf as follows, assuming your username is 'mooc'):
 
 ########## START /etc/shiny-server/shiny-server.conf #################
