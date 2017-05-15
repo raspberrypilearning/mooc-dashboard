@@ -781,7 +781,7 @@ getCommentViewerData <- function(commentData, run,courseMetaData){
 	data$likes <- as.integer(data$likes)
 	runsplit <- strsplit(run,"-")
 	course <- trimws(runsplit[[1]])
-	courseRun <- as.character(courseMetaData$course_run[[which(courseMetaData$course == course[[1]] & courseMetaData$run == course[[2]])]])
+	courseRun <- as.character(courseMetaData$course_run)
 	shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
 	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
 	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
