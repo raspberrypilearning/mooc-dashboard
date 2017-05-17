@@ -64,7 +64,7 @@ class FLCourses:
 
 
 							# Fetch data of finished and in progress courses only.
-							if( _status == 'finished' or _status == 'in progress' ):
+							if( _status == 'finished' or _status == 'in progress' or _status == 'upcoming' ):
 								run_duration_weeks = self.getRunDuration(self.__mainsite + _run_details_path)
 
 								# Convert to Date type and compute end date
@@ -194,11 +194,11 @@ class FLCourses:
 		duration = 0
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(_run_details_url).content, 'html.parser')
-			run_data = soup.findAll('span',class_ = 'm-key-info__data')
+			run_data = soup.findAll('span',class_ = 'm-metadata__title')
 			if(run_data):
 				for run_datum in run_data:
 					if("Duration" in run_datum.string):
-						duration = run_datum.string[10:-6]
+						duration = run_datum.string.strip().split()[1]
 						print "Found duration: %s" % duration
 		if(duration == 0):
 			print("[ERROR] Unable to parse duration")
