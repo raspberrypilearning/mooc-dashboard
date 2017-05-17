@@ -27,13 +27,17 @@
                 }
 
                 $(document).ready(function() {
-                    updateUrls('#demographics')
-                    updateUrls('#statement-demographics')
-                    updateUrls('#sign-ups-statements-sold')
+                    updateUrls('#demographics a')
+                    updateUrls('#statement-demographics a')
+                    updateUrls('#sign-ups-statements-sold a')
+                    updateUrls('#step-completion a')
+                    updateUrls('#comments-overview a')
+                    updateUrls('#comments-viewer a')
+                    updateUrls('#total-measures a')
                 });
             </script>
 {% endblock %}
-
+{% block active-nav %}{{ view.dashboard.navid }}{% endblock %}
 
 {% block description %}
     {% if view.dashboard.course1 != None %}

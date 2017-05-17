@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{{ view.dashboard.title }}{% endblock %}
+{% block scripts %}
+            <!--Load the AJAX API-->
+            <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+            <script type="text/javascript">
+                // Load the Visualization API and the corechart package.
+                google.charts.load('current', {'packages':['corechart']});
+                urlappend = ''
+                {% if view.dashboard.course1 != None %}
+                urlappend += '?course1={{ view.dashboard.course1 }}&run1={{ view.dashboard.run1 }}'
+                {% endif %}
+                {% if view.dashboard.course2 != None %}
+                urlappend += '&course2={{ view.dashboard.course2 }}&run2={{ view.dashboard.run2 }}'
+                {% endif %}
+                {% if view.dashboard.course3 != None %}
+                urlappend += '&course3={{ view.dashboard.course3 }}&run3={{ view.dashboard.run3 }}'
+                {% endif %}
+                {% if view.dashboard.course4 != None %}
+                urlappend += '&course4={{ view.dashboard.course4 }}&run4={{ view.dashboard.run4 }}'
+                {% endif %}
+
+                function updateUrls(id) {
+                    new_url = $(id).attr('href') + urlappend
+                    $(id).attr('href',new_url);
+                }
+
+                function updateCourseRunTab(select) {
+                    var showid = '#course' + select.value + '-graphs'
+                    $('.courseruntab').hide();
+                    $(showid).show();
+                }
+
+                $(document).ready(function() {
+                    updateUrls('#demographics a')
+                    updateUrls('#statement-demographics a')
+                    updateUrls('#sign-ups-statements-sold a')
+                    updateUrls('#step-completion a')
+                    updateUrls('#comments-overview a')
+                    updateUrls('#comments-viewer a')
+                    updateUrls('#total-measures a')
+                });
+            </script>
+{% endblock %}
+{% block active-nav %}{{ view.dashboard.navid }}{% endblock %}
+
+{% block description %}
+    {% if view.dashboard.course1 != None %}
+    {{ view.dashboard.course1 }} [{{ view.dashboard.run1 }}]
+    {% endif %}
+    {% if view.dashboard.course2 != None %}
+     vs {{ view.dashboard.course2 }} [{{ view.dashboard.run2 }}]
+    {% endif %}
+    {% if view.dashboard.course3 != None %}
+     vs {{ view.dashboard.course3 }} [{{ view.dashboard.run3 }}]
+    {% endif %}
+    {% if view.dashboard.course4 != None %}
+     vs {{ view.dashboard.course4 }} [{{ view.dashboard.run4 }}]
+    {% endif %}
+{% endblock %}
+{% block content %}
+                    <!--<div class="tab-content">
+                        <div role="tabpanel" class="tab-pane" id="tab-demographics">-->
+                            <div class="row">  
+                                <div class="col-md-12">
+                                    <div class="box box-solid box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">Run Selector</h3>
+                                            <div class="box-tools pull-right">
+                                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /.box-header -->
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <label class="control-label" for="course1">Runs</label>
+                                                    <div>
+                                                        <select id="dropdown-course-selector" class="form-control course_select" name="dropdown-course-selector" onchange="updateCourseRunTab(this)" style="display: inline; width: 450px;">
+                                                            {% if view.dashboard.course1 != None %}
+                                                            <option value="1" selected>{{ view.dashboard.course1 }} [{{ view.dashboard.run1 }}]</option>
+                                                            {% endif %}
+                                                            {% if view.dashboard.course2 != None %}
+                                                            <option value="2">{{ view.dashboard.course2 }} [{{ view.dashboard.run2 }}]</option>
+                                                            {% endif %}
+                                                            {% if view.dashboard.course3 != None %}
+                                                            <option value="3">{{ view.dashboard.course3 }} [{{ view.dashboard.run3 }}]</option>
+                                                            {% endif %}
+                                                            {% if view.dashboard.course4 != None %}
+                                                            <option value="1">{{ view.dashboard.course4 }} [{{ view.dashboard.run4 }}]</option>
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- ./box-body -->
+                                        <!--<div class="box-footer">
+                                        </div>-->
+                                        <!-- /.box-footer -->
+                                    </div>
+                                    <!-- /.box -->
+                                </div>
+                                <!-- /.col -->
+                                <div id="course1-graphs" class="courseruntab">  
+                                    {% for widget in view.dashboard.widgets1 %}
+                                    {% include widget.get_template_name %}
+                                    {% endfor %}
+                                </div>
+
+                                {% if view.dashboard.course2 != None %}
+                                <div id="course2-graphs" class="courseruntab">  
+                                    {% for widget in view.dashboard.widgets2 %}
+                                    {% include widget.get_template_name %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if view.dashboard.course3 != None %}
+                                <div id="course3-graphs" class="courseruntab">  
+                                    {% for widget in view.dashboard.widgets3 %}
+                                    {% include widget.get_template_name %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if view.dashboard.course4 != None %}
+                                <div id="course4-graphs" class="courseruntab">  
+                                    {% for widget in view.dashboard.widgets4 %}
+                                    {% include widget.get_template_name %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <!-- /.row -->
+                        <!--</div>-->
+                        <!-- /.tab-pane -->
+
+                    <!--</div>-->
+                    <!-- ./tab-content -->
+
+                    <script type="text/javascript">
+                    google.charts.setOnLoadCallback(function() {
+                        $('.courseruntab').hide();
+                        $('#course1-graphs').show();
+                    });
+                    </script>
+{% endblock %}

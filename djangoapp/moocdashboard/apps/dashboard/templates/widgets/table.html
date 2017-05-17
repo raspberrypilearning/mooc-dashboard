@@ -1,0 +1,63 @@
+                                {% if widget.updated %}
+                                <div class="col-md-{{ widget.width }}">
+                                    <div class="box box-solid box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">{{ widget.title }}</h3>
+                                            <div class="box-tools pull-right">
+                                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /.box-header -->
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+
+                                                    {% if widget.ajax_url %}
+                                                    <table id="table_{{ widget.uniqid }}" class="datatable" data-source-url="{{ widget.ajax_url }}">
+                                                        <thead>
+                                                            <tr>
+                                                                {% for column in widget.column_labels %}
+                                                                <th>{{ column }}</th>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        </thead>
+
+                                                        {% if widget.footer %}
+                                                        <tfoot>
+                                                            <tr>
+                                                                {% for column in widget.column_labels %}    
+                                                                <th>{{ column }}</th>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        </tfoot>
+                                                        {% endif %}
+                                                    </table>
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            $('#table_{{ widget.uniqid }}').DataTable({
+                                                                "paging": true,
+                                                                "processing": true,
+                                                                "serverSide": true,
+                                                                "ajax": "{{ widget.ajax_url }}"
+                                                            });
+                                                        });
+                                                    </script>
+                                                    {% else %}
+                                                    {{ widget.empty_message }}
+                                                    {% endif %}
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- ./box-body -->
+                                        <!--<div class="box-footer">
+                                        </div>-->
+                                        <!-- /.box-footer -->
+                                    </div>
+                                    <!-- /.box -->
+                                </div>
+                                <!-- /.col -->
+                                {% endif %}

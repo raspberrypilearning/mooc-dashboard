@@ -1,0 +1,163 @@
+{% load staticfiles %}
+
+<html>
+    <head>
+        <title>{% block title %}{{ title }}{% endblock %}</title>
+        <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">-->
+
+        <!-- Bootstrap Core CSS -->
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+
+        <!-- Morris Charts CSS -->
+        <link href="{% static 'css/plugins/morris.css' %}" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+        <script type="text/javascript">
+            var urlArray = window.location.pathname.split('/');
+            $(document).ready(function() {
+                $('.nav li').removeClass('active');
+                if(urlArray[1] == 'demographics') {
+                    $('#demographics-nav').addClass('active');
+                }
+            });
+
+        </script>
+
+        {% block scripts %}
+        {% endblock %}
+
+
+    </head>
+
+    <body>
+        <div id="wrapper">
+
+            <!-- Navigation -->
+            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">MOOC Dashboard</a>
+                </div>
+                <!-- Top Menu Items -->
+                <ul class="nav navbar-right top-nav">
+                    {% if request.user.is_authenticated %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> {{request.user.username}} <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <!--<li>
+                                <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-fw fa-envelope"></i> Inbox</a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
+                            </li>-->
+                            {% if request.user.is_staff %}
+                            <li>
+                                <a href="/admin/"><i class="fa fa-fw fa-gear"></i> Admin</a>
+                            </li>
+                            <li class="divider"></li>
+                            {% endif %}
+                            <li>
+                                <a href="/logout/"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="/login/?next=/"><i class="fa fa-user"></i> Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+                <div class="collapse navbar-collapse navbar-ex1-collapse">
+                    <ul class="nav navbar-nav side-nav">
+                        <li class="active">
+                            <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                        </li>
+                        <li>
+                            <a href="/new_course_list/"><i class="fa fa-fw fa-th"></i> New Course List</a>
+                        </li>
+                        <li id="demographics-nav">
+                            <a href="/demographics/"><i class="fa fa-fw fa-bar-chart"></i> Demographics</a>
+                        </li>
+                        <li>
+                            <a href="/statement-demographics/"><i class="fa fa-fw fa-pie-chart"></i> Statement Demographics</a>
+                        </li>
+                        <li>
+                            <a href="/sign-ups-statements-sold/"><i class="fa fa-fw fa-graduation-cap"></i> Sign Ups and Statements Sold</a>
+                        </li>
+                        <li>
+                            <a href="/step-completion/"><i class="fa fa-fw fa-graduation-cap"></i> Step Completion</a>
+                        </li>
+                        <li>
+                            <a href="/comments-overview/"><i class="fa fa-fw fa-commenting-o"></i> Comments Overview</a>
+                        </li>
+                        <li>
+                            <a href="/comments-viewer/"><i class="fa fa-fw fa-commenting-o"></i> Comments Viewer</a>
+                        </li>
+                        <li>
+                            <a href="/total-measures/"><i class="fa fa-fw fa-comments"></i> Total Measures</a>
+                        </li>
+                        <li>
+                            <a href="/correlations/"><i class="fa fa-fw fa-puzzle-piece"></i> Correlations</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- /.navbar-collapse -->
+            </nav>
+
+            <div id="page-wrapper">
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                        {% block content %}
+                        {% endblock %}
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- /.container-fluid -->
+            </div>
+            <!-- /#page-wrapper -->
+        </div>
+        <!-- /#wrapper -->
+
+        <!-- jQuery -->
+        <script src="{% static 'js/jquery.js' %}"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+        <!-- Morris Charts JavaScript -->
+        <script src="{% static 'js/plugins/morris/raphael.min.js' %}"></script>
+        <script src="{% static 'js/plugins/morris/morris.min.js' %}"></script>
+        <script src="{% static 'js/plugins/morris/morris-data.js' %}"></script>
+    </body>
+</html>

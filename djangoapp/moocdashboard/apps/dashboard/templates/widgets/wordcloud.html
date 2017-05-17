@@ -1,0 +1,162 @@
+{% load staticfiles %}
+                                <div class="col-md-4">
+                                    <div class="box box-solid box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">{{ widget.title }} Options</h3>
+                                            <div class="box-tools pull-right">
+                                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /.box-header -->
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div style="height: 400px">
+                                                    <span class="irs js-irs-4">
+
+                                                        <!--<label class="control-label">Minimum Frequency of Words:</label>
+                                                        <input id="frequency_range" type="text" name="frequency_range" value="50">
+                                                        <br />-->
+
+                                                        <label class="control-label">Maximum Number of Words:</label>
+                                                        <input id="max_words" class="form-control" type="text" name="max_words" value="50">
+                                                        <br />
+                                                        
+                                                        <label class="control-label">Colour Scheme:</label>
+                                                        <select id="colour-select" class="form-control" name="colour_scheme">
+                                                            <option value="Blues" selected>Blues</option>
+                                                            <option value="Greens">Greens</option>
+                                                            <option value="Greys">Greys</option>
+                                                            <option value="Oranges">Oranges</option>
+                                                            <option value="Purples">Purples</option>
+                                                            <option value="Reds">Reds</option>
+                                                            <option value="viridis">Viridis</option>
+                                                            <option value="inferno">Inferno</option>
+                                                            <option value="plasma">Plasma</option>
+                                                            <option value="magma">Magma</option>
+                                                        </select>
+
+                                                        <br />
+                                                        <input id="load_cloud" type="button" value="Load Cloud">
+
+                                                    </span>
+
+                                                    </div>
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            $("#frequency_range").ionRangeSlider({
+                                                              min: 0,
+                                                              max: 100,
+                                                              from: 50,
+                                                              type: 'single',
+                                                              step: 1,
+                                                              prettify: false,
+                                                              hasGrid: true
+                                                            });
+
+                                                            $("#max_words").ionRangeSlider({
+                                                              min: 0,
+                                                              max: 200,
+                                                              from: 100,
+                                                              type: 'single',
+                                                              step: 1,
+                                                              prettify: false,
+                                                              hasGrid: true
+                                                            });
+
+                                                            function get_course_run() {
+                                                                alert($("#dropdown-course-selector").val());
+                                                                alert("{{ widget.course2 }}");
+
+                                                            }
+
+                                                            function load_cloud() {
+                                                                var course = '{{ widget.course1 }}';
+                                                                var run = {{ widget.run1 }};
+
+                                                                var course_run = parseInt($("#dropdown-course-selector").val());
+                                                                switch(course_run) {
+                                                                    case 2:
+                                                                        course = '{{ widget.course2 }}';
+                                                                        run = {{ widget.run2 }};
+                                                                        break;
+                                                                    case 3:
+                                                                        course = '{{ widget.course3 }}';
+                                                                        run = {{ widget.run3 }};
+                                                                        break;
+                                                                    case 4:
+                                                                        course = '{{ widget.course4 }}';
+                                                                        run = {{ widget.run4 }};
+                                                                        break;
+                                                                }
+
+                                                                var width = $('#word_cloud_{{ widget.uniqid }}').width();
+
+                                                                var max_words = $("#max_words").val();
+
+                                                                var colour_scheme = $("#colour-select").val();
+
+                                                                var new_image_url = '/get_comments_cloud/?width=' + width + '&course1=' + course + '&run1=' + run + '&max_words=' + max_words + "&colour_scheme=" + colour_scheme;
+                                                                $("#word_cloud_img_{{ widget.uniqid }}").attr("src",new_image_url);
+                                                            }
+                                                            $("#dropdown-course-selector").change(load_cloud);
+                                                            $("#load_cloud").click(load_cloud);
+                                                        });
+                                                    </script>
+                                                    <link href="{% static 'js/plugins/ionslider/ion.rangeSlider.css' %}" rel="stylesheet" />
+                                                    <link href="{% static 'js/plugins/ionslider/ion.rangeSlider.skinFlat.css' %}" rel="stylesheet" />
+                                                    <script src="{% static 'js/plugins/ionslider/ion.rangeSlider.min.js' %}"></script>
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- ./box-body -->
+                                        <!--<div class="box-footer">
+                                        </div>-->
+                                        <!-- /.box-footer -->
+                                    </div>
+                                    <!-- /.box -->
+                                </div>
+                                <!-- /.col -->
+
+                                <div class="col-md-8">
+                                    <div class="box box-solid box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">{{ widget.title }}</h3>
+                                            <div class="box-tools pull-right">
+                                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /.box-header -->
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div id="word_cloud_{{ widget.uniqid }}" style="height:{{ widget.height }}; width: 100%;">
+                                                        <!--<img src="data:image/png;base64, {{ widget.image }}" />-->
+                                                    </div>
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            var width = $('#word_cloud_{{ widget.uniqid }}').width();
+
+                                                            $('#word_cloud_{{ widget.uniqid }}').prepend('<img id="word_cloud_img_{{ widget.uniqid }}" src="/get_comments_cloud/?width=' + width + '&course1={{ widget.course1 }}&run1={{ widget.run1 }}" />')
+                                                            //'&course1=' + {{ widget.course1 }} + '&run1=' + {{ widget.run1 }} + '
+                                                        });
+                                                    </script>
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- ./box-body -->
+                                        <!--<div class="box-footer">
+                                        </div>-->
+                                        <!-- /.box-footer -->
+                                    </div>
+                                    <!-- /.box -->
+                                </div>
+                                <!-- /.col -->

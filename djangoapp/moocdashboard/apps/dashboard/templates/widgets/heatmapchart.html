@@ -1,0 +1,66 @@
+                                <div class="col-md-{{ widget.width }}">
+                                    <div class="box box-solid box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">{{ widget.title }}</h3>
+                                            <div class="box-tools pull-right">
+                                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /.box-header -->
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div id="chart_{{ widget.uniqid }}"></div>
+
+                                                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                                                    <script type="text/javascript">
+                                                    var data = [
+                                                        {
+                                                            x: {{ widget.columns|safe }},
+                                                            y: {{ widget.rows|safe }},
+                                                            z: {{ widget.chartdata }},
+                                                            type: 'heatmap',
+                                                            colorscale: [
+                                                                ['0.0', 'rgb(145,191,219)'],
+                                                                ['0.2', 'rgb(48,126,188)'],
+                                                                ['1.0', 'rgb(8,48,107)']         
+                                                            ],
+                                                            showscale: false                        
+                                                        }
+                                                    ];
+                                                    var layout = {
+                                                        margin: {
+                                                            l: 0,
+                                                            r: 100,
+                                                            b: 50,
+                                                            t: 0,
+                                                            pad: 4
+                                                        },
+                                                        xaxis: {
+                                                            title: 'Step'
+                                                        },
+                                                        yaxis: {
+                                                            side: 'right'
+                                                        },
+                                                        font: {
+                                                            family: 'Arial, sans-serif',
+                                                            size: 14
+                                                        }
+                                                    }
+                                                    Plotly.plot('chart_{{ widget.uniqid }}', data, layout);
+                                                    </script>
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- ./box-body -->
+                                        <!--<div class="box-footer">
+                                        </div>-->
+                                        <!-- /.box-footer -->
+                                    </div>
+                                    <!-- /.box -->
+                                </div>
+                                <!-- /.col -->

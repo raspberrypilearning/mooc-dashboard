@@ -1,59 +1,126 @@
 from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-#from django.views.generic import ListView
+from django.views import View
 from django.views.generic import TemplateView, FormView
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count
-from sortable_listview import SortableListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-import json, datetime
+from django_datatables_view.base_datatable_view import BaseDatatableView
 
-from ..data.models import AggregateCourse
-from .models import AggregateCourseTable, Dashboard, DemographicsDashboard, StatementDemographicsDashboard, SignUpsStatementsSoldDashboard, StepCompletionDashboard
+import json, datetime, wordcloud
+
+from .models import AggregateCourse, Comment
+from .dashboard import *
 from .forms import CourseRunForm
 
 # Create your views here.
-
-class CourseList(LoginRequiredMixin,SortableListView):
-    allowed_sort_fields = {'course_run': {'default_direction': '',
-                      'verbose_name': 'Course Run'},
-              'start_date': {'default_direction': '',
-                                    'verbose_name': 'Start Date'},
-                           'no_of_weeks': {'default_direction': '',
-                                              'verbose_name': 'Weeks'},
-                           'joiners': {'default_direction': '',
-                                              'verbose_name': 'Joiners'},
-                           'leavers': {'default_direction': '',
-                                              'verbose_name': 'Leavers'},
-                           'learners': {'default_direction': '',
-                                              'verbose_name': 'Learners'},
-                           'active_learners': {'default_direction': '',
-                                              'verbose_name': 'Active Learners'},
-                           'returning_learners': {'default_direction': '',
-                                              'verbose_name': 'Returning Learners'}
-                                              }
-    default_sort_field = 'course_run'
+class CourseListJson(BaseDatatableView):
     model = AggregateCourse
-    title = 'Course List'
-    paginate_by = 50
+    columns = ['course_run','start_date','no_of_weeks','joiners','leavers','learners','active_learners','returning_learners','social_learners','fully_participating_learners','statements_sold']
+    #if column not sortable then leave blank ''
+    order_columns = ['course_run','start_date','no_of_weeks','joiners','leavers','learners','active_learners','returning_learners','social_learners','fully_participating_learners','statements_sold']
 
-# views.py
-def course_list(request):
-    table = AggregateCourseTable(AggregateCourse.objects.all())
+    #anti-DDoS
+    max_display_length = 500
 
-    return render(request, 'course_list.html', {
-        'table': table
-    })
+    def render_column(self, row, column):
+        if column == 'course_run':
+            return row.course_run.title().replace("-"," ")
+        else:
+            return super(CourseListJson, self).render_column(row,column)
 
-def get_course_runs_method(course_name):
-    courses = AggregateCourse.objects.all().values_list('course_run','course','run','start_date','no_of_weeks').filter(course=course_name).order_by('course_run')
-    course_dict = {}
-    for course in courses:
-        end_date = course[3] + datetime.timedelta(weeks=course[4])
-        course_dict[course[2]] = str(course[2]) + ' - ' + str(course[3]) + ' - ' + str(end_date)
-    return HttpResponse(json.dumps(course_dict))
+class CommentsJson(BaseDatatableView):
+    model = Comment
+    columns = ['timestamp','step','text','parent_id','likes','id']
+    order_columns = ['timestamp','step','text','parent_id','likes','id']
+
+    max_display_length = 500
+
+    def get_initial_queryset(self):
+        filter_args = {}
+        if 'course1' in self.request.GET:
+            filter_args['course'] = self.request.GET['course1']
+            if self.request.GET['run1'] != 'A':
+                filter_args['course_run'] = self.request.GET['run1']
+
+        return self.model.objects.filter(**filter_args)
+
+    def render_column(self,row,column):
+        if column == 'timestamp':
+            time_val = row.timestamp
+            if time_val:
+                time_val = row.timestamp.strftime('%Y-%m-%d')
+            return time_val
+        if column == 'parent_id':
+            if row.parent_id == None:
+                return 'No'
+            else:
+                return 'Yes'
+            return row.parent_id
+        else:
+            return super(CommentsJson, self).render_column(row,column)
+
+class WordCloud(View):
+    model = Comment
+    width = 700
+    height = 400
+    max_words = 100
+    colour_scheme = 'Blues'
+
+    course1 = 'All'
+    run1 = 'A'
+
+    def get_initial_queryset(self):
+        filter_args = {}
+        if 'course1' in self.request.GET:
+            self.course1 = self.request.GET['course1']
+            if self.request.GET['run1'] != 'A':
+                self.run1 = self.request.GET['run1']
+
+        if 'width' in self.request.GET:
+            self.width = int(round(float(self.request.GET['width'])))
+        if 'height' in self.request.GET:
+            self.height = self.request.GET['height']
+
+        if 'max_words' in self.request.GET:
+            self.max_words = int(round(float(self.request.GET['max_words'])))
+
+        if 'colour_scheme' in self.request.GET:
+            self.colour_scheme = self.request.GET['colour_scheme']
+
+        from django.db import connections
+        cursor = connections['mooc_data'].cursor()
+        cursor.execute("SET @@session.group_concat_max_len = 15000")
+
+        query = "SELECT GROUP_CONCAT(text SEPARATOR ' ') FROM Comments"
+        if self.course1 != 'All':
+            query += " WHERE course='" + self.course1 + "'"
+            if self.run1 != 'A' and isinstance(self.run1, (int, long)):
+                query += " AND course_run=" + self.run1
+
+
+        cursor.execute(query)
+        row = cursor.fetchone()
+
+        return row[0]
+
+    def get(self,request):
+        words = self.get_initial_queryset()
+
+        import matplotlib
+
+        #Fix for Mac OS
+        matplotlib.use('TkAgg')
+        import matplotlib.pyplot as plt
+        wc = wordcloud.WordCloud(width=self.width,height=self.height,background_color="white",colormap=self.colour_scheme,max_words=self.max_words).generate(words)
+        img = wc.to_image()
+
+        response = HttpResponse(content_type="image/png")
+        img.save(response,"PNG")
+        return response
+
 
 class CompareView(LoginRequiredMixin,FormView):
     template_name = 'compare.html'
@@ -107,6 +174,8 @@ def get_course_runs(request):
         course_dict[course[2]] = str(course[2]) + ' - ' + str(course[3]) + ' - ' + str(end_date)
     return HttpResponse(json.dumps(course_dict))
 
+
+
 class DashboardView(LoginRequiredMixin,TemplateView):
     template_name = 'dashboard.html'
 
@@ -140,9 +209,6 @@ class DashboardView(LoginRequiredMixin,TemplateView):
         if 'run4' in self.request.GET:
           self.dashboard.run4 = self.request.GET['run4']
 
-        if self.dashboard.course1 == 'All':
-          self.dashboard.run1 = ''
-
     def update(dashboard):
         dashboard.updateCharts()
 
@@ -153,6 +219,9 @@ class DashboardView(LoginRequiredMixin,TemplateView):
         self.dashboard.updateCharts()
         return context
 
+class CourseListDashboardView(DashboardView):
+    dashboard = CourseListDashboard()
+
 class DemographicsView(DashboardView):
     dashboard = DemographicsDashboard()
 
@@ -162,5 +231,22 @@ class StatementDemographicsView(DashboardView):
 class SignUpsStatementsSoldView(DashboardView):
     dashboard = SignUpsStatementsSoldDashboard()
 
-class StepCompletionView(DashboardView):
+class SingleCourseDashboardView(DashboardView):
+    template_name = 'singlecoursedashboard.html'
     dashboard = StepCompletionDashboard()
+
+class StepCompletionView(SingleCourseDashboardView):
+    dashboard = StepCompletionDashboard()
+
+class CommentsOverviewView(SingleCourseDashboardView):
+    dashboard = CommentsOverviewDashboard()
+
+class DynamicSingleCourseDashboardView(DashboardView):
+    template_name = 'dynamicsinglecoursedashboard.html'
+    dashboard = CommentsViewerDashboard()
+
+class CommentsViewerView(DynamicSingleCourseDashboardView):
+    dashboard = CommentsViewerDashboard()
+
+class TotalMeasuresView(SingleCourseDashboardView):
+    dashboard = TotalMeasuresDashboard()

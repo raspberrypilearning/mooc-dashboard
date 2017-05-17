@@ -25,24 +25,17 @@
                 }
             })
         }
-
-        $(document).ready(function() {
-            $('#tabs li a').on('click', function() {
-                $('#content-alert').show();
-                $('#content-alert').hide();
-            });
-        });
     </script>
 {% endblock %}
 
 {% block description %}Welcome to the MOOC Dashboard! Select the course(s) and run(s) you wish to visualise{% endblock %}
 
 {% block errors %}
-                    <div class="alert alert-warning alert-dismissible" id="content-alert" style="margin: 0 15px; display: none;">
+                    <!--<div class="alert alert-warning alert-dismissible" id="content-alert" style="margin: 0 15px; display: none;">
                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                         <h4><i class="icon fa fa-warning"></i> No course/runs selected!</h4>
                         You must select at least 1 course to be able to view this data. 
-                    </div>
+                    </div>-->
 {% endblock %}
 
 {% block content %}

@@ -21,7 +21,11 @@
         <link rel="stylesheet" href="{% static 'css/skins/_all-skins.min.css' %}" rel="stylesheet" type="text/css">
 
         <!-- Custom Fonts -->
-        <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css"> 
+
+        <!-- DataTables CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
+
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -30,19 +34,18 @@
             <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
 
+        {% block css %}
+        {% endblock %}
+
         <!-- jQuery -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
-        <!--<script type="text/javascript">
-            var urlArray = window.location.pathname.split('/');
-            $(document).ready(function() {
-                $('.nav li').removeClass('active');
-                if(urlArray[1] == 'demographics') {
-                    $('#demographics-nav').addClass('active');
-                }
-            });
+        <!-- Bootstrap Core JavaScript -->
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
 
-        </script>-->
+        <!-- DataTables JavaScript -->
+        <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
 
         <script type="text/javascript">
             var urlArray = window.location.pathname.split('/');
@@ -136,15 +139,5 @@
         </div>
         <!-- /#wrapper -->
 
-        <!-- jQuery -->
-        <script src="{% static 'js/jquery.js' %}"></script>
-
-        <!-- Bootstrap Core JavaScript -->
-        <script src="{% static 'js/bootstrap.min.js' %}"></script>
-
-        <!-- Morris Charts JavaScript -->
-        <script src="{% static 'js/plugins/morris/raphael.min.js' %}"></script>
-        <script src="{% static 'js/plugins/morris/morris.min.js' %}"></script>
-        <script src="{% static 'js/plugins/morris/morris-data.js' %}"></script>
     </body>
 </html>

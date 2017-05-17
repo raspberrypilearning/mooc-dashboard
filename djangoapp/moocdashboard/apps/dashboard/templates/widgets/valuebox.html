@@ -1,0 +1,19 @@
+                                <div class="col-sm-{{ widget.width }}">
+									<!-- small box -->
+									<div class="small-box bg-{{ widget.color }}">
+										<div class="inner">
+											<h3>{{ widget.title }}</h3>
+											<p>
+												{% if widget.queryset == None %}
+												{{ widget.empty_message }}
+												{% else %}
+												{{ widget.queryset }} {{ widget.descriptor }}
+												{% endif %}
+											</p>
+										</div>
+										<div class="icon-large">
+											<i class="fa fa-comment-o"></i>
+										</div>
+									</div>
+								</div>
+								<!-- ./col -->

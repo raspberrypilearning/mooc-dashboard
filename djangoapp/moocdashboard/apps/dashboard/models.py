@@ -1,65 +1,97 @@
 from __future__ import unicode_literals
-from ..data.models import AggregateCourse
 
-import dashboardwidgets
+from django.db import models
 import django_tables2 as tables
 
 # Create your models here.
-class AggregateCourseTable(tables.Table):
-    class Meta:
-        model = AggregateCourse
-        fields = ('course_run', 'start_date', 'no_of_weeks', 'joiners', 'leavers', 'learners', 'active_learners', 'returning_learners', 'social_learners', 'fully_participating_learners', 'statements_sold')
 
+class AggregateCourse(models.Model):
+	_DATABASE = "mooc_data"
+	course_run = models.CharField(max_length=70, unique=True, primary_key=True)
+	course = models.CharField(max_length=70)
+	run = models.CharField(max_length=70)
+	start_date = models.DateField()
+	no_of_weeks = models.IntegerField()
+	joiners = models.IntegerField()
+	leavers = models.CharField(max_length=20)
+	learners = models.CharField(max_length=20)
+	active_learners  = models.CharField(max_length=20)
+	returning_learners = models.CharField(max_length=20)
+	social_learners = models.CharField(max_length=20)
+	fully_participating_learners = models.CharField(max_length=20)
+	statements_sold = models.IntegerField()
+	university = models.CharField(max_length=40)#, primary_key=True)
 
-class Dashboard():
-	title = 'Dashboard';
-	course1='All'
-	run1='A'
-	course2=None
-	run2=None
-	course3=None
-	run3=None
-	course4=None
-	run4=None
+	class Meta:
+		db_table = 'Courses'
 
-	widgets = []
+	def __str__(self):
+		return self.course_run
 
-	def updateCharts(self):
+	def get_course(self):
+		return self.course
 
-		for widget in self.widgets:
-			widget.course1 = self.course1
-			widget.run1 = self.run1
-			widget.course2 = self.course2
-			widget.run2 = self.run2
-			widget.course3 = self.course3
-			widget.run3 = self.run3
-			widget.course4 = self.course4
-			widget.run4 = self.run4
+class LearnerEnrolment(models.Model):
+	_DATABASE = "mooc_data"
+	learner_id = models.CharField(max_length=50, primary_key=True)
+	enrolled_at = models.DateTimeField()
+	unenrolled_at = models.DateTimeField(null=True,blank=True)
+	role = models.CharField(max_length=20)
+	fully_participated_at = models.DateTimeField(null=True,blank=True)
+	purchased_statement_at = models.DateTimeField(null=True,blank=True)
+	gender = models.CharField(max_length=50)
+	country = models.CharField(max_length=50)
+	age_range = models.CharField(max_length=50)
+	highest_education_level = models.CharField(max_length=50)
+	employment_status = models.CharField(max_length=50)
+	employment_area = models.CharField(max_length=50)
+	university = models.CharField(max_length=40) #, primary_key=True)
+	course = models.CharField(max_length=70) #, primary_key=True)
+	course_run = models.IntegerField() #primary_key=True)
 
-			widget.update()
+	class Meta:
+		db_table = 'Enrolments'
 
-		#data = self.formDataSet('age_range')
-		
-			#q_objects = Q(course='Agincourt 1415: Myth and Reality') | Q(course='Archaeology of Portus: Exploring the Lost Harbour of Ancient Rome')
-			#queryset = LearnerEnrolment.objects.exclude(age_range='Unknown').filter(q_objects).values('age_range','course').annotate(total = Count('age_range')).order_by('age_range')				
-		#self.ageRangeChart = OldChart(columns,data,order)
+	def __str__(self):
+		return self.course_run
 
-class DemographicsDashboard(Dashboard):
-	title = 'Demographics'
-	widgets = [dashboardwidgets.AgeDistributionWidget(),dashboardwidgets.GenderWidget(),dashboardwidgets.EmploymentAreaWidget(),dashboardwidgets.EmploymentStatusWidget(),dashboardwidgets.EducationLevelWidget(),dashboardwidgets.GeoWidget()]
+class LearnerActivity(models.Model):
+	_DATABASE = "mooc_data"
+	learner_id = models.CharField(max_length=50, primary_key=True)
+	step = models.CharField(max_length=5)
+	week_number = models.IntegerField() #primary_key=True)
+	step_number = models.IntegerField() #primary_key=True)
+	first_visited_at = models.DateTimeField()
+	last_completed_at = models.DateTimeField(null=True,blank=True)
+	university = models.CharField(max_length=40) #, primary_key=True)
+	course = models.CharField(max_length=70) #, primary_key=True)
+	course_run = models.IntegerField() #primary_key=True)
 
-class StatementDemographicsDashboard(Dashboard):
-	title = 'Statement Demographics'
-	widgets = [dashboardwidgets.AgeDistributionWidget(),dashboardwidgets.GenderWidget(),dashboardwidgets.EmploymentAreaWidget(),dashboardwidgets.EmploymentStatusWidget(),dashboardwidgets.EducationLevelWidget(),dashboardwidgets.GeoWidget()]
+	class Meta:
+		db_table = 'Activity'
 
-	def __init__(self):
-		for widget in self.widgets:
-			widget.additional_filters = [{'type' : 'filter', 'arg' : 'purchased_statement_at__isnull', 'val' : False}]
+	def __str__(self):
+		return self.step
 
-class SignUpsStatementsSoldDashboard(Dashboard):
-	title = 'Sign Ups and Statements Sold'
-	widgets = [dashboardwidgets.SignUpsPerDayWidget(),dashboardwidgets.StatementsSoldPerDayWidget()]
+class Comment(models.Model):
+	_DATABASE = "mooc_data"
+	id = models.IntegerField(primary_key=True)
+	author_id = models.CharField(max_length=50)
+	parent_id = models.IntegerField(null=True,blank=True)
+	step = models.CharField(max_length=5)
+	week_number = models.IntegerField() #primary_key=True)
+	step_number = models.IntegerField() #primary_key=True)
+	text = models.CharField(max_length=1200)
+	timestamp = models.DateTimeField()
+	moderated = models.DateTimeField(null=True,blank=True)
+	likes = models.IntegerField()
+	university = models.CharField(max_length=40) #, primary_key=True)
+	course = models.CharField(max_length=70) #, primary_key=True)
+	course_run = models.IntegerField() #primary_key=True)
 
-class StepCompletionDashboard(Dashboard):
-	title = 'Steps Completion'
-	widgets = [dashboardwidgets.StepsMarkedAsComplete(),dashboardwidgets.StepsCompleted(),dashboardwidgets.StepsCompleted()]
+	class Meta:
+		db_table = 'Comments'
+
+	def __str__(self):
+		return self.id
+
