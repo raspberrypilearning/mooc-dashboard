@@ -26,18 +26,26 @@ def update(email,password):
 	    	password (str) The facilitators FutureLearn password
 
 	"""
-
+	# logging in to futureLearn website with the credentials taken from config.json 
 	loginInfo, rep = login(email,password,'https://www.futurelearn.com/sign-in')
 
 	if rep.status_code == 200:
 		print "Login OK..."
+		# check if user has admin privileges!
 		cos  = FLCourses(loginInfo)
+		# files with contains the list of csvs path on disk
 		files = {}
 
 		print "Retrieving courses..."
 
 		enrolmentData = []
 
+		# cos.getCourses().items() will return each course and their runs alongside various info such as: start_date, end_date ect,
+		# Look into ./course_run.py for the full list. These info are scrapped from the website.
+
+		# by the end of this for loop, there will be a csv file named "Courses Data/Data/Courses-Data.csv"
+		# which contains the overall info about each run of each course, This file will be later inserted into mysql, alongside other csvs,
+		# which are directly downloaded from the website (not individually scrapped)
 		for course_name , runs in cos.getCourses().items():
 			
 			for run, info in runs.items():	
@@ -49,6 +57,7 @@ def update(email,password):
 				enrolmentData.append(run_enrol_data)
 				print len(info['datasets'])
 				if(not len(info['datasets']) == 0):
+					# download all csvs for each run within courses
 					download(loginInfo, cos.getUniName(), course_name, run, info)
 					
 					for url,filename in info['datasets'].items():
@@ -60,6 +69,8 @@ def update(email,password):
 		if not os.path.exists(courses_path):
 			os.makedirs(courses_path)
 
+		# multiple IFs below because some runs have nulls
+		# In this step, the scrapped info are written in the csv file "Courses-Data.csv"
 		with open(courses_path + courses_filename, 'w') as f:
 			writer = csv.writer(f, lineterminator='\n')
 			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,course_run".split(','))
@@ -83,6 +94,7 @@ def update(email,password):
 		# JSR Disable import as unused
 		print "Changing the csv hex to unix style"
 		output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
+		# Now that all csvs are in place and stored in "files" var, then the process of inserting these csvs into mysql
 		importData(files,cos.getUniName())
 		f_update_time = open("../data/"+cos.getUniName()+"/updated.txt",'w')
 		f_update_time.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))

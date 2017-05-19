@@ -13,3 +13,4 @@ log/*
 log/!.gitkeep
 *nohup.out
 !removeCarrigeReturn.sh
+*.sublime-*

@@ -1,5 +1,9 @@
 import csv,mysql.connector
 
+# This class is responsible for inserting a csv file into mysql, based on the name which is either: comments, enrolments etc. 
+# Each name has a specific schema.
+# Warning, we use IGNORE to insert csv's rows into mysql, which means that if a given row is not parsed, it will not be inserted, and because "LOAD DATA LOCAL INFILE"
+# is a bulk command to mysql, it may not be reported that a particular row is not inserted.
 
 class CSV_TO_SQL:
 

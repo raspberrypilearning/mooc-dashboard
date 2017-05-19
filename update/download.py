@@ -2,6 +2,11 @@ import requests,datetime,mysql.connector,os,errno,json
 from login import login
 from csvToSQL import CSV_TO_SQL
 
+# Download() is responsible for downloading csvs into "data" directory, most of the csvs are directly downloaded from the website
+# except "metadata.csv", which is constructed by scrapping info from the website
+
+# importData() is the method to pass all csvs into mysql using "CSV_TO_SQL" class
+
 def download(s, uni_name, course_name, run, info):
 	""" Fetch all the datasets (CSV) for a given iteration (run) of a course
 
@@ -30,13 +35,13 @@ def download(s, uni_name, course_name, run, info):
 			else:
 				raise
 
-		#Create course metadata file
+		#Create course metadata file "metadata.csv" for each run
 		f_metadata_csv = open(dir_path+"/metadata.csv",'w')
 		f_metadata_csv.write("uni_name,course_name,run,start_date,end_date,duration_weeks"+'\n')
 		f_metadata_csv.write(uni_name+","+course_name+","+run+","+start_date+","+end_date+","+info['duration_weeks']+'\n')
 		f_metadata_csv.close()
 
-		#fetch the CSVs
+		#Download the CSVs
 		for url,filename in info['datasets'].items():
 			print filename
 			print "Downloading %s to %s ..." % (url, dir_path)
@@ -60,6 +65,7 @@ def importData(files,uni):
 	
 	for f,course_run in files.items():
 		print("Inserting " + f + " into database.")
+		# Insert each csv file into mysql 
 		convert.insertIntoTable(f,course_run,uni)
 		# os.remove(f)
 		# Lets not delete the csv files until the sql conversion is finished.d
