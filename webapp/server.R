@@ -2095,7 +2095,7 @@ function(input, output, session) {
 		analysis <- signUpData()
 		data<- analysis[[1]]
 		startDays <- analysis[[2]]
-
+		startDay <- analysis[[3]]
 		chart <- Highcharts$new()
 		chart$chart(type = "line", width = 1200)
 		chart$data(data[c(names(enrolment_data))])
@@ -2110,8 +2110,8 @@ function(input, output, session) {
 	      				width = 3,
 	      				zIndex = 4,
 	      				label = list(
-	      					text = paste(names(enrolment_data)[1],
-	      						"Start", sep = " "),
+	      					text = paste("Course Started: ", startDay,
+	      						sep = " "),
 	                		style = list( color = 'black')
 	      				)
 	      			)

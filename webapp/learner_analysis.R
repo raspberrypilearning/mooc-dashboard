@@ -1097,7 +1097,7 @@ signUpData<-function(){
 		}
 		data[[names(enrolment_data[x])]] <- d
 	}
-	return(list(data,startDays))
+	return(list(data,startDays,startDay))
 }
 
 statementsSoldData<-function(){
