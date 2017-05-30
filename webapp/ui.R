@@ -23,6 +23,13 @@ scatterChoices <- list("Number of comments" = "comments", "Number of replies" = 
 											 "Percentage of completed questions" = "questions")
 # Dashboard
 
+stepCompletionList <- list("Steps Marked As Complete" = "StepsMarkedAsComplete",
+						 "Steps First Visited" = "StepsFirstVisited",
+						 "Steps First Visited By Step And Date" = "StepsFirstVisitedByStepAndDate",
+						 "Steps First Visited Per Day" = "StepsFirstVisitedPerDay",
+						 "Steps Marked Completed Per Day" = "StepsMarkedCompletedPerDay",
+						 "Steps Marked As Complete By Step And Date" = "StepsMarkedAsCompleteByStepAndDate")
+
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -239,28 +246,50 @@ body <- dashboardBody(
 			)
 		),
 		tabItem(tabName = "step_completion",
-			fluidRow(
-				box(
+			fluidRow(box(
 					uiOutput("runSelectorSteps"),
+					selectInput("graphName", label = "Choose a graph", 
+						choices = stepCompletionList, selected = "StepsMarkedAsComplete",width = 550),
+					actionButton("runSelectorStepsButton", label = "Display"),
 					title = "Run Selector",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
-				),
-				box(
-					showOutput("stepsCompleted","highcharts"),
-					title = "Steps Marked As Complete",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
-				),
-				box(
-					d3heatmapOutput("firstVisitedHeat"),
-					title = "Steps First Visited By Step And Date",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
-				),
-				box(
-					d3heatmapOutput("stepCompletionHeat"),
-					title = "Steps Marked As Complete By Step And Date",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
-				)
-			)
+			)),
+			fluidRow(box(
+				showOutput("stepsCompleted","highcharts"),
+				title = "Steps Marked As Complete",
+				id="box1",
+				status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+			)),
+			fluidRow(box(
+				showOutput("StepsFirstVisited","highcharts"),
+				title = "Steps First Visited",
+				id="box2",
+				status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+			)),
+			fluidRow(box(
+				d3heatmapOutput("firstVisitedHeat"),
+				title = "Steps First Visited By Step And Date",
+				id="box3",
+				status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+			)),
+			fluidRow(box(
+				showOutput("firstVisitedPerDay","highcharts"),
+				title = "Steps First Visited Per Day",
+				id="box4",
+				status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+			)),
+			fluidRow(box(
+				showOutput("markedCompletedPerDay","highcharts"),
+				title = "Steps Marked Completed Per Day",
+				id="box5",
+				status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+			)),
+			fluidRow(box(
+				d3heatmapOutput("stepCompletionHeat"),
+				title = "Steps Marked As Complete By Step And Date",
+				id="box6",
+				status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+			))
 		),
 		tabItem(tabName = "commentsOverview",
 			fluidRow(

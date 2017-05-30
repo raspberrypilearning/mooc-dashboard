@@ -20,6 +20,12 @@ source("learner_filters.R")
 source("courses.R")
 source("data_retrieval.R")
 
+jscode <- "
+shinyjs.collapse = function(boxid) {
+$('#' + boxid).closest('.box').find('[data-widget=collapse]').click();
+}
+"
+
 function(input, output, session) { 
 	
 	output$institution <- renderText({"soton"})
@@ -1607,81 +1613,214 @@ function(input, output, session) {
 	# START STEP COMPLETION TAB
 
 	# Selector for which run to display on the step tab
-	output$runSelectorSteps <- renderUI({
-		chartDependency()
-		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-		if(input$run2 != "None"){
-			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-		}
-		if(input$run3 != "None"){
-			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-		}
-		if(input$run4 != "None"){
-			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-		}
-		print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
+	
+	StepButtonDependency <- eventReactive(input$runSelectorStepsButton, {})
+	observeEvent(input$runSelectorStepsButton, {
+		output$runSelectorSteps <- renderUI({
+			StepButtonDependency()
+			chartDependency()
+			# stepDependancy()
+
+			runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+			if(input$run2 != "None"){
+				runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+			}
+			if(input$run3 != "None"){
+				runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+			}
+			if(input$run4 != "None"){
+				runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+			}
+			print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
+		})
+		if (isolate(input$graphName) == "StepsMarkedAsComplete") {
+			# Step completed column chart
+			# output$StepsFirstVisited <- renderChart2({})
+			# output$stepCompletionHeat <- renderD3heatmap({})
+			# output$firstVisitedHeat <- renderD3heatmap({})
+			# output$firstVisitedPerDay <- renderChart2({})
+			# output$markedCompletedPerDay <- renderChart2({})
+			shinyjs::hide(id = "box2")
+			shinyjs::hide(id = "box3")
+			shinyjs::hide(id = "box4")
+			shinyjs::hide(id = "box5")
+			shinyjs::hide(id = "box6")
+			shinyjs::show(id = "box1")
+			output$stepsCompleted <- renderChart2({
+				stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
+				a <- rCharts:::Highcharts$new()
+				a$chart(type = "column", width = 1200)
+				a$series(
+					name = input$runChooserSteps,
+					type = column,
+					data = stepsCount$freq
+					)
+				a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
+				a$yAxis(title = list(text = "Frequency"))
+				a$plotOptions(
+					column = list(
+						animation = FALSE
+					),
+					line = list(
+						animation = FALSE)
+				)
+				# model <- lm(stepsCount[,2] ~ stepsCount$week_step)
+				# fit <- predict(model,newData = stepsCount)
+				# a$series(
+				# 	name = "Best Fit",
+		  #       	type = line,
+		  #       	data = fit
+		  #       )
+				return(a)
+			})
+	}
+	else if (isolate(input$graphName) == "StepsFirstVisited") {
+			# Step completed column chart
+			# output$stepsCompleted <- renderChart2({})
+			# output$stepCompletionHeat <- renderD3heatmap({})
+			# output$firstVisitedHeat <- renderD3heatmap({})
+			# output$firstVisitedPerDay <- renderChart2({})
+			# output$markedCompletedPerDay <- renderChart2({})
+			shinyjs::hide(id = "box1")
+			shinyjs::hide(id = "box3")
+			shinyjs::hide(id = "box4")
+			shinyjs::hide(id = "box5")
+			shinyjs::hide(id = "box6")
+			shinyjs::show(id = "box2")
+			output$StepsFirstVisited <- renderChart2({
+				stepsCount <- getStepsFirstVistedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
+				a <- rCharts:::Highcharts$new()
+				a$chart(type = "column", width = 1200)
+				a$series(
+					name = input$runChooserSteps,
+					type = column,
+					data = stepsCount$freq
+					)
+				a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
+				a$yAxis(title = list(text = "Frequency"))
+				a$plotOptions(
+					column = list(
+						animation = FALSE
+					),
+					line = list(
+						animation = FALSE)
+				)
+				# model <- lm(stepsCount[,2] ~ stepsCount$week_step)
+				# fit <- predict(model,newData = stepsCount)
+				# a$series(
+				# 	name = "Best Fit",
+		  #       	type = line,
+		  #       	data = fit
+		  #       )
+				return(a)
+			})
+	}
+	else if (isolate(input$graphName) == "StepsFirstVisitedByStepAndDate") {
+		# Step completion heat map
+		# output$StepsFirstVisited <- renderChart2({})
+		# output$stepsCompleted <- renderChart2({})
+		# output$stepCompletionHeat <- renderD3heatmap({})
+		# output$firstVisitedPerDay <- renderChart2({})
+		# output$markedCompletedPerDay <- renderChart2({})
+		shinyjs::hide(id = "box1")
+		shinyjs::hide(id = "box2")
+		shinyjs::hide(id = "box4")
+		shinyjs::hide(id = "box5")
+		shinyjs::hide(id = "box6")
+		shinyjs::show(id = "box3")
+		output$firstVisitedHeat <- renderD3heatmap({
+			startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
+			map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
+			print(d3heatmap(map[,2:ncol(map)],
+				dendrogram = "none",
+				scale = "column",
+				color = "Blues",
+				labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
+				)
+			)
+		})
+	}
+	else if (isolate(input$graphName) == "StepsFirstVisitedPerDay") {
+		# Step completion heat map
+		# output$StepsFirstVisited <- renderChart2({})
+		# output$stepsCompleted <- renderChart2({})
+		# output$firstVisitedHeat <- renderD3heatmap({})
+		# output$stepCompletionHeat <- renderD3heatmap({})
+		# output$markedCompletedPerDay <- renderChart2({})
+		shinyjs::hide(id = "box1")
+		shinyjs::hide(id = "box2")
+		shinyjs::hide(id = "box3")
+		shinyjs::hide(id = "box5")
+		shinyjs::hide(id = "box6")
+		shinyjs::show(id = "box4")
+		output$firstVisitedPerDay <- renderChart2({
+			chartDependency()
+			data<-stepsFirstVisitedPerDay()
+			chart <- Highcharts$new()
+			chart$chart(type = "line", width = 1200)
+			chart$data(data[c(names(step_data))])
+			chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+			chart$xAxis(categories = data$day)
+			chart$yAxis(title = list(text = "Frequency"))
+			return(chart)
+		})
+	}
+	else if (isolate(input$graphName) == "StepsMarkedCompletedPerDay") {
+		# Step completion heat map
+		# output$StepsFirstVisited <- renderChart2({})
+		# output$stepsCompleted <- renderChart2({})
+		# output$firstVisitedHeat <- renderD3heatmap({})
+		# output$stepCompletionHeat <- renderD3heatmap({})
+		# output$firstVisitedPerDay <- renderChart2({})
+		shinyjs::hide(id = "box1")
+		shinyjs::hide(id = "box2")
+		shinyjs::hide(id = "box3")
+		shinyjs::hide(id = "box4")
+		shinyjs::hide(id = "box6")
+		shinyjs::show(id = "box5")
+		output$markedCompletedPerDay <- renderChart2({
+			chartDependency()
+			data<-stepsMarkedCompletedPerDay()
+			chart <- Highcharts$new()
+			chart$chart(type = "line", width = 1200)
+			chart$data(data[c(names(step_data))])
+			chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+			chart$xAxis(categories = data$day)
+			chart$yAxis(title = list(text = "Frequency"))
+			return(chart)
+		})
+	}
+	else if (isolate(input$graphName) == "StepsMarkedAsCompleteByStepAndDate") {
+		# First Visited Heat Map
+		# output$StepsFirstVisited <- renderChart2({})
+		# output$stepsCompleted <- renderChart2({})
+		# output$stepCompletionHeat <- renderD3heatmap({})
+		# output$firstVisitedPerDay <- renderChart2({})
+		# output$markedCompletedPerDay <- renderChart2({})
+		shinyjs::hide(id = "box1")
+		shinyjs::hide(id = "box2")
+		shinyjs::hide(id = "box3")
+		shinyjs::hide(id = "box4")
+		shinyjs::hide(id = "box5")
+		shinyjs::show(id = "box6")
+		output$stepCompletionHeat <- renderD3heatmap({
+			startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
+			map <- getStepCompletionHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
+			print(d3heatmap(map[,2:ncol(map)],
+				dendrogram = "none",
+				scale = "column",
+				color = "Blues",
+				labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
+				)
+			)
+		})
+	}
 	})
 
-	# Step completed column chart
-	output$stepsCompleted <- renderChart2({
-		chartDependency()
-		stepDependancy()
-		stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
-		a <- rCharts:::Highcharts$new()
-		a$chart(type = "column", width = 1200)
-		a$series(
-			name = input$runChooserSteps,
-			type = column,
-			data = stepsCount$freq
-			)
-		a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
-		a$yAxis(title = list(text = "Frequency"))
-		a$plotOptions(
-			column = list(
-				animation = FALSE
-			),
-			line = list(
-				animation = FALSE)
-		)
-		# model <- lm(stepsCount[,2] ~ stepsCount$week_step)
-		# fit <- predict(model,newData = stepsCount)
-		# a$series(
-		# 	name = "Best Fit",
-  #       	type = line,
-  #       	data = fit
-  #       )
-		return(a)
-	})
+	
+	
 
-	# Step completion heat map
-	output$stepCompletionHeat <- renderD3heatmap({
-		chartDependency()
-		stepDependancy()
-		startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
-		map <- getStepCompletionHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
-		print(d3heatmap(map[,2:ncol(map)],
-			dendrogram = "none",
-			scale = "column",
-			color = "Blues",
-			labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
-			)
-		)
-	})
-
-	# First Visited Heat Map
-	output$firstVisitedHeat <- renderD3heatmap({
-		chartDependency()
-		stepDependancy()
-		startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
-		map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
-		print(d3heatmap(map[,2:ncol(map)],
-			dendrogram = "none",
-			scale = "column",
-			color = "Blues",
-			labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
-			)
-		)
-	})
+	
 
 	# END STEP COMPLETION TAB
 

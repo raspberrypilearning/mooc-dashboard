@@ -604,6 +604,14 @@ getStepsCompletedData <- function(stepData){
 	return (stepsCount)
 }
 
+getStepsFirstVistedData <- function(stepData){
+	data <- stepData
+	firstVistedSteps <- subset(data, first_visited_at != "")
+	firstVistedSteps$week_step <- getWeekStep(firstVistedSteps)
+	stepsCount <- count(firstVistedSteps, 'week_step')
+	return (stepsCount)
+}
+
 # Returns the heat map of step completion, requires step data and the start date of the run
 getStepCompletionHeatMap <- function(stepData, startDate){
 	data <-stepData
@@ -1127,6 +1135,67 @@ statementsSoldData<-function(){
 				d[i] <- freqs[[x]][[2]][i]
 			}
 			data[[names(enrolment_data[x])]] <- d
+	}
+	return(data)
+}
+
+stepsFirstVisitedPerDay<-function(){
+	freqs <- list()
+
+	maxLength <- 0
+	for(i in c(1:length(names(step_data)))){
+		steps <- step_data[[names(step_data)[i]]]
+		steps <- steps[which(steps$first_visited_at != ""),]
+		stepsCount <- count(substr(as.character(steps$first_visited_at),start = 1, stop = 10))
+		dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
+		if(length(dates[[1]]) > maxLength){
+			maxLength <- length(dates[[1]])
+		}
+		for(x in c(1:length(stepsCount$x))){
+			dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
+		}
+		freqs[[i]] <- dates
+	}
+
+	data <- data.frame(day = seq(from = 1, to = maxLength))
+	for(x in c(1:length(freqs))){
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(step_data[x])]] <- d
+	}
+	return(data)
+}
+
+
+stepsMarkedCompletedPerDay<-function(){
+	freqs <- list()
+
+	maxLength <- 0
+	for(i in c(1:length(names(step_data)))){
+		steps <- step_data[[names(step_data)[i]]]
+		steps <- steps[which(steps$last_completed_at != ""),]
+		stepsCount <- count(substr(as.character(steps$last_completed_at),start = 1, stop = 10))
+		dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
+		if(length(dates[[1]]) > maxLength){
+			maxLength <- length(dates[[1]])
+		}
+		for(x in c(1:length(stepsCount$x))){
+			dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
+		}
+		freqs[[i]] <- dates
+	}
+
+	data <- data.frame(day = seq(from = 1, to = maxLength))
+	for(x in c(1:length(freqs))){
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(step_data[x])]] <- d
 	}
 	return(data)
 }
