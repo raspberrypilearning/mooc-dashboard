@@ -15,7 +15,7 @@ require(DT)
 require(R.utils)
 require(RMySQL)
 source("config.R")
-source("learner_analysis.R")
+
 source("learner_filters.R")
 source("courses.R")
 source("data_retrieval.R")
@@ -27,7 +27,7 @@ $('#' + boxid).closest('.box').find('[data-widget=collapse]').click();
 "
 
 function(input, output, session) { 
-	
+	source("learner_analysis.R", local=TRUE)
 	output$institution <- renderText({"soton"})
 	output$pageTitle <- renderText("Welcome to the MOOC Dashboard! Select the course(s) and run(s) you wish to visualise")
 	# output$updatedTime <- renderText(paste("Data last updated  -  ",getUpdatedTime()))
@@ -56,7 +56,13 @@ function(input, output, session) {
 	# step data, comment data, enrolment data, quiz data, review data, course meta data, for each of the 
 	# runs in a list of data frames
 	# Executes after user has clicked the "chooseCourseButton"
-
+	step_data <- NULL
+	comments_data <- NULL
+	quiz_data <- NULL
+	assignments_data <- NULL
+	reviews_data <- NULL
+	enrolment_data <- NULL
+	course_data <- NULL
 	observeEvent(input$chooseCourseButton, {
 
 		withProgress(message = "Loading Data", value = 0, {
@@ -73,37 +79,37 @@ function(input, output, session) {
 		#FixMe - this could all go into a function - but check scope
 		
 		stepDataFiles <- getData("Activity")
-		assign("step_data", stepDataFiles, envir = .GlobalEnv)
+		step_data <<- stepDataFiles
 
 		incProgress(1/n, detail = "Loaded Step Data")
 
 		commentsDataFiles <- getData("Comments")
-		assign("comments_data", commentsDataFiles, envir = .GlobalEnv)
+		comments_data <<- commentsDataFiles
 
 		incProgress(1/n, detail = "Loaded Comment Data")
 
 		quizDataFiles <- getData("Quiz")
-		assign("quiz_data", quizDataFiles, envir = .GlobalEnv)
+		quiz_data <<- quizDataFiles
 
 		incProgress(1/n, detail = "Loaded Quiz Data")
 
 		assignmentsDataFiles <- getData("Assignments")
-		assign("assignments_data", assignmentsDataFiles, envir = .GlobalEnv)
+		assignments_data <<- assignmentsDataFiles
 
 		incProgress(1/n, detail = "Loaded assignment Data")
 
 		reviewsDataFiles <- getData("Reviews")
-		assign("reviews_data", reviewsDataFiles, envir = .GlobalEnv)
+		reviews_data <<- reviewsDataFiles
 
 		incProgress(1/n, detail = "Loaded Review Data")
 
 		enrolmentsDataFiles <- getData("Enrolments")
-		assign("enrolment_data", enrolmentsDataFiles, envir = .GlobalEnv)
+		enrolment_data <<- enrolmentsDataFiles
 
 		incProgress(1/n, detail = "Loaded Enrolments Data")
 		
 		courseMetaData <- getCourseData()
-		assign("course_data", courseMetaData, envir = .GlobalEnv)
+		course_data <<- courseMetaData
 		incProgress(1/n, detail = "Loaded Meta Data")
 
 
