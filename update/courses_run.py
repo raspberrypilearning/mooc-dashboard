@@ -45,8 +45,6 @@ class FLCourses:
 					try:
 						course_name = course.a['title']
 						print "Found course: %s ..." %course_name
-						if (course_name != "Developing Your Research Project (Southampton)"):
-							continue
 						#get courses run in different time
 						course_runs = course.find_all('tr')
 						run_count = len(course_runs)
