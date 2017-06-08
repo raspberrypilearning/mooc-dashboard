@@ -53,11 +53,16 @@ class FLCourses:
 
 						for course_run in course_runs:
 							l = course_run.find_all('span')
-							
-							_start_date = l[2].text
-							print "...start date: %s " % _start_date
-							_status = l[1].text.lower()
-							print "...status: %s " % _status
+							if (l[1].text.lower() == "invite-only"):
+								_start_date = l[3].text
+								print "...start date: %s " % _start_date
+								_status = l[2].text.lower()
+								print "...status: %s " % _status
+							else:
+								_start_date = l[2].text
+								print "...start date: %s " % _start_date
+								_status = l[1].text.lower()
+								print "...status: %s " % _status
 
 							_run_details_path = course_run.find_all('a')[1].get('href')
 							_stats_path = course_run.find_all('a')[2].get('href')
