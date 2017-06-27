@@ -20,18 +20,28 @@ getTable <- function(table,course,course_run){
 	return(data)
 }
 
+#returns a data frame of metadata about all courses
 getCourseMetaData <- function(){
+  
+  #creating the mysql connection
 	m<-dbDriver("MySQL");
 	con<-dbConnect(m,user='root',password=sqlPassword,host='localhost',dbname='moocs');
+	
+	#gets and then returns the data frame of metadata
 	query <- 'Select * FROM Courses'
 	data <- dbGetQuery(con,query)
 	dbDisconnect(con)
 	return(data)
 }
 
+#returns a data frame of metadata about a course and a run
 getCourseMetaDataSpecific <- function(course,course_run){
+  
+  #creating the mysql connection
 	m<-dbDriver("MySQL");
  	con<-dbConnect(m,user='root',password=sqlPassword,host='localhost',dbname='moocs');
+ 	
+ 	#gets and then returns the data frame of metadata of a course and a run
 	query <- paste0('Select * FROM Courses WHERE course = "', course, '" And run = ', course_run)
  	data <- dbGetQuery(con,query)
  	dbDisconnect(con)
