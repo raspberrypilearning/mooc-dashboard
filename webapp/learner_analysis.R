@@ -777,7 +777,7 @@ getEmploymentDegreeCount <- function(enrolmentData){
   return(statusCount)
 }
 
-# Returns comment data in the format needed for the comment viewer, takes the overall comment data and which run.
+# Returns comment data in the format needed for the comment viewer
 getCommentViewerData <- function(commentData, run,courseMetaData){
 	data <- commentData[[which(names(commentData) == run)]]
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))

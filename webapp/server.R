@@ -53,7 +53,7 @@ function(input, output, session) {
 	courseMetaData <- getCourseMetaData()
 	
 	# Load the necessary data from the SQL database for each of the runs, store the types of data,
-	# step data, comment data, enrolment data, quiz data, review data, course meta data, for each of the 
+	# step data, comment data, enrolment data, quiz data, review data, course meta data, team data for each of the 
 	# runs in a list of data frames
 	# Executes after user has clicked the "chooseCourseButton"
 	step_data <- NULL
@@ -63,60 +63,63 @@ function(input, output, session) {
 	reviews_data <- NULL
 	enrolment_data <- NULL
 	course_data <- NULL
+	team_data <- NULL
+	
 	observeEvent(input$chooseCourseButton, {
 
 		withProgress(message = "Loading Data", value = 0, {
-
-		n <- 8
 		
+		#Updates the page title to contain the courses and runs selected
 		output$pageTitle <- renderText(paste(input$course1, "- [", substr(input$run1,1,1), "]",
 		ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
 		ifelse(input$run3 != "None",paste0(" vs ",input$course3,"- [", substr(input$run3,1,1), "]"),""),
 		ifelse(input$run4 != "None",paste0(" vs ",input$course4,"- [", substr(input$run4,1,1), "]"),"")))
 		
+		#Updates the app to show the demographics page after loading a course
 		updateTabsetPanel(session, "tabs", selected = "demographics")
 		
 		#FixMe - this could all go into a function - but check scope
 		
+		#number of steps in the loading part
+		n <- 9
+		
+		#getting the data from the database and storing it into a global variable
+		#updating the loading progress
+		#same process repeated for each variable
 		stepDataFiles <- getData("Activity")
 		step_data <<- stepDataFiles
-
 		incProgress(1/n, detail = "Loaded Step Data")
 
 		commentsDataFiles <- getData("Comments")
 		comments_data <<- commentsDataFiles
-
 		incProgress(1/n, detail = "Loaded Comment Data")
 
 		quizDataFiles <- getData("Quiz")
 		quiz_data <<- quizDataFiles
-
 		incProgress(1/n, detail = "Loaded Quiz Data")
 
 		assignmentsDataFiles <- getData("Assignments")
 		assignments_data <<- assignmentsDataFiles
-
 		incProgress(1/n, detail = "Loaded assignment Data")
 
 		reviewsDataFiles <- getData("Reviews")
 		reviews_data <<- reviewsDataFiles
-
 		incProgress(1/n, detail = "Loaded Review Data")
 
 		enrolmentsDataFiles <- getData("Enrolments")
 		enrolment_data <<- enrolmentsDataFiles
-
 		incProgress(1/n, detail = "Loaded Enrolments Data")
 		
 		courseMetaData <- getCourseData()
 		course_data <<- courseMetaData
 		incProgress(1/n, detail = "Loaded Meta Data")
-
+		
+		teamDataFiles <- getData("TeamMembers")
+		team_data <<- teamDataFiles
+		incProgress(1/n, detail = "Loaded Team Members Data")
 
 		assign("pre_course_data", do.call("rbind",enrolment_data) , envir = .GlobalEnv)
-
 		assign("allLearners", getAllLearners(enrolmentsDataFiles), envir = .GlobalEnv)
-
 		assign("filtersEnabled", FALSE, envir = .GlobalEnv)
 		updateTextInput(session, "filteredLearners", value = allLearners)
 
