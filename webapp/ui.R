@@ -403,7 +403,7 @@ body <- dashboardBody(
 		            tags$div(style = "margin-left:15px", uiOutput("runButton"))
 		        ),
 		                title = "Members Selector",
-		                status =  "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+		                status = "primary", solidHeader = TRUE, width = 60,height = 460, collapsible = TRUE
 		        )
 		     ),
 		  
@@ -411,7 +411,7 @@ body <- dashboardBody(
 		 	  box(
 		 	        DT::dataTableOutput("teamMember"),
 		 	        title = "Team Members",
-		 	        status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+		 	        status = "primary", solidHeader = TRUE, width = 12,height = 1000, collapsible = TRUE
 		 	  )
 		 	)
 		)
