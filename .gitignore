@@ -6,11 +6,7 @@ update/config.json
 update/fail
 *.pyc
 update/.idea
-data/*
-data/!.gitkeep
-log/*
 *.csv
-log/!.gitkeep
 *nohup.out
 !removeCarrigeReturn.sh
 *.sublime-*
