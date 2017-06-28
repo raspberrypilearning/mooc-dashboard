@@ -402,7 +402,7 @@ body <- dashboardBody(
 		            tags$div(style = "display:inline-block; margin-left:15px", uiOutput("memberSelector", inline = TRUE)),
 		            tags$div(style = "margin-left:15px", uiOutput("viewTeamButton"))
 		        ),
-		                title = "Members Selector",
+		                title = "Run Selector",
 		                status = "primary", solidHeader = TRUE, width = 12,height = 200, collapsible = TRUE
 		        )
 		     ),
@@ -410,7 +410,7 @@ body <- dashboardBody(
 		 	fluidRow(
 		 	  box(
 		 	        DT::dataTableOutput("teamMember"),
-		 	        title = "Team Members",
+		 	        title = "Team Members Activity",
 		 	        status = "primary", solidHeader = TRUE, width = 12,height = 1000, collapsible = TRUE
 		 	  )
 		 	)
