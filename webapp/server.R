@@ -2445,7 +2445,6 @@ function(input, output, session) {
         options = list(
           autoWidth = TRUE,
           columnDefs = list(list(width = '10%', targets = list(0,1,2))),
-          #scrollX = TRUE,
           scrollY = "700px",
           lengthMenu = list(c(10,20,30),c('10','20','30')),
           pageLength = 20,
