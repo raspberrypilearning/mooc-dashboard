@@ -2425,7 +2425,7 @@ function(input, output, session) {
   })
   
   # Produces a data table for the team members
-  output$teamMember <- renderDataTable({
+  output$teamMembersViewer <- renderDataTable({
     chartDependency()
     viewTeamPressed()
     if(input$viewTeamButton == 0){

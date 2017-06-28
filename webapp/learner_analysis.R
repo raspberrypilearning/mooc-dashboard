@@ -827,6 +827,9 @@ getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
   #gets the data frame from the list; corresponding to the course run
   commentDataRun <- commentData[[which(names(commentData) == run)]]
   
+  #removing the id column as it will appear as a duplicate 
+  commentDataRun$id <- NULL
+  
   #merge the data frames based on the user id
   data <- merge (teamData, commentDataRun,  by.x = "id", by.y = "author_id")
   
