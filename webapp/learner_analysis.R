@@ -777,25 +777,82 @@ getEmploymentDegreeCount <- function(enrolmentData){
   return(statusCount)
 }
 
-# Returns comment data in the format needed for the comment viewer
+#' Used to get comment data for the comment viewer
+#'
+#' @param commentData list of data frames that contain comment data for the chosen courses and runs 
+#' @param run the chosen run for which to return comment data
+#' @param courseMetaData all sort of information about the course
+#'
+#' @return Returns comment data in the format needed for the comment viewer
 getCommentViewerData <- function(commentData, run,courseMetaData){
+  
+  #gets the data frame from the list corresponding to the course run
 	data <- commentData[[which(names(commentData) == run)]]
+	
+	#modify the timestamp column to contain just the date
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+	
+	#activity steps under a specific form e.g. 1.3
 	data$week_step <- getWeekStep(data)
+	
 	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
 	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
 	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
 	data$likes <- as.numeric(data$likes)
 	data$likes <- as.integer(data$likes)
+	
+	#creating the url by doing some splitting and removing leading/trailing whitespace 
 	runsplit <- strsplit(run,"-")
 	course <- trimws(runsplit[[1]])
 	courseRun <- as.character(courseMetaData$course_run)
 	shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
 	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
 	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+	
 	sorted <- data[order(-data$likes),]
 	return(sorted)
 }
+
+
+#' To get data about team interactions with the platform: name, date, step, comment, link
+#'
+#' @param teamData a data frame with data about team members
+#' @param commentData a list of data frames
+#' @param run the course run
+#' @param courseMetaData specific information about the courses
+#'
+#' @return a data frame about team interactions with the platform
+getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
+  
+  #gets the data frame from the list; corresponding to the course run
+  commentDataRun <- commentData[[which(names(commentData) == run)]]
+  
+  #merge the data frames based on the user id
+  data <- merge (teamData, commentDataRun,  by.x = "id", by.y = "author_id")
+  
+  #creating a name column that contains the first and last name of team members
+  data$name <- paste(data$first_name, data$last_name, sep = " ")
+  
+  #modify the timestamp column to contain just the date
+  data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+  
+  #activity steps under a specific form e.g. 1.3
+  data$week_step <- getWeekStep(data)
+  
+  #creating the url by doing some splitting and removing leading/trailing whitespace 
+  runsplit <- strsplit(run,"-")
+  course <- trimws(runsplit[[1]])
+  courseRun <- as.character(courseMetaData$course_run)
+  shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
+  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+  data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+  
+  #sorting the data frame by the name of team members
+  sorted <- data[order(data$name),]
+  
+  return(sorted)
+}
+
 
 getSurveyResponsesFromFullyParticipating <- function(enrolmentData){
 	responses <- enrolmentData[which(enrolmentData$fully_participated_at != ""),]

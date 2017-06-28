@@ -114,7 +114,7 @@ function(input, output, session) {
 		course_data <<- courseMetaData
 		incProgress(1/n, detail = "Loaded Meta Data")
 		
-		teamDataFiles <- getData("TeamMembers")
+		teamDataFiles <- getAllTableData("TeamMembers")
 		team_data <<- teamDataFiles
 		incProgress(1/n, detail = "Loaded Team Members Data")
 
