@@ -45,8 +45,8 @@ sidebar <- dashboardSidebar(
 		menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
 		menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
 		menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
-		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece"))
-		# ,menuItem("Team Members", tabName = "team_members", icon = icon("users"))
+		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
+		menuItem("Team Members", tabName = "team_members", icon = icon("users"))
 		# ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
 		# ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
 		# ,menuItem("Debug", tabName = "debug")
@@ -393,10 +393,28 @@ body <- dashboardBody(
 			fluidRow(
 				valueBoxOutput("scatterSlope", width = 6)
 			)#fluidRow
+		),#tabItem
+		
+		tabItem(tabName = "teamMembers",
+		   fluidRow(
+		     box(
+		        fluidRow(
+		            tags$div(style = "display:inline-block; margin-left:15px", uiOutput("memberSelector", inline = TRUE)),
+		            tags$div(style = "margin-left:15px", uiOutput("runButton"))
+		        ),
+		                title = "Members Selector",
+		                status =  "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+		        )
+		     ),
+		  
+		 	fluidRow(
+		 	  box(
+		 	        DT::dataTableOutput("teamMember"),
+		 	        title = "Team Members",
+		 	        status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+		 	  )
+		 	)
 		)
-		# ,#tabItem
-		# tabItem(tabName = "team_members",
-		# 	fluidRow(
 				
 		# 	)
 		# )
