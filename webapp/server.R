@@ -2392,6 +2392,85 @@ function(input, output, session) {
 
 	# END SIGN UPS AND STATEMENTS SOLD TAB
 	
+	# # START TEAM MEMBERS TAB
+	# 
+	# #Selector to choose which run to be displayed
+	# output$memberSelector <- renderUI({
+	#   chartDependency()
+	#   runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+	#   if(input$run2 != "None"){
+	#     runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+	#   }
+	#   if(input$run3 != "None"){
+	#     runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+	#   }
+	#   if(input$run4 != "None"){
+	#     runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+	#   }
+	#   print(selectInput("runChooser", label = "Run", choices = runs, width = "550px"))
+	# })
+	# 
+	# # View team members button
+	# output$runButton <- renderUI({
+	#   chartDependency()
+	#   print(actionButton("runButton","View Team Members"))
+	# })
+	# 
+	# # Dependency for the data table to only load after the view team members button has been pressed
+	# viewIfPressed <- eventReactive(input$runButton, {
+	#   return(input$runChooser)
+	# })
+	# 
+	# # Produces a data table for the team members
+	# output$teamMembers <- renderDataTable({
+	#   chartDependency()
+	#   viewIfPressed()
+	#   if(input$runButton == 0){
+	#     return()
+	#   }
+	#   withProgress(message = "Processing",{
+	#     data <- getCommentViewerData(comments_data, viewIfPressed(), courseMetaData)
+	#     DT::datatable(
+	#       data[,c("timestamp","week_step","text", "url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+	#       colnames = c(
+	#         "Date" = 1,
+	#         "Step" = 2,
+	#         "Comment" = 3,
+	#         "Link" = 4
+	#       ),
+	#       options = list(
+	#         scrollY = "700px",
+	#         lengthMenu = list(c(10,20,30),c('10','20','30')),
+	#         pageLength = 20,
+	#         dom = 'lfrtBip',
+	#         buttons = list(
+	#           "print", 
+	#           list(
+	#             extend = 'pdf',
+	#             filename = 'Team Members',
+	#             text = 'Download pdf'
+	#           ),
+	#           list(
+	#             extend = 'excel',
+	#             filename = 'Team Members',
+	#             text = 'Download Excel'
+	#           )
+	#         )
+	#       ),
+	#       rownames = FALSE,
+	#       selection = 'single',
+	#       escape = FALSE
+	#     )
+	#   })
+	# })
+	# 
+	# # Checks if a comment has been selected
+	# threadSelected <- eventReactive( input$commentViewer_rows_selected, {
+	#   runif(input$commentViewer_rows_selected)
+	# })
+	# 
+	# # END TEAM MEMBERS VIEWER TAB
+	
 	# Debug tool print statements.
 	# output$debug <- renderText({
 	# 	freqs <- list()
