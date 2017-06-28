@@ -41,10 +41,10 @@ sidebar <- dashboardSidebar(
 		menuItem("Demographics", tabName = "demographics", icon = icon("pie-chart")),
 		menuItem("Statement Demographics", tabName = "statementDemographics", icon = icon("pie-chart")),
 		menuItem("Sign Ups and Statements Sold", tabName = "signUpsStatementsSold", icon = icon("graduation-cap")),
-		menuItem("Step Completion", tabName = "step_completion", icon = icon("graduation-cap")),
+		menuItem("Step Completion", tabName = "stepCompletion", icon = icon("graduation-cap")),
 		menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
 		menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
-		menuItem("Total Measures", tabName = "total_measures", icon = icon("comments")),
+		menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comments")),
 		menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
 		menuItem("Team Members", tabName = "teamMembers", icon = icon("users"))
 		# ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
@@ -245,7 +245,7 @@ body <- dashboardBody(
 				)
 			)
 		),
-		tabItem(tabName = "step_completion",
+		tabItem(tabName = "stepCompletion",
 			fluidRow(box(
 					uiOutput("runSelectorSteps"),
 					selectInput("graphName", label = "Choose a graph", 
@@ -355,7 +355,7 @@ body <- dashboardBody(
 				)
 			)
 		),
-		tabItem(tabName = "total_measures",
+		tabItem(tabName = "totalMeasures",
 			fluidRow(
 				box(uiOutput("totalMeasuresRunSelector"),
 					title = "Run Selector",
@@ -400,10 +400,10 @@ body <- dashboardBody(
 		     box(
 		        fluidRow(
 		            tags$div(style = "display:inline-block; margin-left:15px", uiOutput("memberSelector", inline = TRUE)),
-		            tags$div(style = "margin-left:15px", uiOutput("runButton"))
+		            tags$div(style = "margin-left:15px", uiOutput("viewTeamButton"))
 		        ),
 		                title = "Members Selector",
-		                status = "primary", solidHeader = TRUE, width = 60,height = 460, collapsible = TRUE
+		                status = "primary", solidHeader = TRUE, width = 12,height = 200, collapsible = TRUE
 		        )
 		     ),
 		  
