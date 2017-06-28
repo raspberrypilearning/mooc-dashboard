@@ -2432,14 +2432,15 @@ function(input, output, session) {
 	    return()
 	  }
 	  withProgress(message = "Processing",{
-	    data <- getCommentViewerData(comments_data, viewIfPressed(), courseMetaData)
+	    data <- getTeamMembersData(team_data, comments_data, viewIfPressed(), courseMetaData)
 	    DT::datatable(
-	      data[,c("timestamp","week_step","text", "url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+	      data[,c("name","timestamp","week_step","text", "url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
 	      colnames = c(
-	        "Date" = 1,
-	        "Step" = 2,
-	        "Comment" = 3,
-	        "Link" = 4
+	        "Name" = 1,
+	        "Date" = 2,
+	        "Step" = 3,
+	        "Comment" = 4,
+	        "Link" = 5
 	      ),
 	      options = list(
 	        scrollY = "700px",
@@ -2468,9 +2469,9 @@ function(input, output, session) {
 	})
 
 	# Checks if a comment has been selected
-# 	threadSelected <- eventReactive( input$commentViewer_rows_selected, {
-# 	  runif(input$commentViewer_rows_selected)
-# })
+	threadSelected <- eventReactive( input$commentViewer_rows_selected, {
+	  runif(input$commentViewer_rows_selected)
+})
 
 	# END TEAM MEMBERS VIEWER TAB
 	
