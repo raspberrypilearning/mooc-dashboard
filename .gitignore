@@ -4,6 +4,10 @@ webapp/.RData
 webapp/.RHistory
 update/config.json
 update/fail
+data/*
+data/!.gitkeep
+log/*
+log/!.gitkeep
 *.pyc
 update/.idea
 *.csv
