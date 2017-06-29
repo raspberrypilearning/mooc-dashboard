@@ -726,14 +726,26 @@ getGenderCount <- function(enrolmentData){
 	return(genderCount)
 }
 
-# Takes enrolment data and returns counts for each age group.
+#' Takes enrolment data and returns counts and percentages for each age group
+#'
+#' @param enrolmentData data frame with information about enrolments
+#'
+#' @return a data frame with age group data
 getLearnerAgeCount <- function(enrolmentData){
 	data <- enrolmentData
+	
+	#transforming age into a vector of characters and removing the Unknown values
 	age <- as.character(data$age_range)
 	age <- age[age!="Unknown"]
+	
+	#making a dataframe with the age groups and their frequencies
 	ageCount <- count(age)
 	ageCount <- ageCount[order(-ageCount$freq),]
+	
+	#changing the column name to age_group
 	names(ageCount)[names(ageCount)=="x"] <- "age_group"
+	
+	#creating a percentages column for the age groups
 	ageCount$percentage <- ageCount$freq / sum(ageCount$freq) * 100
 	ageCount$percentage <- round(ageCount$percentage,2)
 	return(ageCount)
@@ -924,12 +936,27 @@ countryCodesToHDI <- function(countryCodes){
   return(hdi)
 }
 
+#' For popultaing the learner age chart
+#'
+#' @return a data frame with age group values for each course-run chosen
 learnersAgeData <- function(){
+  
+  #creating a data frame with one column - levels
 	data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
 	data$levels <- as.character(data$levels)
+	
+	#enrolment_data is a list of course-run data frames
+	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
+	  
+	  #creates a data frame containing 3 columns: age group, count and percentages for the present course-run
 		ageCount <- getLearnerAgeCount(enrolment_data[[x]])
+		
+		#creates a new column with the title of the course run
+		#initialised with 0s for each age group level
 		data[[x]] <- numeric(7)
+		
+		#goes through each existing age group and updates the age group values of the course-run
 		for(i in c(1:length(ageCount$age_group))){
 			data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
 		}
