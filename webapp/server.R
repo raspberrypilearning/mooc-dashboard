@@ -26,6 +26,16 @@ $('#' + boxid).closest('.box').find('[data-widget=collapse]').click();
 }
 "
 
+#' Title
+#'
+#' @param input 
+#' @param output 
+#' @param session 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 function(input, output, session) { 
   source("learner_analysis.R", local=TRUE)
   output$institution <- renderText({"soton"})
@@ -912,18 +922,34 @@ function(input, output, session) {
   })
   # END: LEARNER FITLERS - CHARTS
   
+  
+  
   # START OF ENROLMENTS TABLE GRAPHS
   
   # Produces graph of the percentages of learners age groups
   output$learnersAgeBar <- renderChart2({
+    
+    #used to update the chart when the Go button is pressed
     chartDependency()
     
-    data <- learnersAgeData()
+    #a data frame of age data - either with percentages or value depending on the radio button selected
+    data <- learnersAgeData(input$rbChartDataType)
     
+    #creating the learner age chart
     a <- rCharts:::Highcharts$new()
     a$chart(type = "column", width = 750)
+    
+    #x-axis with the age groups
     a$xAxis(categories = data$levels)
-    a$yAxis(title = list(text = "Population"))
+    
+    #y-axis with either percentages or values 
+    if(input$rbChartDataType == "percentages"){
+      a$yAxis(title = list(text = "Percentage of Population"))
+    } else {
+      a$yAxis(title = list(text = "Population"))
+    }
+    
+    #contains the data for all the selected course runs
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
     a$plotOptions(
@@ -937,23 +963,39 @@ function(input, output, session) {
     return(a)
   })
   
+  #download button for the learner age data - as a csv file
   output$downloadLearnerAge <- downloadHandler(
     filename = function() { paste("learner_age", '.csv', sep='') },
     content = function(file) {
-      data <- learnersAgeData()
+      data <- learnersAgeData(input$rbChartDataType)
       write.csv(data, file)
     }
   )
   
   # Produces graph of the percentages of learners gender groups
   output$learnersGender <- renderChart2({
-    chartDependency()
-    data <- learnersGenderData()
     
+    #used to update the chart when the Go button is pressed
+    chartDependency()
+    
+    #a data frame of gender data - either with percentages or value depending on the radio button selected
+    data <- learnersGenderData(input$rbChartDataType)
+    
+    #creating the gender chart
     a <- rCharts:::Highcharts$new()
     a$chart(type = "column", width = 350)
+    
+    #x-axis with the gender values
     a$xAxis(categories = data$levels)
-    a$yAxis(title = list(text = "Population"))
+    
+    #y-axis with either percentages or values 
+    if(input$rbChartDataType == "percentages"){
+      a$yAxis(title = list(text = "Percentage of Population"))
+    } else {
+      a$yAxis(title = list(text = "Population"))
+    }
+    
+    #contains the data for all the selected course runs
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
     a$plotOptions(
@@ -967,12 +1009,11 @@ function(input, output, session) {
     return(a)
   })
   
+  #download button for the gender data - as a csv file
   output$downloadLearnerGender <- downloadHandler(
-    
     filename = function() { paste("learner_gender", '.csv', sep='') },
     content = function(file) {
-      
-      data <- learnersGenderData()
+      data <- learnersGenderData(input$rbChartDataType)
       write.csv(data, file)
     }
   )

@@ -69,9 +69,9 @@ body <- dashboardBody(
 					status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
 				),
 				box(
-			  	column(
+				  column(
 				    width = 4,
-				    tags$div(radioButtons("rbPercPopul", "Display charts by:", c("Percentages" = "percent", "Population" = "popul")))),
+				    tags$div(radioButtons("rbChartDataType", "Display charts by:", c("Percentages" = "percentages", "Population" = "population")))),
 				  column(
 				    width = 2,
 				    tags$div(uiOutput("chooseCourse", inline = TRUE))),

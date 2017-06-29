@@ -713,14 +713,26 @@ getNumberOfAuthorsByWeek <- function (comments){
   return(plotData)
 }
 
-# Takes enrolment data and returns counts for each gender.
+#' Takes enrolment data and returns counts and percentages for each gender.
+#'
+#' @param enrolmentData data frame with information about enrolments
+#'
+#' @return data frame with gender groups, counts and percentages
 getGenderCount <- function(enrolmentData){
 	data <- enrolmentData
+	
+	#transforming gender into a vector of characters and removing the Unknown values
 	gender <- as.character(data$gender)
 	gender <- gender[gender!="Unknown"]
+	
+	#making a dataframe with the gender values and their frequencies
 	genderCount <- count(gender)
 	genderCount <- genderCount[order(-genderCount$freq),]
+	
+	#changing the column name to gender
 	names(genderCount)[names(genderCount)=="x"] <- "gender"
+	
+	#creating a percentage column in the data frame for the genders
 	genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
 	genderCount$percentage <- round(genderCount$percentage,2)
 	return(genderCount)
@@ -730,7 +742,7 @@ getGenderCount <- function(enrolmentData){
 #'
 #' @param enrolmentData data frame with information about enrolments
 #'
-#' @return a data frame with age group data
+#' @return a data frame with age group, counts and percentages
 getLearnerAgeCount <- function(enrolmentData){
 	data <- enrolmentData
 	
@@ -751,15 +763,30 @@ getLearnerAgeCount <- function(enrolmentData){
 	return(ageCount)
 }
 
-# Takes enrolment data and returns counts for each employment area.
+
+#' Takes enrolment data and returns counts and percentages for each employment area.
+#'
+#' @param enrolmentData data frame with information about enrolments
+#'
+#' @return data frame with employment areas, counts and percentages
 getEmploymentAreaCount <- function(enrolmentData){
 	enrolments <- enrolmentData
+	
+	#vector of characters without Unknown values
 	employment <- as.character(enrolments$employment_area)
 	employment <- employment[employment!="Unknown"]
+	
+	#making a dataframe with the employment areas and their frequencies
 	employmentCount <- count(employment)
+	
+	#changing the column name to 'employment'
 	names(employmentCount)[names(employmentCount)=="x"] <- "employment"
+	
+	#creating a percentages column for the employment areas 
 	employmentCount$percentage <- employmentCount$freq / sum(employmentCount$freq) * 100
 	employmentCount$percentage <- round(employmentCount$percentage,2)
+	
+	#ordering the data frame in decreasing order
 	employmentCount <- employmentCount[order(-employmentCount$percentage),]
 	return(employmentCount)
 }
@@ -936,10 +963,12 @@ countryCodesToHDI <- function(countryCodes){
   return(hdi)
 }
 
-#' For popultaing the learner age chart
+#' For populating the learner age chart
+#'
+#' @param dataType the character value of the selected radio button
 #'
 #' @return a data frame with age group values for each course-run chosen
-learnersAgeData <- function(){
+learnersAgeData <- function(dataType){
   
   #creating a data frame with one column - levels
 	data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
@@ -949,7 +978,7 @@ learnersAgeData <- function(){
 	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
 	  
-	  #creates a data frame containing 3 columns: age group, count and percentages for the present course-run
+	  #creates a data frame containing 3 columns: age group, count and percentages for the current course-run in the loop
 		ageCount <- getLearnerAgeCount(enrolment_data[[x]])
 		
 		#creates a new column with the title of the course run
@@ -958,28 +987,59 @@ learnersAgeData <- function(){
 		
 		#goes through each existing age group and updates the age group values of the course-run
 		for(i in c(1:length(ageCount$age_group))){
-			data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  }
 		}
 	}
 
 	return(data)
 }
 
-learnersGenderData <- function(){
+#' For populating the gender chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with gender values for each course-run chosen
+learnersGenderData <- function(dataType){
+  
+  #creating a data frame with one column - levels
 	data <- data.frame(levels = c("male","female","other","non-binary"))
 	data$levels <- as.character(data$levels)
 
+	#enrolment_data is a list of course-run data frames
+	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
+	  
+	  #creates a data frame containing 3 columns: gender, count and percentages for the current course run in the loop
 		genderCount <- getGenderCount(enrolment_data[[x]])
+		
+		#creates a new column with the title of the course run
+		#initialised with 0s for each gender level
 		data[[x]] <- numeric(4)
+		
+		#goes through each existing gender and updates the gender values of the course-run
 		for(i in c(1:length(genderCount$gender))){
-			data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$freq[i]
+		  }
 		}
 	}
 	return(data)
 }
 
-learnersEmploymentData <- function(){
+#' Title
+#'
+#' @param dataType 
+#'
+#' @return
+learnersEmploymentData <- function(dataType){
+  
+  #creating a data frame with one column - area
 	data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
 										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
 										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
@@ -988,7 +1048,11 @@ learnersEmploymentData <- function(){
 										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
 	data$area <- as.character(data$area)
 
+	#enrolment_data is a list of course-run data frames
+	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
+	  
+	  #creates a data frame containing 3 columns: employment area, count and percentages for the current course run in the loop
 	  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
 	  data[[x]] <- numeric(21)
 	  for(i in c(1:length(areaCount$employment))){
