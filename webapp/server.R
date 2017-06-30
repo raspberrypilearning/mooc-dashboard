@@ -932,7 +932,7 @@ function(input, output, session) {
     #used to update the chart when the Go button is pressed
     chartDependency()
     
-    #a data frame of age data - either with percentages or value depending on the radio button selected
+    #a data frame of age data - either with percentages or values depending on the radio button selected
     data <- learnersAgeData(input$rbChartDataType)
     
     #creating the learner age chart
@@ -1018,17 +1018,32 @@ function(input, output, session) {
     }
   )
   
-  # Produces graph of the percentages of the learners employment area
+  # Produces graph of the percentages/values of the learners employment area
   output$employmentBar <-renderChart2({
+    
+    #to update the chart when the Go button is pressed
     chartDependency()
     
-    data <- learnersEmploymentData()
+    #data frame with employment area count/percentages for each course run
+    data <- learnersEmploymentData(input$rbChartDataType)
+    
+    #creating the bar chart
     a <- rCharts:::Highcharts$new()
     a$chart(type = "bar", width = 1200, height = 650)
+    
+    #contains the data for all selected course runs
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+    
+    #x axis contains the employment area 
     a$xAxis(categories = gsub( "_"," ",(data$area)))
-    a$yAxis(title = list(text = "Population"))
+    
+    #y-axis with either percentages or values
+    if(input$rbChartDataType == "percentages"){
+      a$yAxis(title = list(text = "Percentage of Population"))
+    } else {
+      a$yAxis(title = list(text = "Population"))
+    }
     a$plotOptions(
       bar = list(
         dataLabels = list(
@@ -1040,25 +1055,41 @@ function(input, output, session) {
     return(a)
   })
   
+  #download button for employment area data - as a csv
   output$downloadLearnerEmployment <- downloadHandler(
-    
     filename = function() { paste("learner_employment", '.csv', sep='') },
     content = function(file) {
-      data <- learnersEmploymentData()
+      data <- learnersEmploymentData(input$rbChartDataType)
       write.csv(data, file)
     }
   )	
   
-  # Produces graph of the percentages of the learners employment status
+  # Produces graph of the percentages/values of the learners employment status
   output$employmentStatus <- renderChart2({
+    
+    #to update the chart when the Go button is pressed
     chartDependency()
-    data<-learnersStatusData()
+    
+    #data frame with status count/percentages for each course run
+    data<-learnersStatusData(input$rbChartDataType)
+    
+    #creating the bar chart
     a <- rCharts:::Highcharts$new()
     a$chart(type = "bar", width = 1200, height = 650)
+    
+    #contains the data for all selected course runs
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+    
+    #x-axis contains the status options
     a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
-    a$yAxis(title = list(text = "Population"))
+    
+    #y-axis with either percentages or values
+    if(input$rbChartDataType == "percentages"){
+      a$yAxis(title = list(text = "Percentage of Population"))
+    } else {
+      a$yAxis(title = list(text = "Population"))
+    }
     a$plotOptions(
       bar = list(
         dataLabels = list(
@@ -1070,13 +1101,12 @@ function(input, output, session) {
     return(a)
   })
   
+  #download button for status data - as a csv
   output$downloadLearnerStatus <- downloadHandler(
-    
-    
     filename = function() { paste("learner_status", '.csv', sep='') },
     content = function(file) {
       
-      data <- learnersStatusData()
+      data <- learnersStatusData(input$rbChartDataType)
       write.csv(data, file)
     }
   )	
