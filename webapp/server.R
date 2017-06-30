@@ -1231,6 +1231,7 @@ function(input, output, session) {
   # START STATEMENT DEMOGRAPHICS TAB
   
   # Column chart of statement purchaser's genders
+  # Depending of the selected radio button it shows either percentages or numbers
   output$stateGenderColumn <- renderChart2({
     
     #to update the chart when the Go button is pressed
@@ -1277,6 +1278,7 @@ function(input, output, session) {
   )
   
   # Column chart of statement purchaser's age groups
+  # Depending of the selected radio button it shows either percentages or numbers
   output$stateAgeColumn <- renderChart2({
     
     #to update the chart when pressing the Go button
@@ -1324,6 +1326,7 @@ function(input, output, session) {
   )
   
   # Bar chart of statement purchasers' employment area
+  # Depending of the selected radio button it shows either percentages or numbers
   output$stateEmploymentAreaBar <- renderChart2({
     
     #to update the chart when the Go button is pressed
@@ -1370,6 +1373,7 @@ function(input, output, session) {
   )
   
   # Column chart of statement purchasers' employment status
+  # Depending of the selected radio button it shows either percentages or numbers
   output$stateEmploymentStatusColumn <- renderChart2({
     
     #creates the chart when pressing the Go button
@@ -1417,6 +1421,7 @@ function(input, output, session) {
   )
   
   # Column chart of statement purchaser's education level
+  # Depending of the selected radio button it shows either percentages or numbers
   output$stateDegreeColumn <- renderChart2({
     
     #to update the chart after pressing the Go button
