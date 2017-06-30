@@ -818,13 +818,25 @@ getEmploymentStatusCount <- function(enrolmentData){
 	return(statusCount)
 }
 
-# Takes enrolment data and returns counts for each education level.
+#' Takes enrolment data and returns counts/percentages for each education level.
+#'
+#' @param enrolmentData data frame with information about enrolments for a specific course run
+#'
+#' @return a data frame with 3 columns: degree, count and percentage
 getEmploymentDegreeCount <- function(enrolmentData){
   enrolments <- enrolmentData
+  
+  #vector of all degree values without Unknown values
   status <- as.character(enrolments$highest_education_level)
   status <- status[status!="Unknown"]
+  
+  #creating a data frame with the count value of each degree status
   statusCount <- count(status)
+  
+  #renaming the x column created above to 'degree'
   names(statusCount)[names(statusCount)=="x"] <- "degree"
+  
+  #creating a percentage column
   statusCount$percentage <- statusCount$freq / sum(statusCount$freq) * 100
   statusCount$percentage <- round(statusCount$percentage,2)
   return(statusCount)
@@ -916,8 +928,17 @@ getSurveyResponsesFromFullyParticipating <- function(enrolmentData){
 	return(responses)
 }
 
+#' To get enrolment data about people who purchased a statement
+#'
+#' @param enrolmentData data frame with information about enrolments for a specific course run
+#'
+#' @return a data frame with information about people who purchased statements
 getSurveyResponsesFromStatementBuyers <- function(enrolmentData){
+  
+  #gets the enrolment data for the people who purchased a statement
 	responses <- enrolmentData[which(enrolmentData$purchased_statement_at != ""),]
+	
+	#removes the rows with unknown values
 	responses <- responses[which(responses$gender != "Unknown" | responses$country != "Unknown" | responses$age_range != "Unknown" | responses$highest_education_level != "Unknown" | responses$employment_status != "Unknown" | responses$employment_area != "Unknown"),]
 	return(responses)
 }
@@ -1104,7 +1125,7 @@ learnersStatusData <- function(dataType){
 	#goes through each course run data frame
 	for(x in names(enrolment_data)){
 	  
-	  #data frame with status/count/percentage about the current course run in the loop
+	  #data frame with status-count-percentage about the current course run in the loop
 		statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
 		
 		#creates a new column with the name of the course run and initialises it with 0s
@@ -1125,16 +1146,35 @@ learnersStatusData <- function(dataType){
 	return(data)	
 }
 
-learnersEducationData <- function(){
+#' For populating the degree bar chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a dataframe with degree status count/percentages for each selected course-run
+learnersEducationData <- function(dataType){
+  
+  #creates a data frame with one column - level
 	data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
 		"tertiary","university_degree","university_masters","university_doctorate"))
 	data$level <- as.character(data$level)
 
+	#enrolment_data is a list with one data frame for each course_run
+	#goes through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with degree-count-percentage about the current course run in the loop
 	  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
+	  
+	  #creates a new column with the title of the current course run and initialises it with 0s
 	  data[[x]] <- numeric(8)
+	  
+	  #goes through each degree status and updates the values of the current course run
 	  for(i in c(1:length(degreeCount$degree))){
-		data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+	    if(dataType == "percentages"){
+	      data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+	    } else {
+	      data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+	    }
 	  }
 	}
 	return(data)
@@ -1163,40 +1203,90 @@ learnersHDIData <- function(){
 	return(data)
 }
 
-stateGenderData <- function(){
+
+#' For creating the statement purchasers gender chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a dataframe with gender count/percentages for each selected course-run
+stateGenderData <- function(dataType){
+  
+  #creates a data frame wiith one columm - levels
 	data <- data.frame(levels = c("male","female","other","non-binary"))
 	data$levels <- as.character(data$levels)
 
+	#enrolement_data is a list of data frames, one for each course run
+	# goes through each course_run data frame
 	for(x in names(enrolment_data)){
-	  statementsSoldCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
-	  statementsSoldCount <- getGenderCount(statementsSoldCount)
-	  print(statementsSoldCount)
 	  
+	  #data frame with the enrolment information of the people who purchased statements
+	  statementsSoldCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+	  
+	  #data frame with gender-count-percentage data 
+	  statementsSoldCount <- getGenderCount(statementsSoldCount)
+	  
+	  #creates a new column with the name of the current course run and initialises it with 0s
 	  data[[x]] <- numeric(4)
+	  
+	  #goes through each gender option and updates the count/percentage values for the course run
 	  for(i in c(1:length(statementsSoldCount$gender))){
-		data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$freq[i]
+	    if(dataType == "percentages"){
+	      data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$percentage[i]
+	    } else {
+	      data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$freq[i]
+	    }
 	  }
 	}
 
+	#ordering the status data in decreasing order of the values of the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)
 }
 
-stateAgeData <-function(){
+#' To create the statement purchasers age chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with age group count/percentage information about the selected course runs
+stateAgeData <-function(dataType){
+  
+  #creates a data frame with one column initially - levels of age groups
 	data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
 	data$levels <- as.character(data$levels)
+	
+	#enrolment data is list of data frames, one for each course run
+	#goes through all the course run data frames
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with  enrolment information about the statement purchasers in this course run
 		ageCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		
+		#data frame has 3 columns: age-count-percentage
 		ageCount <- getLearnerAgeCount(ageCount)
+		
+		#creates a column with the title of the course run and initialises it with 0s for each age group
 		data[[x]] <- numeric(7)
+		
+		#goes through each age group and updates the information for all selected course runs
 		for(i in c(1:length(ageCount$age_group))){
-			data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  }
 		}
 	}
 	return(data)
 }
 
-stateEmploymentData<-function(){
+#' For creating the employment area chart for the statement buyers
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with employment area count/percentage information about the selected course runs
+stateEmploymentData<-function(dataType){
+  
+  #creates a data frame with one column initially - area
 	data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
 										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
 										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
@@ -1205,14 +1295,30 @@ stateEmploymentData<-function(){
 										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
 	data$area <- as.character(data$area)
 
+	#enrolment_data is a list of data frames, one for each course run selected
+	#goes through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with enrolment information about the statement buyers
 		areaCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		
+		#with 3 columns - age, count and percentages
 		areaCount <- getEmploymentAreaCount(areaCount)
+		
+		#creates a new column with the name of the current course run and initiliases it with 0s for each employment area
 		data[[x]] <- numeric(21)
+		
+		#goes through each employment area option and updates its value for each course run
 		for(i in c(1:length(areaCount$employment))){
-		data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+		  }
 	  }
 	}
+	
+	#orders the data in decreasing order by the values of the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)
 }
