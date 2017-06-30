@@ -1279,7 +1279,7 @@ function(input, output, session) {
   # Column chart of statement purchaser's age groups
   output$stateAgeColumn <- renderChart2({
     
-    #to create the chart when pressing the Go button
+    #to update the chart when pressing the Go button
     chartDependency()
     
     # data frame with age group values/percentage for each course run
@@ -1326,7 +1326,7 @@ function(input, output, session) {
   # Bar chart of statement purchasers' employment area
   output$stateEmploymentAreaBar <- renderChart2({
     
-    #to create the chart when the Go button is pressed
+    #to update the chart when the Go button is pressed
     chartDependency()
     
     #data frame with employment area values/percentages for each course run
@@ -1336,7 +1336,7 @@ function(input, output, session) {
     a <- rCharts:::Highcharts$new()
     a$chart(type = "bar", width = 1200, height = 650)
     
-    #data for all the course run selected
+    #data for all the course runs selected
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
     
@@ -1360,6 +1360,7 @@ function(input, output, session) {
     return(a)
   })
   
+  #button for downloading the statement purchsers' employment area data in csv
   output$downloadStateLearnerEmployment <- downloadHandler(
     filename = function() { paste("statements_learner_employment", '.csv', sep='') },
     content = function(file) {
@@ -1368,18 +1369,33 @@ function(input, output, session) {
     }
   )
   
-  # Column chart of statement purchaser's employment status
+  # Column chart of statement purchasers' employment status
   output$stateEmploymentStatusColumn <- renderChart2({
+    
+    #creates the chart when pressing the Go button
     chartDependency()
     
-    data<-stateStatusData()
+    #data frame with status groups value/percentage for each course run
+    data<-stateStatusData(input$rbChartDataType)
     
+    #creating the chart
     a <- rCharts:::Highcharts$new()
     a$chart(type = "bar", width = 1200, height = 650)
+    
+    #chart data for all the selected course runs
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+    
+    #x-axis contains the employment status levels
     a$xAxis(categories = gsub( "_"," ",unlist(data$levels)))
-    a$yAxis(title = list(text = "Population"))
+    
+    #y-axis with either percentages or values
+    if(input$rbChartDataType == "percentages"){
+      a$yAxis(title = list(text = "Percentage of Population"))
+    } else {
+      a$yAxis(title = list(text = "Population"))
+    }
+    
     a$plotOptions(
       bar = list(
         dataLabels = list(
@@ -1391,24 +1407,42 @@ function(input, output, session) {
     return(a)
   })
   
+  #button for downloading status data for statement purchasers as csv file
   output$downloadStateLearnerStatus <- downloadHandler(
     filename = function() { paste("statements_learner_status", '.csv', sep='') },
     content = function(file) {
-      data <- stateStatusData()
+      data <- stateStatusData(input$rbChartDataType)
       write.csv(data, file)
     }
   )
   
   # Column chart of statement purchaser's education level
   output$stateDegreeColumn <- renderChart2({
+    
+    #to update the chart after pressing the Go button
     chartDependency()
-    data<-stateEducationData()
+    
+    #data frame with education status value/percentage for each course run selected
+    data<-stateEducationData(input$rbChartDataType)
+    
+    #creating the chart
     a <- rCharts:::Highcharts$new()
     a$chart(type = "column", width = 1200, height = 650)
+    
+    #chart data for all the selected course runs
     a$data(data[c(names(enrolment_data))])
     a$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+    
+    #x-axis with the education status categories
     a$xAxis(categories = gsub( "_"," ",data$level))
-    a$yAxis(title = list(text = "Population"))
+    
+    #y-axis with either percentages or values
+    if(input$rbChartDataType == "percentages"){
+      a$yAxis(title = list(text = "Percentage of Population"))
+    } else {
+      a$yAxis(title = list(text = "Population"))
+    }
+    
     a$plotOptions(
       column = list(
         dataLabels = list(
@@ -1420,10 +1454,11 @@ function(input, output, session) {
     return(a)
   })
   
+  #button for downloading education status data for all the statement purchasers
   output$downloadStateLearnerEducation <- downloadHandler(
     filename = function() { paste("statements_learner_education", '.csv', sep='') },
     content = function(file) {
-      data <- stateEducationData()
+      data <- stateEducationData(input$rbChartDataType)
       write.csv(data, file)
     }
   )
