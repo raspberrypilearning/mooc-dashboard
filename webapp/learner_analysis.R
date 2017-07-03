@@ -849,16 +849,22 @@ getEmploymentDegreeCount <- function(enrolmentData){
 #' @param courseMetaData all sort of information about the course
 #'
 #' @return Returns comment data in the format needed for the comment viewer
-getCommentViewerData <- function(commentData, run,courseMetaData){
+getCommentViewerData <- function(commentData, run, courseMetaData){
   
   #gets the data frame from the list corresponding to the course run
 	data <- commentData[[which(names(commentData) == run)]]
 	
+#	data <- 
+
+	
+	
 	#modify the timestamp column to contain just the date
 	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+	print(run)
 	
 	#activity steps under a specific form e.g. 1.3
 	data$week_step <- getWeekStep(data)
+	#print(getWeekStep(data))
 	
 	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
 	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
@@ -866,34 +872,23 @@ getCommentViewerData <- function(commentData, run,courseMetaData){
 	data$likes <- as.numeric(data$likes)
 	data$likes <- as.integer(data$likes)
 	
-	#creating the url by doing some splitting and removing leading/trailing whitespace 
-	print("RUN: ")
-	print(run)
-	print(class(run))
-	
-	#splits the run by '-' and trims the whitespaces to get the full name of the course
+	#splits the run name by '-' to separate the name of course and run number
 	runsplit <- strsplit(run,"-")
-	print("RUN SPLIT: ")
-	print(runsplit)
-	print(class(runsplit))
 	
+	#trims the leading and trailing whitespaces to get the correct name of the course
 	course <- trimws(runsplit[[1]])
-	print("COURSE: ")
-	print(course)
-	print(typeof(course))
 	
-	#WORK FOR MOST OF COURSES - APART FROM ENGLISH AS A MEDIUM OF INSTRUCTION ..
+	#based on the name of the course it get the shorten name with the run number
 	courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
-	print("COURSE RUN:  ")
-	print(courseRun)
-	print(class(courseRun))
+	
+	#gets the short name of the course 
 	shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
-	print("SHORTENED COURSE:  ")
-	print(shortenedCourse)
-	print(class(shortenedCourse))
+
+	#creates the url and adds it to each row in the data frame
 	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
 	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
 	
+	#sorting the comments in decreasing order by the number of likes
 	sorted <- data[order(-data$likes),]
 	return(sorted)
 }
@@ -912,11 +907,8 @@ getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
   #gets the data frame from the list; corresponding to the course run
   commentDataRun <- commentData[[which(names(commentData) == run)]]
   
-  #removing the id column as it will appear as a duplicate 
-  commentDataRun$id <- NULL
-  
   #merge the data frames based on the user id
-  data <- merge (teamData, commentDataRun,  by.x = "id", by.y = "author_id")
+  data <- merge (commentDataRun, teamData,  by.x = "author_id", by.y = "id")
   
   #creating a name column that contains the first and last name of team members
   data$name <- paste(data$first_name, data$last_name, sep = " ")
@@ -926,13 +918,21 @@ getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
   
   #activity steps under a specific form e.g. 1.3
   data$week_step <- getWeekStep(data)
-  
-  #creating the url by doing some splitting and removing leading/trailing whitespace 
+
+  #splits the run name by '-' to separate the name of course and run number
   runsplit <- strsplit(run,"-")
+  
+  #trims the leading and trailing whitespaces to get the correct name of the course
   course <- trimws(runsplit[[1]])
-  courseRun <- as.character(courseMetaData$course_run)
-  shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
-  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(runsplit[[2]]),"/comments/")
+  
+  #based on the name of the course it get the shorten name with the run number
+  courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+  
+  #gets the short name of the course 
+  shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+  
+  #creates the url and adds it to each row in the data frame
+  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
   data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
   
   #sorting the data frame by the name of team members
