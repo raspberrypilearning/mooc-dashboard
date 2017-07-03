@@ -867,10 +867,30 @@ getCommentViewerData <- function(commentData, run,courseMetaData){
 	data$likes <- as.integer(data$likes)
 	
 	#creating the url by doing some splitting and removing leading/trailing whitespace 
+	print("RUN: ")
+	print(run)
+	print(class(run))
+	
+	#splits the run by '-' and trims the whitespaces to get the full name of the course
 	runsplit <- strsplit(run,"-")
+	print("RUN SPLIT: ")
+	print(runsplit)
+	print(class(runsplit))
+	
 	course <- trimws(runsplit[[1]])
-	courseRun <- as.character(courseMetaData$course_run)
-	shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
+	print("COURSE: ")
+	print(course)
+	print(typeof(course))
+	
+	#WORK FOR MOST OF COURSES - APART FROM ENGLISH AS A MEDIUM OF INSTRUCTION ..
+	courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+	print("COURSE RUN:  ")
+	print(courseRun)
+	print(class(courseRun))
+	shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+	print("SHORTENED COURSE:  ")
+	print(shortenedCourse)
+	print(class(shortenedCourse))
 	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
 	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
 	
@@ -912,7 +932,7 @@ getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
   course <- trimws(runsplit[[1]])
   courseRun <- as.character(courseMetaData$course_run)
   shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
-  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(runsplit[[2]]),"/comments/")
   data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
   
   #sorting the data frame by the name of team members
