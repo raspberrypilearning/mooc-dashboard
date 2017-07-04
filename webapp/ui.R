@@ -73,11 +73,15 @@ body <- dashboardBody(
                   column(
                     width = 6,
                     tags$div(radioButtons("rbChartDataType", "Display charts by:", c("Percentages" = "percentages", "Population" = "population"))),
-                  fixedRow(
+                    fixedRow(
+                      column(
+                        width = 12,
+                        selectInput("palette", " Heatmap Palette", c("Blues", "Reds", "Purples", "Oranges", "Greys", "Greens")),
+                    fixedRow(
                     column(
                       width = 2,
                       # offset = 2,
-                      tags$div(uiOutput("chooseCourse", inline = TRUE)))))),
+                      tags$div(uiOutput("chooseCourse", inline = TRUE)))))))),
                 title = "Go",
                 status = "primary", solidHeader = TRUE, width = 2, collapsible = FALSE
               ),
