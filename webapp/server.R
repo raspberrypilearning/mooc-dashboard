@@ -1578,7 +1578,7 @@ function(input, output, session) {
     
     
     d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
-              color = "Blues",
+              color = scales::col_quantile(input$palette, NULL,100),
               scale = "column",
               labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
               labCol = colnames(comments)[-1])
