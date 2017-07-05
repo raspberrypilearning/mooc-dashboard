@@ -301,7 +301,8 @@ function(input, output, session) {
   #END: COURSE SELECTION UI AND VALUE BOXES
   
   
-  #START: LEARNER FILTERS - TEXT INPUTS
+  # =================================START NOT USED===============================================
+  #START: LEARNER FILTERS - TEXT INPUTS - NOT USED
   observeEvent(input$click$genderFilter, {
     updateTextInput(session, "gender", value = input$click$genderFilter)
   })
@@ -349,9 +350,9 @@ function(input, output, session) {
   output$selected <- renderText({
     input$selected
   })
-  #END: LEARNER FILTERS - TEXT INPUTS
+  #END: LEARNER FILTERS - TEXT INPUTS - NOT USED
   
-  #START: LEARNER FILTERS - FILTERING
+  #START: LEARNER FILTERS - FILTERING - NOT USED
   
   assign("selectedGenderIDs", "", envir = .GlobalEnv)
   assign("selectedAgeIDs", "", envir = .GlobalEnv)
@@ -920,8 +921,8 @@ function(input, output, session) {
     )
     return (histogram)
   })
-  # END: LEARNER FITLERS - CHARTS
-  
+  # END: LEARNER FITLERS - CHARTS - NOT USED
+  # =============================================END NOT USED==============================================
   
   
   # START OF ENROLMENTS TABLE GRAPHS - Demographics tab
@@ -1530,152 +1531,184 @@ function(input, output, session) {
   # END STATEMENT DEMOGRAPHICS TAB
   
   
-  #START: CHARTS - COMMENTS ORIENTATED
+  # START SIGN UPS AND STATEMENTS SOLD TAB
   
-  # Selector for which run to display comment related things
-  
-  output$runSelectorComments <- renderUI({
+  # Line showing sign ups over time
+  output$signUpsLine <- renderChart2({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-    if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-    }
-    if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-    }
-    if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-    }
-    print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
-  })
-  
-  output$commentsBarChart <- renderChart2({
-    chartDependency()
-    commentDependancy()
-    plotData <- getCommentsBarChart(step_data[[which(names(step_data) == input$runChooserComments)]],comments_data[[which(names(comments_data)==input$runChooserComments)]])
-    histogram <- Highcharts$new()
-    histogram$chart(type = "column" , width = 1200)
-    histogram$data(plotData[,c("reply","post")])
-    histogram$xAxis (categories = plotData$week_step)
-    histogram$yAxis(title = list(text = "Frequency"))
-    histogram$plotOptions (
-      column = list(
-        stacking = "normal"
-      ),
-      animation = FALSE
-    )
-    return(histogram)
-  })
-  
-  # Heatmap of comments made per step and date
-  output$stepDateCommentsHeat <- renderD3heatmap({
-    # Draw the chart when the "chooseCourseButton" is pressed by the user
-    chartDependency()
-    commentDependancy()
-    learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
-    comments <- getCommentsHeatMap(comments_data[[which(names(comments_data) == input$runChooserComments)]], startDate)
     
-    
-    d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
-              color = "Blues",
-              scale = "column",
-              labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
-              labCol = colnames(comments)[-1])
-  })
-  
-  # Histogram of the comment and replies made per week
-  output$commentsRepliesWeekBar <- renderChart2({
-    chartDependency()
-    commentDependancy()
-    plotData <- getCommentsBarChartWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
-    
-    histogram <- Highcharts$new()
-    histogram$chart(type = "column" , width = 550)
-    histogram$data(plotData[,c("reply","post")])
-    histogram$xAxis (categories = plotData$week_number)
-    histogram$yAxis(title = list(text = "Frequency"))
-    histogram$plotOptions (
-      column = list(
-        stacking = "normal"
-      ),
-      animation = FALSE
-    )
-    return(histogram)
-  })
-  
-  # Histogram of the number of authors per week
-  output$authorsWeekBar <- renderChart2({
-    chartDependency()
-    commentDependancy()
-    plotData <- getNumberOfAuthorsByWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
-    histogram <- Highcharts$new()
-    histogram$chart(type = "column" , width = 550)
-    histogram$data(plotData[,c("authors")])
-    histogram$xAxis (categories = plotData$week_number)
-    histogram$yAxis(title = list(text = "Frequency"))
-    histogram$plotOptions (
-      column = list(
-        stacking = "normal"
-      ),
-      animation = FALSE
-    )
-    return(histogram)
-  })
-  
-  output$totalMeasuresRunSelector <- renderUI({
-    chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-    if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    analysis <- signUpData()
+    data<- analysis[[1]]
+    startDays <- analysis[[2]]
+    startDay <- analysis[[3]]
+    chart <- Highcharts$new()
+    chart$chart(type = "line", width = 1200)
+    chart$data(data[c(names(enrolment_data))])
+    chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+    if(length(startDays) == 1){
+      chart$xAxis(
+        title = list(text = "Day"),
+        categories = data$day, plotLines = list(
+          list(
+            value = startDays[1],
+            color = "#7cb5ec",
+            width = 3,
+            zIndex = 4,
+            label = list(
+              text = paste("Course Started: ", startDay,
+                           sep = " "),
+              style = list( color = 'black')
+            )
+          )
+        )
+      )
+    } else if (length(startDays) == 2){
+      chart$xAxis(
+        title = list(text = "Day"),
+        categories = data$day, plotLines = list(
+          list(
+            value = startDays[1],
+            color = "#7cb5ec",
+            width = 3,
+            zIndex = 4,
+            label = list(
+              text = paste(names(enrolment_data)[1],
+                           "Start", sep = " "),
+              style = list( color = 'black')
+            )
+          ),
+          list(
+            value = startDays[2],
+            color = "#434348",
+            width = 3,
+            zIndex = 4,
+            label = list(
+              text = paste(names(enrolment_data)[2],
+                           "Start", sep = " "),
+              style = list( color = 'black')
+            )
+          )
+        )
+      )
+    }else if (length(startDays) == 3){
+      chart$xAxis(
+        title = list(text = "Day"),
+        categories = data$day, plotLines = list(list(
+          value = startDays[1],
+          color = "#7cb5ec",
+          width = 3,
+          zIndex = 4,
+          label = list(text = paste(names(enrolment_data)[1],"Start", sep = " "),
+                       style = list( color = 'black')
+          )),
+          list(
+            value = startDays[2],
+            color = '#434348',
+            width = 3,
+            zIndex = 4,
+            label = list(text = paste(names(enrolment_data)[2],"Start", sep = " "),
+                         style = list( color = 'black')
+            )),
+          list(
+            value = startDays[3],
+            color = '#8085e9',
+            width = 3,
+            zIndex = 4,
+            label = list(text = paste(names(enrolment_data)[3],"Start", sep = " "),
+                         style = list( color = 'black')
+            ))
+        ))
+    }else if (length(startDays) == 4){
+      chart$xAxis(
+        title = list(text = "Day"),
+        categories = data$day, plotLines = list(list(
+          value = startDays[1],
+          color = "#7cb5ec",
+          width = 3,
+          zIndex = 4,
+          label = list(text = paste(names(enrolment_data)[1],"Start", sep = " "),
+                       style = list( color = 'black')
+          )),
+          list(
+            value = startDays[2],
+            color = '#434348',
+            width = 3,
+            zIndex = 4,
+            label = list(text = paste(names(enrolment_data)[2],"Start", sep = " "),
+                         style = list( color = 'black')
+            )),
+          list(
+            value = startDays[3],
+            color = '#8085e9',
+            width = 3,
+            zIndex = 4,
+            label = list(text = paste(names(enrolment_data)[3],"Start", sep = " "),
+                         style = list( color = 'black')
+            )),
+          list(
+            value = startDays[4],
+            color = '#00ffcc',
+            width = 3,
+            zIndex = 4,
+            label = list(text = paste(names(enrolment_data)[4],"Start", sep = " "),
+                         style = list( color = 'black')
+            ))
+        ))
     }
-    if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-    }
-    if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-    }
-    print(selectInput("totalMeasuresRunChooser", label = "Run",
-                      choices = runs, width = "550px"))
+    chart$yAxis(title = list(text = "Frequency"))
+    return(chart)
   })
   
-  # Line chart of the average number of comments made per step completion percentage
-  output$avgCommentsCompletionLine <- renderChart2({
-    # Draw the chart when the "chooseCourseButton" is pressed by the user
-    chartDependency()
-    measuresDependancy()
-    # Get number of comments made and steps completed by learner
-    learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    # JSR replaced
-    #assign("startDate", input$courseDates[1], envir = .GlobalEnv)
-    #assign("endDate", input$courseDates[2], envir = .GlobalEnv)
+  output$downloadSignUps <- downloadHandler(
+    filename = function() { paste("signUps", '.csv', sep='') },
+    content = function(file) {
+      data <- signUpData()[[1]]
+      write.csv(data, file)
+    }
+  )
+  
+  # Line showing statements sold over time: day vs frequency
+  output$statementsSoldLine <- renderChart2({
     
-    comments <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
-    steps <- getStepsCompleted(step_data[[which(names(step_data)==input$totalMeasuresRunChooser)]])
-    # Round the percentage 
-    steps$completed <- round(steps$completed)
-    # Merge the two data frame together
-    plotData <- merge(comments, steps, by = "learner_id")
-    assign("plotTest", plotData, envir = .GlobalEnv)
-    # To reduce the number of drawn point, scale the percentages to increments of 5
-    plotData$completed <- lapply(plotData$completed, function (x) if (x %% 5 != 0) {x - x %% 5} else {x})
-    plotData$completed <- as.numeric(plotData$completed)
-    # Aggregate the data to get the total average of comments made per percentage of completed steps
-    plotData <- ddply(plotData, ~completed, summarise, comments = mean(comments))
-    # Create the line chart and pass in some options
-    lineChart <- Highcharts$new()
-    lineChart$chart (type = "line", width = 1200, height = 600)
-    lineChart$series (
-      name = "Comments",
-      data = toJSONArray2(plotData, json = FALSE, names = FALSE),
-      type = "line"
-    )
-    lineChart$xAxis (title = list(text = "Completed (%)"))
-    lineChart$yAxis (title = list(text = "Comments"))
-    return (lineChart)
+    #to update the chart after pressing the Go button
+    chartDependency()
+    
+    #getting the data for the chart  
+    data<-statementsSoldData()
+    
+    #creating the chart
+    chart <- rCharts:::Highcharts$new()
+    chart$chart(type = "line", width = 1200)
+    if(nrow(data) == 0){
+      chart$title(text = "No data available")
+    } else {
+      chart$xAxis(categories = unlist(as.factor(data$day)), title = list(text = "Day"))
+      chart$yAxis(title = list(text = "Frequency"))
+      chart$data(data[c(names(enrolment_data))])
+      chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+    }
+     
+    
+    return(chart)
   })
   
-  #END: CHARTS - COMMENTS ORIENTATED
+  #downloading the statements data as a csv
+  output$downloadStatementsSold <- downloadHandler(
+    filename = function() { paste("statements_sold", '.csv', sep='') },
+    content = function(file) {
+      data <- statementsSoldData()
+      write.csv(data, file)
+    }
+  )
+  
+  # END SIGN UPS AND STATEMENTS SOLD TAB
+  
+  
+  
+  
+  
+  
+ 
   
   #START: CHARTS - OTHER
   
@@ -2013,6 +2046,7 @@ function(input, output, session) {
   
   # END AGGREGATE ENROLMENT TAB
   
+  
   # START STEP COMPLETION TAB
   
   # Selector for which run to display on the step tab
@@ -2053,20 +2087,29 @@ function(input, output, session) {
         stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
         a <- rCharts:::Highcharts$new()
         a$chart(type = "column", width = 1200)
-        a$series(
-          name = input$runChooserSteps,
-          type = column,
-          data = stepsCount$freq
-        )
-        a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
-        a$yAxis(title = list(text = "Frequency"))
-        a$plotOptions(
-          column = list(
-            animation = FALSE
-          ),
-          line = list(
-            animation = FALSE)
-        )
+        
+        #if there is no data available
+        if(nrow(stepsCount)==0){
+          a$title(text="No data available")
+        } else {
+          a$series(
+            name = input$runChooserSteps,
+            type = column,
+            data = stepsCount$freq
+          )
+          a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
+          a$yAxis(title = list(text = "Frequency"))
+          a$plotOptions(
+            column = list(
+              animation = FALSE
+            ),
+            line = list(
+              animation = FALSE)
+          )
+        }
+        
+        
+        
         # model <- lm(stepsCount[,2] ~ stepsCount$week_step)
         # fit <- predict(model,newData = stepsCount)
         # a$series(
@@ -2093,21 +2136,29 @@ function(input, output, session) {
       output$StepsFirstVisited <- renderChart2({
         stepsCount <- getStepsFirstVistedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
         a <- rCharts:::Highcharts$new()
-        a$chart(type = "column", width = 1200)
-        a$series(
-          name = input$runChooserSteps,
-          type = column,
-          data = stepsCount$freq
-        )
-        a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
-        a$yAxis(title = list(text = "Frequency"))
-        a$plotOptions(
-          column = list(
-            animation = FALSE
-          ),
-          line = list(
-            animation = FALSE)
-        )
+        #if there is no data available
+        if(nrow(stepsCount)==0){
+          a$title(text="No data available")
+        } else {
+          a$chart(type = "column", width = 1200)
+          a$series(
+            name = input$runChooserSteps,
+            type = column,
+            data = stepsCount$freq
+          )
+          a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
+          a$yAxis(title = list(text = "Frequency"))
+          a$plotOptions(
+            column = list(
+              animation = FALSE
+            ),
+            line = list(
+              animation = FALSE)
+          )
+        }
+       
+        
+        
         # model <- lm(stepsCount[,2] ~ stepsCount$week_step)
         # fit <- predict(model,newData = stepsCount)
         # a$series(
@@ -2132,15 +2183,26 @@ function(input, output, session) {
       shinyjs::hide(id = "box6")
       shinyjs::show(id = "box3")
       output$firstVisitedHeat <- renderD3heatmap({
+        
+        #gets the start date of the course run which is selected
         startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
+        
+        #gets the data for the heat map, passing the step data for the course run and the start date
         map <- getFirstVisitedHeatMap(step_data[[which(names(step_data) == input$runChooserSteps)]], startDate)
-        print(d3heatmap(map[,2:ncol(map)],
-                        dendrogram = "none",
-                        scale = "column",
-                        color = "Blues",
-                        labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")
-        )
-        )
+        
+        if(nrow(map)>0){
+          d3heatmap(map[,2:ncol(map)],
+                          dendrogram = "none",
+                          scale = "column",
+                          color = "Blues",
+                          labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01"))
+        } else {
+         #d3heatmap(data.frame(NULL), main = "No data available")
+          #TODO: fix to show a message when no data available
+          return(NULL)
+        }
+        
+        
       })
     }
     else if (isolate(input$graphName) == "StepsFirstVisitedPerDay") {
@@ -2160,10 +2222,13 @@ function(input, output, session) {
         chartDependency()
         data<-stepsFirstVisitedPerDay()
         chart <- Highcharts$new()
+        if(nrow(data)==0){
+          chart$title(text = "No data available")
+        }
         chart$chart(type = "line", width = 1200)
         chart$data(data[c(names(step_data))])
         chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-        chart$xAxis(categories = data$day)
+        chart$xAxis(categories = unlist(as.factor(data$day)), title = list(text = "Day"))
         chart$yAxis(title = list(text = "Frequency"))
         return(chart)
       })
@@ -2186,9 +2251,12 @@ function(input, output, session) {
         data<-stepsMarkedCompletedPerDay()
         chart <- Highcharts$new()
         chart$chart(type = "line", width = 1200)
+        if(nrow(data) == 0){
+          chart$title(text = "No data available")
+        }
         chart$data(data[c(names(step_data))])
         chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-        chart$xAxis(categories = data$day)
+        chart$xAxis(categories = unlist(as.factor(data$day)), title = list(text = "Day"))
         chart$yAxis(title = list(text = "Frequency"))
         return(chart)
       })
@@ -2220,14 +2288,172 @@ function(input, output, session) {
     }
   })
   
-  
-  
-  
-  
-  
   # END STEP COMPLETION TAB
   
-  # START COMMENT VIEWR TAB
+ 
+  
+  
+  #START: CHARTS - COMMENTS ORIENTATED
+  
+  # Selector for which run to display comment related things
+  
+  output$runSelectorComments <- renderUI({
+    chartDependency()
+    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    if(input$run2 != "None"){
+      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    }
+    if(input$run3 != "None"){
+      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+    }
+    if(input$run4 != "None"){
+      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+    }
+    print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
+  })
+  
+  output$commentsBarChart <- renderChart2({
+    
+    #to update if the go button is pressed or the comment selector is changed
+    chartDependency()
+    commentDependancy()
+    
+    #get the data for the barchart, passing the step and comment data for the selected course run
+    sData <- step_data[[which(names(step_data) == input$runChooserComments)]]
+    cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+    histogram <- Highcharts$new()
+    if(nrow(sData)!=0 && nrow(cData)!=0){
+      plotData <- getCommentsBarChart(sData, cData)
+      histogram$chart(type = "column" , width = 1200)
+      histogram$data(plotData[,c("reply","post")])
+      histogram$xAxis (categories = plotData$week_step)
+      histogram$yAxis(title = list(text = "Frequency"))
+      histogram$plotOptions (
+        column = list(
+          stacking = "normal"
+        ),
+        animation = FALSE
+      )
+    } else {
+      histogram$title(text = 'No data available')
+    }
+    return(histogram)
+  })
+  
+  # Heatmap of comments made per step and date
+  output$stepDateCommentsHeat <- renderD3heatmap({
+    # Draw the chart when the "chooseCourseButton" is pressed by the user
+    chartDependency()
+    commentDependancy()
+    learners <- unlist(strsplit(input$filteredLearners, "[,]"))
+    startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
+    comments <- getCommentsHeatMap(comments_data[[which(names(comments_data) == input$runChooserComments)]], startDate)
+    
+    
+    d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
+              color = "Blues",
+              scale = "column",
+              labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
+              labCol = colnames(comments)[-1])
+  })
+  
+  # Histogram of the comment and replies made per week
+  output$commentsRepliesWeekBar <- renderChart2({
+    chartDependency()
+    commentDependancy()
+    plotData <- getCommentsBarChartWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
+    
+    histogram <- Highcharts$new()
+    histogram$chart(type = "column" , width = 550)
+    histogram$data(plotData[,c("reply","post")])
+    histogram$xAxis (categories = plotData$week_number)
+    histogram$yAxis(title = list(text = "Frequency"))
+    histogram$plotOptions (
+      column = list(
+        stacking = "normal"
+      ),
+      animation = FALSE
+    )
+    return(histogram)
+  })
+  
+  # Histogram of the number of authors per week
+  output$authorsWeekBar <- renderChart2({
+    chartDependency()
+    commentDependancy()
+    plotData <- getNumberOfAuthorsByWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
+    histogram <- Highcharts$new()
+    histogram$chart(type = "column" , width = 550)
+    histogram$data(plotData[,c("authors")])
+    histogram$xAxis (categories = plotData$week_number)
+    histogram$yAxis(title = list(text = "Frequency"))
+    histogram$plotOptions (
+      column = list(
+        stacking = "normal"
+      ),
+      animation = FALSE
+    )
+    return(histogram)
+  })
+  
+  output$totalMeasuresRunSelector <- renderUI({
+    chartDependency()
+    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    if(input$run2 != "None"){
+      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    }
+    if(input$run3 != "None"){
+      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+    }
+    if(input$run4 != "None"){
+      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+    }
+    print(selectInput("totalMeasuresRunChooser", label = "Run",
+                      choices = runs, width = "550px"))
+  })
+  
+  # Line chart of the average number of comments made per step completion percentage
+  output$avgCommentsCompletionLine <- renderChart2({
+    # Draw the chart when the "chooseCourseButton" is pressed by the user
+    chartDependency()
+    measuresDependancy()
+    # Get number of comments made and steps completed by learner
+    learners <- unlist(strsplit(input$filteredLearners, "[,]"))
+    # JSR replaced
+    #assign("startDate", input$courseDates[1], envir = .GlobalEnv)
+    #assign("endDate", input$courseDates[2], envir = .GlobalEnv)
+    
+    comments <- getNumberOfCommentsByLearner(comments_data[[which(names(comments_data)==input$totalMeasuresRunChooser)]])
+    steps <- getStepsCompleted(step_data[[which(names(step_data)==input$totalMeasuresRunChooser)]])
+    # Round the percentage 
+    steps$completed <- round(steps$completed)
+    # Merge the two data frame together
+    plotData <- merge(comments, steps, by = "learner_id")
+    assign("plotTest", plotData, envir = .GlobalEnv)
+    # To reduce the number of drawn point, scale the percentages to increments of 5
+    plotData$completed <- lapply(plotData$completed, function (x) if (x %% 5 != 0) {x - x %% 5} else {x})
+    plotData$completed <- as.numeric(plotData$completed)
+    # Aggregate the data to get the total average of comments made per percentage of completed steps
+    plotData <- ddply(plotData, ~completed, summarise, comments = mean(comments))
+    # Create the line chart and pass in some options
+    lineChart <- Highcharts$new()
+    lineChart$chart (type = "line", width = 1200, height = 600)
+    lineChart$series (
+      name = "Comments",
+      data = toJSONArray2(plotData, json = FALSE, names = FALSE),
+      type = "line"
+    )
+    lineChart$xAxis (title = list(text = "Completed (%)"))
+    lineChart$yAxis (title = list(text = "Comments"))
+    return (lineChart)
+  })
+  
+  #END: CHARTS - COMMENTS ORIENTATED
+  
+  
+  
+   
+  # START COMMENT VIEWER TAB
   
   #Selector to choose which run to view comments of
   output$commentRunSelector <- renderUI({
@@ -2417,166 +2643,7 @@ function(input, output, session) {
   
  
   
-  # START SIGN UPS AND STATEMENTS SOLD TAB
   
-  # Line showing sign ups over time
-  output$signUpsLine <- renderChart2({
-    chartDependency()
-    
-    analysis <- signUpData()
-    data<- analysis[[1]]
-    startDays <- analysis[[2]]
-    startDay <- analysis[[3]]
-    chart <- Highcharts$new()
-    chart$chart(type = "line", width = 1200)
-    chart$data(data[c(names(enrolment_data))])
-    chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-    if(length(startDays) == 1){
-      chart$xAxis(
-        title = list(text = "Day"),
-        categories = data$day, plotLines = list(
-          list(
-            value = startDays[1],
-            color = "#7cb5ec",
-            width = 3,
-            zIndex = 4,
-            label = list(
-              text = paste("Course Started: ", startDay,
-                           sep = " "),
-              style = list( color = 'black')
-            )
-          )
-        )
-      )
-    } else if (length(startDays) == 2){
-      chart$xAxis(
-        title = list(text = "Day"),
-        categories = data$day, plotLines = list(
-          list(
-            value = startDays[1],
-            color = "#7cb5ec",
-            width = 3,
-            zIndex = 4,
-            label = list(
-              text = paste(names(enrolment_data)[1],
-                           "Start", sep = " "),
-              style = list( color = 'black')
-            )
-          ),
-          list(
-            value = startDays[2],
-            color = "#434348",
-            width = 3,
-            zIndex = 4,
-            label = list(
-              text = paste(names(enrolment_data)[2],
-                           "Start", sep = " "),
-              style = list( color = 'black')
-            )
-          )
-        )
-      )
-    }else if (length(startDays) == 3){
-      chart$xAxis(
-        title = list(text = "Day"),
-        categories = data$day, plotLines = list(list(
-          value = startDays[1],
-          color = "#7cb5ec",
-          width = 3,
-          zIndex = 4,
-          label = list(text = paste(names(enrolment_data)[1],"Start", sep = " "),
-                       style = list( color = 'black')
-          )),
-          list(
-            value = startDays[2],
-            color = '#434348',
-            width = 3,
-            zIndex = 4,
-            label = list(text = paste(names(enrolment_data)[2],"Start", sep = " "),
-                         style = list( color = 'black')
-            )),
-          list(
-            value = startDays[3],
-            color = '#8085e9',
-            width = 3,
-            zIndex = 4,
-            label = list(text = paste(names(enrolment_data)[3],"Start", sep = " "),
-                         style = list( color = 'black')
-            ))
-        ))
-    }else if (length(startDays) == 4){
-      chart$xAxis(
-        title = list(text = "Day"),
-        categories = data$day, plotLines = list(list(
-          value = startDays[1],
-          color = "#7cb5ec",
-          width = 3,
-          zIndex = 4,
-          label = list(text = paste(names(enrolment_data)[1],"Start", sep = " "),
-                       style = list( color = 'black')
-          )),
-          list(
-            value = startDays[2],
-            color = '#434348',
-            width = 3,
-            zIndex = 4,
-            label = list(text = paste(names(enrolment_data)[2],"Start", sep = " "),
-                         style = list( color = 'black')
-            )),
-          list(
-            value = startDays[3],
-            color = '#8085e9',
-            width = 3,
-            zIndex = 4,
-            label = list(text = paste(names(enrolment_data)[3],"Start", sep = " "),
-                         style = list( color = 'black')
-            )),
-          list(
-            value = startDays[4],
-            color = '#00ffcc',
-            width = 3,
-            zIndex = 4,
-            label = list(text = paste(names(enrolment_data)[4],"Start", sep = " "),
-                         style = list( color = 'black')
-            ))
-        ))
-    }
-    chart$yAxis(title = list(text = "Frequency"))
-    return(chart)
-  })
-  
-  output$downloadSignUps <- downloadHandler(
-    filename = function() { paste("signUps", '.csv', sep='') },
-    content = function(file) {
-      data <- signUpData()[[1]]
-      write.csv(data, file)
-    }
-  )
-  
-  # Line showing statements sold over time
-  output$statementsSoldLine <- renderChart2({
-    chartDependency()
-    data<-statementsSoldData()
-    chart <- Highcharts$new()
-    chart$chart(type = "line", width = 1200)
-    chart$data(data[c(names(enrolment_data))])
-    chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
-    chart$xAxis(categories = data$day)
-    chart$yAxis(title = list(text = "Frequency"))
-    return(chart)
-  })
-  
-  
-  output$downloadStatementsSold <- downloadHandler(
-    filename = function() { paste("statements_sold", '.csv', sep='') },
-    content = function(file) {
-      data <- statementsSoldData()
-      write.csv(data, file)
-    }
-  )
-  
-  
-  # END SIGN UPS AND STATEMENTS SOLD TAB
   
   # START TEAM MEMBERS TAB
   

@@ -117,6 +117,7 @@ body <- dashboardBody(
 			fluidRow(
 				box(
 					showOutput("learnersAgeBar", "highcharts"),
+				#	HTML('<style>.rChart {width: 100%; height: 600px}</style>'),
 					downloadButton('downloadLearnerAge', 'Download'),
 					title = "Age Distribution", 
 					status = "primary", solidHeader = TRUE, width = 8, collapsible = TRUE
