@@ -663,36 +663,27 @@ getStepCompletionHeatMap <- function(stepData, startDate){
 getFirstVisitedHeatMap <- function(stepData, startDate){
 	data <-stepData
 	
-	#check if the data frame is empty or not
-	if(nrow(data)!=0){
-	  data$week_step <- getWeekStep(data)
+	data$week_step <- getWeekStep(data)
 	  
-	  #it gets all the rows for the written columns
-	  data <- data[,c("week_step", "first_visited_at")]
+	#it gets all the rows for the written columns
+	data <- data[,c("week_step", "first_visited_at")]
 	  
-	  #gets only the dates from the date-time column
-	  data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
+	#gets only the dates from the date-time column
+	data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
 	  
-	  #count column with value 1 for each row 
-	  data$count <- 1
+	#count column with value 1 for each row 
+	data$count <- 1
 	  
-	  #applies the sum function to all count value for the step and date data
-	  aggregateData <- aggregate(count ~., data, FUN = sum)
-	  aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
+	#applies the sum function to all count value for the step and date data
+	aggregateData <- aggregate(count ~., data, FUN = sum)
+	aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
 	  
-	  #casting formula - creates a data frame with the date column and a column for each step
-	  pivot <- dcast(aggregateData, first_visited_at ~ week_step)
-	  pivot[is.na(pivot)] <- 0
+	#casting formula - creates a data frame with the date column and a column for each step
+	pivot <- dcast(aggregateData, first_visited_at ~ week_step)
+	pivot[is.na(pivot)] <- 0
 	  
-	  map <- as.data.frame(pivot)
+	map <- as.data.frame(pivot)
 	  
-	  
-	} else {
-	  #TODO: fix to return an empty heatmap
-	  map <- data.frame(x = numeric(), y = numeric())
-	  print(map)
-	}
-	
 	return(map)
 }
 
@@ -748,17 +739,29 @@ getCommentsBarChart <- function(stepData,comments){
 	return(plotData)
 }
 
-#Returns the plot data for comments per week, just requires the comments data.
+#' Returns the plot data for comments per week, just requires the comments data.
+#'
+#' @param comments data frame with comment data for the current course run
+#'
+#' @return data frame with week number, post and reply data
 getCommentsBarChartWeek <- function(comments){
 	data <- comments
 	stepLevels <- unique(data$week_number)
+	
+	#creating a data frame for the plot data: week, post, reply
 	plotData <-data.frame(week_number = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+	
+	#isolates the required data
 	data <- data[,c("week_number", "parent_id")]
+	
+	#creating the posts(no parent id) and replies(parent id) and counting them
 	posts <- subset(data, is.na(data$parent_id))
 	replies <- subset(data, !is.na(data$parent_id))[,c("week_number")]
 	postCount <- count(posts)
 	replyCount <- count(replies)
 	replyCount$week_number <- as.character(replyCount$x)
+	
+	#counting the number ofposts and replies by week
 	for(x in c(1:length(postCount$freq))){
 		plotData[plotData$week_number == postCount$week_number[x],]$post <- postCount$freq[x]
 	}
