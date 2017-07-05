@@ -209,7 +209,12 @@ function(input, output, session) {
   print("About to assemble runs")
   output$runs1 <-renderUI({
     runs <- getRuns(input$course1)
-    selectInput("run1", label = "Run", width = "450px", choices = c("All",runs))
+    start_dates <- getStartDates(input$course1)
+    num_of_weeks <- getNoOfWeeks(input$course1)
+    
+    #Using the start dates and number of weeks to find out the end dates
+    end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
+    selectInput("run1", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   output$runs2 <-renderUI({
     runs <- getRuns(input$course2)
