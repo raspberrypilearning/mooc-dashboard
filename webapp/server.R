@@ -218,15 +218,30 @@ function(input, output, session) {
   })
   output$runs2 <-renderUI({
     runs <- getRuns(input$course2)
-    selectInput("run2", label = "Run", width = "450px", choices = c("None","All",runs))
+    start_dates <- getStartDates(input$course2)
+    num_of_weeks <- getNoOfWeeks(input$course2)
+    
+    #Using the start dates and number of weeks to find out the end dates
+    end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
+    selectInput("run2", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   output$runs3 <-renderUI({
     runs <- getRuns(input$course3)
-    selectInput("run3", label = "Run", width = "450px", choices = c("None","All",runs))
+    start_dates <- getStartDates(input$course3)
+    num_of_weeks <- getNoOfWeeks(input$course3)
+    
+    #Using the start dates and number of weeks to find out the end dates
+    end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
+    selectInput("run3", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   output$runs4 <-renderUI({
     runs <- getRuns(input$course4)
-    selectInput("run4", label = "Run", width = "450px", choices = c("None","All",runs))
+    start_dates <- getStartDates(input$course4)
+    num_of_weeks <- getNoOfWeeks(input$course4)
+    
+    #Using the start dates and number of weeks to find out the end dates
+    end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
+    selectInput("run4", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   
   output$chooseCourse <- renderUI({
