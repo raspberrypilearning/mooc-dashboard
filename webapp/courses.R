@@ -78,14 +78,14 @@ getStartDates <- function (course) {
   #gets a data frame of start dates of a course and institution
   query <- sprintf("SELECT start_date FROM Courses WHERE university = '%s' AND course = '%s'", institution, course)
   data <- dbGetQuery(con,query)
-  print(data)
+  
   #transforms the dataframe into a vector of start dates that is returned
  
   start_dates <- character()
   for(start_date in data$start_date){
     start_dates <- c(start_dates, start_date)
   }
-  print(start_dates)
+ 
   dbDisconnect(con)
   return(start_dates)
 }
@@ -102,14 +102,14 @@ getNoOfWeeks <- function (course) {
   #gets a data frame of number of weeks of a course and institution
   query <- sprintf("SELECT no_of_weeks FROM Courses WHERE university = '%s' AND course = '%s'", institution, course)
   data <- dbGetQuery(con,query)
-  print(data)
+
   #transforms the dataframe into a vector of week numbers that is returned
   
   num_of_weeks <- character()
   for(no_of_weeks in data$no_of_weeks){
     num_of_weeks <- c(num_of_weeks, no_of_weeks)
   }
-  print(num_of_weeks)
+
   dbDisconnect(con)
   return(num_of_weeks)
 }
