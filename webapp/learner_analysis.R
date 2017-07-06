@@ -595,20 +595,33 @@ getSetOfLearnersByDate <- function(courseDuration, startDate, enrolment){
 
 }
 
-# Filters out step data that is not completed with week step.
+#' Filters out step data that is not completed with week step.
+#'
+#' @param stepData data frame of activity data for a specific course run
+#'
+#' @return a data frame which shows how many times each step was completed
 getStepsCompletedData <- function(stepData){
 	data <- stepData
 	completedSteps <- subset(data, last_completed_at != "")
 	completedSteps$week_step <- getWeekStep(completedSteps)
+	
+	#counts how many times each step was completed
 	stepsCount <- count(completedSteps, 'week_step')
 	return (stepsCount)
 }
 
+#' Gets the number of times each step was first visited for rendering the chart
+#'
+#' @param stepData a data frame with activity information about a specified course run
+#'
+#' @returna data frame which shows how many times each step was first visited
 getStepsFirstVistedData <- function(stepData){
 	data <- stepData
-	firstVistedSteps <- subset(data, first_visited_at != "")
-	firstVistedSteps$week_step <- getWeekStep(firstVistedSteps)
-	stepsCount <- count(firstVistedSteps, 'week_step')
+	firstVisitedSteps <- subset(data, first_visited_at != "")
+	firstVisitedSteps$week_step <- getWeekStep(firstVisitedSteps)
+	
+	#counts how many times each step has been first visited
+	stepsCount <- count(firstVisitedSteps, 'week_step')
 	return (stepsCount)
 }
 
@@ -628,18 +641,37 @@ getStepCompletionHeatMap <- function(stepData, startDate){
 	return(map)
 }
 
-# Returns the heat map of first visited, requires step data and the start date of the run
+
+#' Returns the heat map of first visited steps, requires step data and the start date of the run
+#'
+#' @param stepData data frame with activity data for the selected course run
+#' @param startDate start date of the course run
+#'
+#' @return data frame with data: date vs steps, for the heat map
 getFirstVisitedHeatMap <- function(stepData, startDate){
 	data <-stepData
+	
 	data$week_step <- getWeekStep(data)
+	  
+	#it gets all the rows for the written columns
 	data <- data[,c("week_step", "first_visited_at")]
+	  
+	#gets only the dates from the date-time column
 	data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
+	  
+	#count column with value 1 for each row 
 	data$count <- 1
+	  
+	#applies the sum function to all count value for the step and date data
 	aggregateData <- aggregate(count ~., data, FUN = sum)
 	aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
+	  
+	#casting formula - creates a data frame with the date column and a column for each step
 	pivot <- dcast(aggregateData, first_visited_at ~ week_step)
 	pivot[is.na(pivot)] <- 0
+	  
 	map <- as.data.frame(pivot)
+	  
 	return(map)
 }
 
@@ -658,19 +690,34 @@ getCommentsHeatMap <- function(commentsData, startDate){
 	return(map)
 }
 
-# Returns the plot data for comments per step, requires step data and comment data.
+#' Returns the plot data for comments per step, requires step data and comment data.
+#'
+#' @param stepData data frame with activity data for the selected course run
+#' @param comments data frame with comment data
+#'
+#' @return a data frame with the numbers of posts and replies by step
 getCommentsBarChart <- function(stepData,comments){
+  
+  #making compies of the data frames
 	steps <- stepData
 	data <- comments
 	stepLevels <- unique(getWeekStep(steps))
+	
+	#creating a data frame for the plot data: step, post and reply
 	plotData <-data.frame(week_step = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
 	data$week_step <- getWeekStep(data)
+	
+	#isolating the required data
 	data <- data[,c("week_step", "parent_id")]
+	
+	#creating the posts(no parent id) and replies(parent id) and counting them
 	posts <- subset(data, is.na(data$parent_id))
 	replies <- subset(data, !is.na(data$parent_id))[,c("week_step")]
 	postCount <- count(posts)
 	replyCount <- count(replies)
 	replyCount$week_step <- as.character(replyCount$x)
+	
+	#counting the number ofposts and replies by week step
 	for(x in c(1:length(postCount$freq))){
 		plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
 	}
@@ -680,17 +727,29 @@ getCommentsBarChart <- function(stepData,comments){
 	return(plotData)
 }
 
-#Returns the plot data for comments per week, just requires the comments data.
+#' Returns the plot data for comments per week, just requires the comments data.
+#'
+#' @param comments data frame with comment data for the current course run
+#'
+#' @return data frame with week number, post and reply data
 getCommentsBarChartWeek <- function(comments){
 	data <- comments
 	stepLevels <- unique(data$week_number)
+	
+	#creating a data frame for the plot data: week, post, reply
 	plotData <-data.frame(week_number = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+	
+	#isolates the required data
 	data <- data[,c("week_number", "parent_id")]
+	
+	#creating the posts(no parent id) and replies(parent id) and counting them
 	posts <- subset(data, is.na(data$parent_id))
 	replies <- subset(data, !is.na(data$parent_id))[,c("week_number")]
 	postCount <- count(posts)
 	replyCount <- count(replies)
 	replyCount$week_number <- as.character(replyCount$x)
+	
+	#counting the number ofposts and replies by week
 	for(x in c(1:length(postCount$freq))){
 		plotData[plotData$week_number == postCount$week_number[x],]$post <- postCount$freq[x]
 	}
@@ -849,33 +908,54 @@ getEmploymentDegreeCount <- function(enrolmentData){
 #' @param courseMetaData all sort of information about the course
 #'
 #' @return Returns comment data in the format needed for the comment viewer
-getCommentViewerData <- function(commentData, run,courseMetaData){
+getCommentViewerData <- function(commentData, run, courseMetaData){
   
   #gets the data frame from the list corresponding to the course run
 	data <- commentData[[which(names(commentData) == run)]]
 	
-	#modify the timestamp column to contain just the date
-	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
-	
-	#activity steps under a specific form e.g. 1.3
-	data$week_step <- getWeekStep(data)
-	
-	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
-	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
-	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
-	data$likes <- as.numeric(data$likes)
-	data$likes <- as.integer(data$likes)
-	
-	#creating the url by doing some splitting and removing leading/trailing whitespace 
-	runsplit <- strsplit(run,"-")
-	course <- trimws(runsplit[[1]])
-	courseRun <- as.character(courseMetaData$course_run)
-	shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
-	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
-	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
-	
-	sorted <- data[order(-data$likes),]
-	return(sorted)
+  #if the data frame is not empty 
+	if(nrow(data)!=0) {
+	  #modify the timestamp column to contain just the date
+	  data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+	  print(run)
+	  
+	  #activity steps under a specific form e.g. 1.3
+	  data$week_step <- getWeekStep(data)
+	  
+	  isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
+	  hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
+	  data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
+	  data$likes <- as.numeric(data$likes)
+	  data$likes <- as.integer(data$likes)
+	  
+	  #to build the url 
+	  #splits the run name by '-' to separate the name of course and run number
+	  runsplit <- strsplit(run,"-")
+	  
+	  #trims the leading and trailing whitespaces to get the correct name of the course
+	  course <- trimws(runsplit[[1]])
+	  
+	  #based on the name of the course it get the shorten name with the run number
+	  courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+	  
+	  #gets the short name of the course 
+	  shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+	  
+	  #creates the url and adds it to each row in the data frame
+	  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+	  data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+	  
+	  #sorting the comments in decreasing order by the number of likes
+	  data <- data[order(-data$likes),]
+	} else {
+	  #if the data frame is empty (no data for a specific course run)
+	  #adding new empty columns for the table
+	  data$week_step <- character()
+	  data$thread <- character()
+	  data$url <- character()
+	}
+  
+	return(data)
 }
 
 
@@ -892,33 +972,48 @@ getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
   #gets the data frame from the list; corresponding to the course run
   commentDataRun <- commentData[[which(names(commentData) == run)]]
   
-  #removing the id column as it will appear as a duplicate 
-  commentDataRun$id <- NULL
-  
   #merge the data frames based on the user id
-  data <- merge (teamData, commentDataRun,  by.x = "id", by.y = "author_id")
+  data <- merge (commentDataRun, teamData,  by.x = "author_id", by.y = "id")
   
-  #creating a name column that contains the first and last name of team members
-  data$name <- paste(data$first_name, data$last_name, sep = " ")
+  #if the data frame is not empty
+  if (nrow(data)!=0) {
+    #creating a name column that contains the first and last name of team members
+    data$name <- paste(data$first_name, data$last_name, sep = " ")
+    
+    #modify the timestamp column to contain just the date
+    data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+    
+    #activity steps under a specific form e.g. 1.3
+    data$week_step <- getWeekStep(data)
+    
+    #splits the run name by '-' to separate the name of course and run number
+    runsplit <- strsplit(run,"-")
+    
+    #trims the leading and trailing whitespaces to get the correct name of the course
+    course <- trimws(runsplit[[1]])
+    
+    #based on the name of the course it get the shorten name with the run number
+    courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+    
+    #gets the short name of the course 
+    shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+    
+    #creates the url and adds it to each row in the data frame
+    url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+    data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+    
+    #sorting the data frame by the name of team members
+    data <- data[order(data$name),]
+  } else {
+    
+    #if the data frame is empty
+    data$name <- character()
+    data$url <- character()
+    data$week_step <- character()
+  }
   
-  #modify the timestamp column to contain just the date
-  data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
   
-  #activity steps under a specific form e.g. 1.3
-  data$week_step <- getWeekStep(data)
-  
-  #creating the url by doing some splitting and removing leading/trailing whitespace 
-  runsplit <- strsplit(run,"-")
-  course <- trimws(runsplit[[1]])
-  courseRun <- as.character(courseMetaData$course_run)
-  shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
-  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
-  data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
-  
-  #sorting the data frame by the name of team members
-  sorted <- data[order(data$name),]
-  
-  return(sorted)
+  return(data)
 }
 
 
@@ -1454,93 +1549,222 @@ signUpData<-function(){
 	return(list(data,startDays,startDay))
 }
 
+#' To get the number of statements sold for each of the selected course in the range of days
+#'
+#' @return 	data frame with a 'day' column with all days in the sequence, and a column for each of the selected courses 
+#           with their respective counts of statements sold in every particular day
 statementsSoldData<-function(){
 	freqs <- list()
 
 	maxLength <- 0
+	
+	#enrolment data is a list of data frames, one for each course run selected
 	for(i in c(1:length(names(enrolment_data)))){
+	  
+	  #copy the specific course run data frame
 		learners <- enrolment_data[[names(enrolment_data)[i]]]
+		
+		#gets only the learners who purchased statements
 		learners <- learners[which(learners$role == "learner"),]
 		learners <- learners[which(learners$purchased_statement_at != ""),]
+		
+		#counts how many statements were purchased on each date
 		signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
-		dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-		if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
+		
+		#if there is at least one row in the table
+		if(nrow(learners) != 0){
+		  #creates a list of two elements - a vector of dates and a numeric empty vector  
+		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+		  
+		  #updated the max length of the sequence of days when statements were bought
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  
+		  #for each of the dates in the sign up period it assigns the number of statements sold in that day
+		  for(x in c(1:length(signUpCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+		  }
+		} else {
+		  
+		  #if there are no rows in the table it just creates an empty list
+		  dates <- list(character(), numeric())
 		}
-		for(x in c(1:length(signUpCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-		}
+		
+		#it creates a list of lists - one list for each course run selected
 		freqs[[i]] <- dates
 	}
 
-	data <- data.frame(day = seq(from = 1, to = maxLength))
+	#creates a data frame with one column - day, with one row for each of the days in the max sign up sequence
+	if(maxLength > 1) {
+	  data <- data.frame(day = seq(from = 1, to = maxLength))
+	} else {
+	  data <- data.frame(day = numeric(0))
+	}
+	
+	#goes through each list in the freq list
 	for(x in c(1:length(freqs))){
+	  
+	    #creates a numeric vector of size max length initialised only with 0s
 			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
+			
+			#goes through each value in the 2nd vector of the list and replaces the 0s with that when there were statements sold 
+			if(length(freqs[[x]][[2]]) > 0){
+			  for(i in c(1:length(freqs[[x]][[2]]))){
+			    if(!is.na(freqs[[x]][[2]][i]))
+			      d[i] <- freqs[[x]][[2]][i]
+			  }
 			}
+			
+			#creates a column in the data frame with the name of the course run and the values of the counts of the statements sold
 			data[[names(enrolment_data[x])]] <- d
 	}
+	
+	#data frame with a 'day' column with all days in the sequence, and a column for each of the selected courses 
+	#with their respective counts of statements sold in every particular day
 	return(data)
 }
 
+#' FOr creating the steps first visited per day table
+#'
+#' @return data frame with a 'day' column and a column for each of the selected courses
+#'         with their respective counts of first visited steps in each day
 stepsFirstVisitedPerDay<-function(){
 	freqs <- list()
 
 	maxLength <- 0
+	
+	#step data is a list of data frames, one for each selected course run 
 	for(i in c(1:length(names(step_data)))){
+	  
+	  #creates a new data frame to store the step data of the current course run
 		steps <- step_data[[names(step_data)[i]]]
+		
+		#gets the data with first visited dates
 		steps <- steps[which(steps$first_visited_at != ""),]
+		
+		#counts the steps first visited for each day
 		stepsCount <- count(substr(as.character(steps$first_visited_at),start = 1, stop = 10))
-		dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
-		if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
+		
+		#checks if the data is empty or not
+		if(nrow(steps) != 0){
+		  
+		  #list of two elements - a vector of dates and a numeric empty vector
+		  dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
+		  
+		  #gets the max length of the sequence of dates
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  
+		  #for each of the dates in the sequence it assigns the number of steps first visited 
+		  for(x in c(1:length(stepsCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
+		  }
+		  
+		} else {
+		  #if there are no rows in the table it just creates a list of empty elements
+		  dates <- list(character(), numeric())
 		}
-		for(x in c(1:length(stepsCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
-		}
+		
+		#it creates a list of lists - one list for each selected course
 		freqs[[i]] <- dates
 	}
 
-	data <- data.frame(day = seq(from = 1, to = maxLength))
+	#creates a data frame with one column - day, with one row for each of the days in the max steps first visited sequence
+	if(maxLength > 1) {
+	  data <- data.frame(day = seq(from = 1, to = maxLength))
+	} else {
+	  data <- data.frame(day = numeric(0))
+	}
+	
+	#goes through each list in the freq list
 	for(x in c(1:length(freqs))){
+	  
+	    #creates a numeric vector with maxlength and 0s
 			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
+			
+			#goes through each value in the 2nd vector of the list and updates the 0s with that when there steps visited
+			if(length(freqs[[x]][[2]]) > 0){
+			  for(i in c(1:length(freqs[[x]][[2]]))){
+			    if(!is.na(freqs[[x]][[2]][i]))
+			      d[i] <- freqs[[x]][[2]][i]
+			  }
 			}
+			
+			#creates a new column with the name of the current course run and the values as number of steps first visited for each day
 			data[[names(step_data[x])]] <- d
 	}
+	
+	#data frame with 'day' column and columns for each of the selected course runs, presenting the number of first visited steps
 	return(data)
 }
 
 
+#' For rendering a chart of days vs number of steps marked as completed that day
+#'
+#' @return a data frame with 'day' column and for each day the value of the number of steps marked as completed in the selected courses
 stepsMarkedCompletedPerDay<-function(){
 	freqs <- list()
 
 	maxLength <- 0
+	
+	#step_data is a list of data frames, one for each of the selected course runs
 	for(i in c(1:length(names(step_data)))){
+	  
+	  #selects the step data for the current course
 		steps <- step_data[[names(step_data)[i]]]
+		
+		#selects the steps which were last completed at a date
 		steps <- steps[which(steps$last_completed_at != ""),]
+		
+		#counts the number of steps marked as completed for every day
 		stepsCount <- count(substr(as.character(steps$last_completed_at),start = 1, stop = 10))
-		dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
-		if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
+		
+		#checks if the data is empty or not
+		if(nrow(steps) != 0){
+		  #creates a list with 2 elements - a vector of dates and an empty numeric vector
+		  dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
+		  
+		  #gets the max length of the sequence of days 
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  
+		  #for each of the dates in the sequence it assigns the number of completed steps in that day
+		  for(x in c(1:length(stepsCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
+		  }
+		} else {
+		  #if there are no rows in the table it just creates a list of empty elements
+		  dates <- list(character(), numeric())
 		}
-		for(x in c(1:length(stepsCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
-		}
+	
+		#it creates a list of lists - one list for each selected course
 		freqs[[i]] <- dates
 	}
 
-	data <- data.frame(day = seq(from = 1, to = maxLength))
+	#creates a data frame with one column - day, with one row for each of the days in the max steps completed sequence
+	if(maxLength > 1) {
+	  data <- data.frame(day = seq(from = 1, to = maxLength))
+	} else {
+	  data <- data.frame(day = numeric(0))
+	}
+	
+	#goes through each list in the freq list
 	for(x in c(1:length(freqs))){
+	  
+	    #creates a numeric vector with maxlength and 0s
 			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
+			
+			if(length(freqs[[x]][[2]]) > 0){
+			  for(i in c(1:length(freqs[[x]][[2]]))){
+			    if(!is.na(freqs[[x]][[2]][i]))
+			      d[i] <- freqs[[x]][[2]][i]
+			  }
 			}
+			
+			#creates a new column with the name of the current course run and the values as number of steps marked completed for each day
 			data[[names(step_data[x])]] <- d
 	}
 	return(data)
