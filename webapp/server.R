@@ -2522,40 +2522,38 @@ function(input, output, session) {
 				shinyjs::hide(id = "commentBox5")
 				shinyjs::show(id = "commentBox1")
 				output$commentsBarChart <- renderChart2({
-          #to update if the go button is pressed or the comment selector is changed
-    chartDependency()
-    commentDependancy()
+        
+				  #to update if the go button is pressed or the comment selector is changed
+          chartDependency()
+          commentDependancy()
     
-    #step and comment data for the selected course run
-    sData <- step_data[[which(names(step_data) == input$runChooserComments)]]
-    cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+          #step and comment data for the selected course run
+          sData <- step_data[[which(names(step_data) == input$runChooserComments)]]
+          cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
     
-   
-    
-    #checking to see if the data needed to compute the chart is empty or not
-    #if empty it displays an error message, if not it renders the chart
-    if(nrow(sData)>0 && nrow(cData)>0){
-					plotData <- getCommentsBarChart(sData,cData)
-					histogram <- Highcharts$new()
-					histogram$chart(type = "column" , width = 1200)
-					histogram$data(plotData[,c("reply","post")])
-					histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
-					histogram$yAxis(title = list(text = "Frequency"))
-					histogram$plotOptions (
+          #checking to see if the data needed to compute the chart is empty or not
+          #if empty it displays an error message, if not it renders the chart
+          if(nrow(sData)>0 && nrow(cData)>0){
+					  plotData <- getCommentsBarChart(sData,cData)
+					  histogram <- Highcharts$new()
+					  histogram$chart(type = "column" , width = 1200)
+					  histogram$data(plotData[,c("reply","post")])
+					  histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
+					  histogram$yAxis(title = list(text = "Frequency"))
+					  histogram$plotOptions (
 						column = list(
 							stacking = "normal"
 						),
 						animation = FALSE
-					)
-					return(histogram)
+					  )
+					  return(histogram)
           } else {
-      shiny::validate(
-        need(nrow(sData)>0 && nrow(cData)>0,
-             "No data available")
-      )
-    }
-				})
-			}
+            shiny::validate(
+            need(nrow(sData)>0 && nrow(cData)>0,
+             "No data available"))
+          }
+			})
+		}
 			else if (isolate(input$commentovervewGraph) == "NumberofCommentsperDay") {
 				shinyjs::hide(id = "commentBox1")
 				shinyjs::hide(id = "commentBox3")
@@ -2583,32 +2581,30 @@ function(input, output, session) {
 				shinyjs::show(id = "commentBox3")
 				# Heatmap of comments made per step and date
 				output$stepDateCommentsHeat <- renderD3heatmap({
-					# Draw the chart when the "chooseCourseButton" is pressed by the user
+					
+				  # Draw the chart when the "chooseCourseButton" is pressed by the user
 					chartDependency()
 					commentDependancy()
 					learners <- unlist(strsplit(input$filteredLearners, "[,]"))
 					startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
-          
-          
-           cData <- comments_data[[which(names(comments_data) == input$runChooserComments)]]
+          cData <- comments_data[[which(names(comments_data) == input$runChooserComments)]]
     
-    #renders the heatmap if there is existing data and shows an error message if not
-    if(nrow(cData)>0){
-					comments <- getCommentsHeatMap(cData, startDate)
+          #renders the heatmap if there is existing data and shows an error message if not
+          if(nrow(cData)>0){
+					  comments <- getCommentsHeatMap(cData, startDate)
 
-					d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
+					  d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
 										color = scales::col_quantile(input$palette, NULL,100),
 										scale = "column",
 										labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
 										labCol = colnames(comments)[-1])
-      } else {
-      shiny::validate(
-        need(nrow(cData)>0,
-             "No data available")
-      )
-    }
-				})
-			}
+        } else {
+            shiny::validate(
+            need(nrow(cData)>0,
+             "No data available"))
+        }
+			})
+		}
 			else if (isolate(input$commentovervewGraph) == "CommentsandRepliesbyWeek") {
 				shinyjs::hide(id = "commentBox1")
 				shinyjs::hide(id = "commentBox2")
@@ -2619,33 +2615,33 @@ function(input, output, session) {
 				output$commentsRepliesWeekBar <- renderChart2({
 					chartDependency()
 					commentDependancy()
-              #comment data for the selected course
-    cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+          
+					#comment data for the selected course
+          cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
 
     
-    #checks to see if the table data used to compute the data for the chart is empty or not
-    #if not, it displays the chart, if yes it shows an error message
-    if(nrow(cData)!=0){
-					plotData <- getCommentsBarChartWeek(cDat)
+          #checks to see if the table data used to compute the data for the chart is empty or not
+          #if not, it displays the chart, if yes it shows an error message
+          if(nrow(cData)!=0){
+					  plotData <- getCommentsBarChartWeek(cData)
 					
-					histogram <- Highcharts$new()
-					histogram$chart(type = "column" , width = 550)
-					histogram$data(plotData[,c("reply","post")])
-					histogram$xAxis (categories = plotData$week_number, title = list(text = "Week")
-					histogram$yAxis(title = list(text = "Frequency"))
-					histogram$plotOptions (
+					  histogram <- Highcharts$new()
+					  histogram$chart(type = "column" , width = 550)
+					  histogram$data(plotData[,c("reply","post")])
+					  histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
+					  histogram$yAxis(title = list(text = "Frequency"))
+					  histogram$plotOptions (
 						column = list(
 							stacking = "normal"
 						),
 						animation = FALSE
-					)
-					return(histogram)
-       } else {
-      shiny::validate(
-        need(nrow(cData)>0,
-             "No data available")
-      )
-    }
+					  )
+					  return(histogram)
+        } else {
+            shiny::validate(
+            need(nrow(cData)>0,
+             "No data available"))
+        }
 				})
 			}
 			else if (isolate(input$commentovervewGraph) == "NumberofCommentorsbyWeek") {
@@ -2659,33 +2655,31 @@ function(input, output, session) {
 					chartDependency()
 					commentDependancy()
           
-           #get comment data for the selected course run
-    cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+          #get comment data for the selected course run
+          cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
     
-    #checks if the table needed for getting chart data is empty or not
-    #if not empty, it computes the chart, else it throws an error message
-    if(nrow(cData)!=0){
-					plotData <- getNumberOfAuthorsByWeek(cData)
-					histogram <- Highcharts$new()
-					histogram$chart(type = "column" , width = 550)
-					histogram$data(plotData[,c("authors")])
-					histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
-					histogram$yAxis(title = list(text = "Frequency"))
-					histogram$plotOptions (
+          #checks if the table needed for getting chart data is empty or not
+          #if not empty, it computes the chart, else it throws an error message
+          if(nrow(cData)!=0){
+					  plotData <- getNumberOfAuthorsByWeek(cData)
+					  histogram <- Highcharts$new()
+					  histogram$chart(type = "column" , width = 550)
+					  histogram$data(plotData[,c("authors")])
+					  histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
+					  histogram$yAxis(title = list(text = "Frequency"))
+					  histogram$plotOptions (
 						column = list(
 							stacking = "normal"
 						),
 						animation = FALSE
-					)
+					  )
 					return(histogram)
-      } else {
-      shiny::validate(
-        need(nrow(cData)>0,
-             "No data available")
-      )
-    }
+        } else {
+          shiny::validate(
+          need(nrow(cData)>0,
+             "No data available"))
+        }
 				})
-
 			}
 		})
 
