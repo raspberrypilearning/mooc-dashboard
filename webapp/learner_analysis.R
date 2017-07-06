@@ -595,20 +595,33 @@ getSetOfLearnersByDate <- function(courseDuration, startDate, enrolment){
 
 }
 
-# Filters out step data that is not completed with week step.
+#' Filters out step data that is not completed with week step.
+#'
+#' @param stepData data frame of activity data for a specific course run
+#'
+#' @return a data frame which shows how many times each step was completed
 getStepsCompletedData <- function(stepData){
 	data <- stepData
 	completedSteps <- subset(data, last_completed_at != "")
 	completedSteps$week_step <- getWeekStep(completedSteps)
+	
+	#counts how many times each step was completed
 	stepsCount <- count(completedSteps, 'week_step')
 	return (stepsCount)
 }
 
+#' Gets the number of times each step was first visited for rendering the chart
+#'
+#' @param stepData a data frame with activity information about a specified course run
+#'
+#' @returna data frame which shows how many times each step was first visited
 getStepsFirstVistedData <- function(stepData){
 	data <- stepData
-	firstVistedSteps <- subset(data, first_visited_at != "")
-	firstVistedSteps$week_step <- getWeekStep(firstVistedSteps)
-	stepsCount <- count(firstVistedSteps, 'week_step')
+	firstVisitedSteps <- subset(data, first_visited_at != "")
+	firstVisitedSteps$week_step <- getWeekStep(firstVisitedSteps)
+	
+	#counts how many times each step has been first visited
+	stepsCount <- count(firstVisitedSteps, 'week_step')
 	return (stepsCount)
 }
 
@@ -628,18 +641,37 @@ getStepCompletionHeatMap <- function(stepData, startDate){
 	return(map)
 }
 
-# Returns the heat map of first visited, requires step data and the start date of the run
+
+#' Returns the heat map of first visited steps, requires step data and the start date of the run
+#'
+#' @param stepData data frame with activity data for the selected course run
+#' @param startDate start date of the course run
+#'
+#' @return data frame with data: date vs steps, for the heat map
 getFirstVisitedHeatMap <- function(stepData, startDate){
 	data <-stepData
+	
 	data$week_step <- getWeekStep(data)
+	  
+	#it gets all the rows for the written columns
 	data <- data[,c("week_step", "first_visited_at")]
+	  
+	#gets only the dates from the date-time column
 	data$first_visited_at <- unlist(lapply(data$first_visited_at, function(x) substr(x,1,10)))
+	  
+	#count column with value 1 for each row 
 	data$count <- 1
+	  
+	#applies the sum function to all count value for the step and date data
 	aggregateData <- aggregate(count ~., data, FUN = sum)
 	aggregateData <- subset(aggregateData , as.numeric(gsub("-","",aggregateData$first_visited_at)) >= startDate)
+	  
+	#casting formula - creates a data frame with the date column and a column for each step
 	pivot <- dcast(aggregateData, first_visited_at ~ week_step)
 	pivot[is.na(pivot)] <- 0
+	  
 	map <- as.data.frame(pivot)
+	  
 	return(map)
 }
 
@@ -658,19 +690,34 @@ getCommentsHeatMap <- function(commentsData, startDate){
 	return(map)
 }
 
-# Returns the plot data for comments per step, requires step data and comment data.
+#' Returns the plot data for comments per step, requires step data and comment data.
+#'
+#' @param stepData data frame with activity data for the selected course run
+#' @param comments data frame with comment data
+#'
+#' @return a data frame with the numbers of posts and replies by step
 getCommentsBarChart <- function(stepData,comments){
+  
+  #making compies of the data frames
 	steps <- stepData
 	data <- comments
 	stepLevels <- unique(getWeekStep(steps))
+	
+	#creating a data frame for the plot data: step, post and reply
 	plotData <-data.frame(week_step = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
 	data$week_step <- getWeekStep(data)
+	
+	#isolating the required data
 	data <- data[,c("week_step", "parent_id")]
+	
+	#creating the posts(no parent id) and replies(parent id) and counting them
 	posts <- subset(data, is.na(data$parent_id))
 	replies <- subset(data, !is.na(data$parent_id))[,c("week_step")]
 	postCount <- count(posts)
 	replyCount <- count(replies)
 	replyCount$week_step <- as.character(replyCount$x)
+	
+	#counting the number ofposts and replies by week step
 	for(x in c(1:length(postCount$freq))){
 		plotData[plotData$week_step == postCount$week_step[x],]$post <- postCount$freq[x]
 	}
@@ -680,17 +727,29 @@ getCommentsBarChart <- function(stepData,comments){
 	return(plotData)
 }
 
-#Returns the plot data for comments per week, just requires the comments data.
+#' Returns the plot data for comments per week, just requires the comments data.
+#'
+#' @param comments data frame with comment data for the current course run
+#'
+#' @return data frame with week number, post and reply data
 getCommentsBarChartWeek <- function(comments){
 	data <- comments
 	stepLevels <- unique(data$week_number)
+	
+	#creating a data frame for the plot data: week, post, reply
 	plotData <-data.frame(week_number = stepLevels, post = integer(length = length(stepLevels)), reply = integer(length = length(stepLevels)),stringsAsFactors = FALSE)
+	
+	#isolates the required data
 	data <- data[,c("week_number", "parent_id")]
+	
+	#creating the posts(no parent id) and replies(parent id) and counting them
 	posts <- subset(data, is.na(data$parent_id))
 	replies <- subset(data, !is.na(data$parent_id))[,c("week_number")]
 	postCount <- count(posts)
 	replyCount <- count(replies)
 	replyCount$week_number <- as.character(replyCount$x)
+	
+	#counting the number ofposts and replies by week
 	for(x in c(1:length(postCount$freq))){
 		plotData[plotData$week_number == postCount$week_number[x],]$post <- postCount$freq[x]
 	}
@@ -713,89 +772,250 @@ getNumberOfAuthorsByWeek <- function (comments){
   return(plotData)
 }
 
-# Takes enrolment data and returns counts for each gender.
+#' Takes enrolment data and returns counts and percentages for each gender.
+#'
+#' @param enrolmentData data frame with information about enrolments
+#'
+#' @return data frame with gender groups, counts and percentages
 getGenderCount <- function(enrolmentData){
 	data <- enrolmentData
+	
+	#transforming gender into a vector of characters and removing the Unknown values
 	gender <- as.character(data$gender)
 	gender <- gender[gender!="Unknown"]
+	
+	#making a dataframe with the gender values and their frequencies
 	genderCount <- count(gender)
 	genderCount <- genderCount[order(-genderCount$freq),]
+	
+	#changing the column name to gender
 	names(genderCount)[names(genderCount)=="x"] <- "gender"
+	
+	#creating a percentage column in the data frame for the genders
 	genderCount$percentage <- genderCount$freq / sum(genderCount$freq) * 100
 	genderCount$percentage <- round(genderCount$percentage,2)
 	return(genderCount)
 }
 
-# Takes enrolment data and returns counts for each age group.
+#' Takes enrolment data and returns counts and percentages for each age group
+#'
+#' @param enrolmentData data frame with information about enrolments in a specified course run
+#'
+#' @return a data frame with age group, counts and percentages
 getLearnerAgeCount <- function(enrolmentData){
 	data <- enrolmentData
+	
+	#transforming age into a vector of characters and removing the Unknown values
 	age <- as.character(data$age_range)
 	age <- age[age!="Unknown"]
+	
+	#making a dataframe with the age groups and their frequencies
 	ageCount <- count(age)
 	ageCount <- ageCount[order(-ageCount$freq),]
+	
+	#changing the column name to age_group
 	names(ageCount)[names(ageCount)=="x"] <- "age_group"
+	
+	#creating a percentages column for the age groups
 	ageCount$percentage <- ageCount$freq / sum(ageCount$freq) * 100
 	ageCount$percentage <- round(ageCount$percentage,2)
 	return(ageCount)
 }
 
-# Takes enrolment data and returns counts for each employment area.
+
+#' Takes enrolment data and returns counts and percentages for each employment area.
+#'
+#' @param enrolmentData data frame with information about enrolments in a specified course run
+#'
+#' @return data frame with employment areas, counts and percentages
 getEmploymentAreaCount <- function(enrolmentData){
 	enrolments <- enrolmentData
+	
+	#vector of characters without Unknown values
 	employment <- as.character(enrolments$employment_area)
 	employment <- employment[employment!="Unknown"]
+	
+	#making a dataframe with the employment areas and their frequencies
 	employmentCount <- count(employment)
+	
+	#changing the column name to 'employment'
 	names(employmentCount)[names(employmentCount)=="x"] <- "employment"
+	
+	#creating a percentages column for the employment areas 
 	employmentCount$percentage <- employmentCount$freq / sum(employmentCount$freq) * 100
 	employmentCount$percentage <- round(employmentCount$percentage,2)
+	
+	#ordering the data frame in decreasing order
 	employmentCount <- employmentCount[order(-employmentCount$percentage),]
 	return(employmentCount)
 }
 
-# Takes enrolments data and returns counts for each employment status.
+#' Takes enrolments data and returns counts/percentages for each employment status.
+#'
+#' @param enrolmentData data frame with information about enrolments for a specific course run
+#'
+#' @return a data frame with 3 columns: status, count and percentage
 getEmploymentStatusCount <- function(enrolmentData){
 	enrolments <- enrolmentData
+	
+	#vector of all status values without Unknown values
 	status <- as.character(enrolments$employment_status)
 	status <- status[status!="Unknown"]
+	
+	#creating a data frame with the count value of each status
 	statusCount <- count(status)
+	
+	#renaming the column x created above with 'status'
 	names(statusCount)[names(statusCount)=="x"] <- "status"
+	
+	#creating a percentage column 
 	statusCount$percentage <- statusCount$freq / sum(statusCount$freq) * 100
 	statusCount$percentage <- round(statusCount$percentage,2)
+	
+	#ordering the data frame values in decreasing order by percentage
 	statusCount <- statusCount[order(-statusCount$percentage),]
 	return(statusCount)
 }
 
-# Takes enrolment data and returns counts for each education level.
+#' Takes enrolment data and returns counts/percentages for each education level.
+#'
+#' @param enrolmentData data frame with information about enrolments for a specific course run
+#'
+#' @return a data frame with 3 columns: degree, count and percentage
 getEmploymentDegreeCount <- function(enrolmentData){
   enrolments <- enrolmentData
+  
+  #vector of all degree values without Unknown values
   status <- as.character(enrolments$highest_education_level)
   status <- status[status!="Unknown"]
+  
+  #creating a data frame with the count value of each degree status
   statusCount <- count(status)
+  
+  #renaming the x column created above to 'degree'
   names(statusCount)[names(statusCount)=="x"] <- "degree"
+  
+  #creating a percentage column
   statusCount$percentage <- statusCount$freq / sum(statusCount$freq) * 100
   statusCount$percentage <- round(statusCount$percentage,2)
   return(statusCount)
 }
 
-# Returns comment data in the format needed for the comment viewer, takes the overall comment data and which run.
-getCommentViewerData <- function(commentData, run,courseMetaData){
+#' Used to get comment data for the comment viewer
+#'
+#' @param commentData list of data frames that contain comment data for the chosen courses and runs 
+#' @param run the chosen run for which to return comment data
+#' @param courseMetaData all sort of information about the course
+#'
+#' @return Returns comment data in the format needed for the comment viewer
+getCommentViewerData <- function(commentData, run, courseMetaData){
+  
+  #gets the data frame from the list corresponding to the course run
 	data <- commentData[[which(names(commentData) == run)]]
-	data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
-	data$week_step <- getWeekStep(data)
-	isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
-	hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
-	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
-	data$likes <- as.numeric(data$likes)
-	data$likes <- as.integer(data$likes)
-	runsplit <- strsplit(run," - ")
-	course <- trimws(runsplit[[1]])
-	courseRun <- as.character(courseMetaData$course_run[[which(courseMetaData$course == course[[1]] & courseMetaData$run == course[[2]])]])
-	shortenedCourse <- trimws(strsplit(courseRun, " - ")[[1]])
-	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
-	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
-	sorted <- data[order(-data$likes),]
-	return(sorted)
+	
+  #if the data frame is not empty 
+	if(nrow(data)!=0) {
+	  #modify the timestamp column to contain just the date
+	  data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+	  print(run)
+	  
+	  #activity steps under a specific form e.g. 1.3
+	  data$week_step <- getWeekStep(data)
+	  
+	  isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
+	  hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
+	  data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
+	  data$likes <- as.numeric(data$likes)
+	  data$likes <- as.integer(data$likes)
+	  
+	  #to build the url 
+	  #splits the run name by '-' to separate the name of course and run number
+	  runsplit <- strsplit(run,"-")
+	  
+	  #trims the leading and trailing whitespaces to get the correct name of the course
+	  course <- trimws(runsplit[[1]])
+	  
+	  #based on the name of the course it get the shorten name with the run number
+	  courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+	  
+	  #gets the short name of the course 
+	  shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+	  
+	  #creates the url and adds it to each row in the data frame
+	  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+	  data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+	  
+	  #sorting the comments in decreasing order by the number of likes
+	  data <- data[order(-data$likes),]
+	} else {
+	  #if the data frame is empty (no data for a specific course run)
+	  #adding new empty columns for the table
+	  data$week_step <- character()
+	  data$thread <- character()
+	  data$url <- character()
+	}
+  
+	return(data)
 }
+
+
+#' To get data about team interactions with the platform: name, date, step, comment, link
+#'
+#' @param teamData a data frame with data about team members
+#' @param commentData a list of data frames
+#' @param run the course run
+#' @param courseMetaData specific information about the courses
+#'
+#' @return a data frame about team interactions with the platform
+getTeamMembersData <- function (teamData, commentData, run, courseMetaData){
+  
+  #gets the data frame from the list; corresponding to the course run
+  commentDataRun <- commentData[[which(names(commentData) == run)]]
+  
+  #merge the data frames based on the user id
+  data <- merge (commentDataRun, teamData,  by.x = "author_id", by.y = "id")
+  
+  #if the data frame is not empty
+  if (nrow(data)!=0) {
+    #creating a name column that contains the first and last name of team members
+    data$name <- paste(data$first_name, data$last_name, sep = " ")
+    
+    #modify the timestamp column to contain just the date
+    data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+    
+    #activity steps under a specific form e.g. 1.3
+    data$week_step <- getWeekStep(data)
+    
+    #splits the run name by '-' to separate the name of course and run number
+    runsplit <- strsplit(run,"-")
+    
+    #trims the leading and trailing whitespaces to get the correct name of the course
+    course <- trimws(runsplit[[1]])
+    
+    #based on the name of the course it get the shorten name with the run number
+    courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+    
+    #gets the short name of the course 
+    shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+    
+    #creates the url and adds it to each row in the data frame
+    url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+    data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+    
+    #sorting the data frame by the name of team members
+    data <- data[order(data$name),]
+  } else {
+    
+    #if the data frame is empty
+    data$name <- character()
+    data$url <- character()
+    data$week_step <- character()
+  }
+  
+  
+  return(data)
+}
+
 
 getSurveyResponsesFromFullyParticipating <- function(enrolmentData){
 	responses <- enrolmentData[which(enrolmentData$fully_participated_at != ""),]
@@ -803,8 +1023,17 @@ getSurveyResponsesFromFullyParticipating <- function(enrolmentData){
 	return(responses)
 }
 
+#' To get enrolment data about people who purchased a statement
+#'
+#' @param enrolmentData data frame with information about enrolments for a specific course run
+#'
+#' @return a data frame with information about people who purchased statements
 getSurveyResponsesFromStatementBuyers <- function(enrolmentData){
+  
+  #gets the enrolment data for the people who purchased a statement
 	responses <- enrolmentData[which(enrolmentData$purchased_statement_at != ""),]
+	
+	#removes the rows with unknown values
 	responses <- responses[which(responses$gender != "Unknown" | responses$country != "Unknown" | responses$age_range != "Unknown" | responses$highest_education_level != "Unknown" | responses$employment_status != "Unknown" | responses$employment_area != "Unknown"),]
 	return(responses)
 }
@@ -864,35 +1093,83 @@ countryCodesToHDI <- function(countryCodes){
   return(hdi)
 }
 
-learnersAgeData <- function(){
+#' For populating the learner age chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with age group values for each course-run chosen
+learnersAgeData <- function(dataType){
+  
+  #creating a data frame with one column - levels
 	data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
 	data$levels <- as.character(data$levels)
+	
+	#enrolment_data is a list of course-run data frames
+	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
+	  
+	  #creates a data frame containing 3 columns: age group, count and percentages for the current course-run in the loop
 		ageCount <- getLearnerAgeCount(enrolment_data[[x]])
+		
+		#creates a new column with the title of the course run
+		#initialised with 0s for each age group level
 		data[[x]] <- numeric(7)
+		
+		#goes through each existing age group and updates the age group values of the course-run
 		for(i in c(1:length(ageCount$age_group))){
-			data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  }
 		}
 	}
 
 	return(data)
 }
 
-learnersGenderData <- function(){
+#' For populating the gender chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with gender count/percentages for each course-run chosen
+learnersGenderData <- function(dataType){
+  
+  #creating a data frame with one column - levels
 	data <- data.frame(levels = c("male","female","other","non-binary"))
 	data$levels <- as.character(data$levels)
 
+	#enrolment_data is a list of course-run data frames
+	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
+	  
+	  #creates a data frame containing 3 columns: gender, count and percentages for the current course run in the loop
 		genderCount <- getGenderCount(enrolment_data[[x]])
+		
+		#creates a new column with the title of the course run
+		#initialised with 0s for each gender level
 		data[[x]] <- numeric(4)
+		
+		#goes through each existing gender and updates the gender values of the course-run
 		for(i in c(1:length(genderCount$gender))){
-			data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == genderCount$gender[i])] <- genderCount$freq[i]
+		  }
 		}
 	}
 	return(data)
 }
 
-learnersEmploymentData <- function(){
+#' For populating the employment area chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a dataframe with employment area count/percentages for each selected course-run
+learnersEmploymentData <- function(dataType){
+  
+  #creating a data frame with one column - area
 	data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
 										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
 										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
@@ -901,44 +1178,98 @@ learnersEmploymentData <- function(){
 										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
 	data$area <- as.character(data$area)
 
+	#enrolment_data is a list of course-run data frames
+	#goes through each course-run data frame in the list
 	for(x in names(enrolment_data)){
+	  
+	  #creates a data frame containing 3 columns: employment area, count and percentages for the current course run in the loop
 	  areaCount <- getEmploymentAreaCount(enrolment_data[[x]])
+	  
+	  #creates a new column with the title of the course run
+	  #initialises with 0s for each employment area
 	  data[[x]] <- numeric(21)
+	  
+	  #goes through each employment area and updates the values of the course-run for that specific area
 	  for(i in c(1:length(areaCount$employment))){
-		data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+	    if(dataType == "percentages"){
+	      data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+	    } else {
+	      data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+	    }
 	  }
 	}
+	
+	#ordering the area data in decreasing order of the values of the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)
 }
 
-learnersStatusData <- function(){
+#' For populating the Status bar chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a dataframe with status count/percentages for each selected course-run
+learnersStatusData <- function(dataType){
 
+  #creating a data frame with one column - levels
 	data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
 		"not_working","full_time_student","self_employed","looking_for_work")))
 	data$levels <- as.character(data$levels)
+	
+	#enrolment_data is a list of data frames of course runs
+	#goes through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with status-count-percentage about the current course run in the loop
 		statusCount <- getEmploymentStatusCount(enrolment_data[[x]])
+		
+		#creates a new column with the name of the course run and initialises it with 0s
 		data[[x]] <- numeric(8)
+		
+		#goes through each employment status and updates the values of the current course run
 		for(i in c(1:length(statusCount$status))){
-		data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
+		  }
 	  }
 	}
 	
+	#ordering the status data in decreasing order of the values of the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)	
 }
 
-learnersEducationData <- function(){
+#' For populating the degree bar chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a dataframe with degree status count/percentages for each selected course-run
+learnersEducationData <- function(dataType){
+  
+  #creates a data frame with one column - level
 	data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
 		"tertiary","university_degree","university_masters","university_doctorate"))
 	data$level <- as.character(data$level)
 
+	#enrolment_data is a list with one data frame for each course_run
+	#goes through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with degree-count-percentage about the current course run in the loop
 	  degreeCount <- getEmploymentDegreeCount(enrolment_data[[x]])
+	  
+	  #creates a new column with the title of the current course run and initialises it with 0s
 	  data[[x]] <- numeric(8)
+	  
+	  #goes through each degree status and updates the values of the current course run
 	  for(i in c(1:length(degreeCount$degree))){
-		data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+	    if(dataType == "percentages"){
+	      data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+	    } else {
+	      data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+	    }
 	  }
 	}
 	return(data)
@@ -967,40 +1298,90 @@ learnersHDIData <- function(){
 	return(data)
 }
 
-stateGenderData <- function(){
+
+#' For creating the statement purchasers gender chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a dataframe with gender count/percentages for each selected course-run
+stateGenderData <- function(dataType){
+  
+  #creates a data frame wiith one columm - levels
 	data <- data.frame(levels = c("male","female","other","non-binary"))
 	data$levels <- as.character(data$levels)
 
+	#enrolement_data is a list of data frames, one for each course run
+	# goes through each course_run data frame
 	for(x in names(enrolment_data)){
-	  statementsSoldCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
-	  statementsSoldCount <- getGenderCount(statementsSoldCount)
-	  print(statementsSoldCount)
 	  
+	  #data frame with the enrolment information of the people who purchased statements
+	  statementsSoldCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+	  
+	  #data frame with gender-count-percentage data 
+	  statementsSoldCount <- getGenderCount(statementsSoldCount)
+	  
+	  #creates a new column with the name of the current course run and initialises it with 0s
 	  data[[x]] <- numeric(4)
+	  
+	  #goes through each gender option and updates the count/percentage values for the course run
 	  for(i in c(1:length(statementsSoldCount$gender))){
-		data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$freq[i]
+	    if(dataType == "percentages"){
+	      data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$percentage[i]
+	    } else {
+	      data[[x]][which(data$levels == statementsSoldCount$gender[i])] <- statementsSoldCount$freq[i]
+	    }
 	  }
 	}
 
+	#ordering the status data in decreasing order of the values of the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)
 }
 
-stateAgeData <-function(){
+#' To create the statement purchasers age chart
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with age group count/percentage information about the selected course runs
+stateAgeData <-function(dataType){
+  
+  #creates a data frame with one column initially - levels of age groups
 	data <- data.frame(levels = c("<18","18-25","26-35","36-45","46-55","56-65",">65"))
 	data$levels <- as.character(data$levels)
+	
+	#enrolment data is list of data frames, one for each course run
+	#goes through all the course run data frames
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with  enrolment information about the statement purchasers in this course run
 		ageCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		
+		#data frame has 3 columns: age-count-percentage
 		ageCount <- getLearnerAgeCount(ageCount)
+		
+		#creates a column with the title of the course run and initialises it with 0s for each age group
 		data[[x]] <- numeric(7)
+		
+		#goes through each age group and updates the information in the current course run
 		for(i in c(1:length(ageCount$age_group))){
-			data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == ageCount$age_group[i])] <- ageCount$freq[i]
+		  }
 		}
 	}
 	return(data)
 }
 
-stateEmploymentData<-function(){
+#' For creating the employment area chart for the statement buyers
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with employment area count/percentage information about the selected course runs
+stateEmploymentData<-function(dataType){
+  
+  #creates a data frame with one column initially - area
 	data <- data.frame(area = as.character(c("accountancy_banking_and_finance","armed_forces_and_emergency_services",
 										 "business_consulting_and_management","charities_and_voluntary_work" ,"creative_arts_and_culture",
 										 "energy_and_utilities","engineering_and_manufacturing","environment_and_agriculture","health_and_social_care",
@@ -1009,46 +1390,106 @@ stateEmploymentData<-function(){
 										 "science_and_pharmaceuticals","teaching_and_education","transport_and_logistics")))
 	data$area <- as.character(data$area)
 
+	#enrolment_data is a list of data frames, one for each course run selected
+	#goes through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with enrolment information about the statement buyers
 		areaCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		
+		#with 3 columns - age, count and percentages
 		areaCount <- getEmploymentAreaCount(areaCount)
+		
+		#creates a new column with the name of the current course run and initiliases it with 0s for each employment area
 		data[[x]] <- numeric(21)
+		
+		#goes through each employment area option and updates its value in the current course run
 		for(i in c(1:length(areaCount$employment))){
-		data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$area == areaCount$employment[i])] <- areaCount$freq[i]
+		  }
 	  }
 	}
+	
+	#orders the data in decreasing order by the values of the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)
 }
 
-stateStatusData<-function(){
+#' For creating the employment status chart for the statement buyers
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with employemnt status value/percentage for each selected course
+stateStatusData<-function(dataType){
+  
+  #creates a data frame with initially one column - levels of employment status
 	data <- data.frame(levels = as.character(c("unemployed","working_full_time","working_part_time","retired",
 			"not_working","full_time_student","self_employed","looking_for_work")))
 	data$levels <- as.character(data$levels)
+	
+	#enrolment_data is a list of data frames, one for each course run
+	#goes through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with the enrolment informantion of only the statement buyers
 		statusCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		
+		#counting the employment status choices in the course run - 3 columns: status, count and percentage
 		statusCount <- getEmploymentStatusCount(statusCount)
+		
+		#creates a column with the name of the current course run in the loop and initialises the values with 0s
 		data[[x]] <- numeric(8)
+		
+		#goes through each option of employment status and updates its value in the current course run
 		for(i in c(1:length(statusCount$status))){
-		data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$levels == statusCount$status[i])] <- statusCount$freq[i]
+		  }
 	  }
 	}
 
+	#ordering the data in decreasing order after the data in the first course run
 	data <- data[order(-data[[names(enrolment_data[1])]]),]
 	return(data)
 }
 
-stateEducationData<-function(){
+#' For the Degree chart of the statement purchasers
+#'
+#' @param dataType the character value of the selected radio button
+#'
+#' @return a data frame with education status values/percentages for each of the selected course runs
+stateEducationData<-function(dataType){
+  
+  #creates a data frame with initially one column - level of education
 	data <- data.frame(level = c("apprenticeship","less_than_secondary","professional","secondary",           
 		"tertiary","university_degree","university_masters","university_doctorate"))
 	data$level <- as.character(data$level)
 
+	#enrolment_data is a list of data frames, one for each selected course run
+	#geos through each course run data frame
 	for(x in names(enrolment_data)){
+	  
+	  #data frame with enrolment information about the statement buyers
 		degreeCount <- getSurveyResponsesFromStatementBuyers(enrolment_data[[x]])
+		
+		#counting the education status values: 3 columns - degree, count and percentage
 		degreeCount <- getEmploymentDegreeCount(degreeCount)
+		
+		#creates a column with the title of the current course run and initialises it with 0s
 		data[[x]] <- numeric(8)
+		
+		#goes through each education status option and updates its values in the current course run
 		for(i in c(1:length(degreeCount$degree))){
-			data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+		  if(dataType == "percentages"){
+		    data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$percentage[i]
+		  } else {
+		    data[[x]][which(data$level == degreeCount$degree[i])] <- degreeCount$freq[i]
+		  }
 		}
 	}
 	return(data)
@@ -1108,64 +1549,154 @@ signUpData<-function(){
 	return(list(data,startDays,startDay))
 }
 
+#' To get the number of statements sold for each of the selected course in the range of days
+#'
+#' @return 	data frame with a 'day' column with all days in the sequence, and a column for each of the selected courses 
+#           with their respective counts of statements sold in every particular day
 statementsSoldData<-function(){
 	freqs <- list()
 
 	maxLength <- 0
+	
+	#enrolment data is a list of data frames, one for each course run selected
 	for(i in c(1:length(names(enrolment_data)))){
+	  
+	  #copy the specific course run data frame
 		learners <- enrolment_data[[names(enrolment_data)[i]]]
+		
+		#gets only the learners who purchased statements
 		learners <- learners[which(learners$role == "learner"),]
 		learners <- learners[which(learners$purchased_statement_at != ""),]
+		
+		#counts how many statements were purchased on each date
 		signUpCount <- count(substr(as.character(learners$purchased_statement_at),start = 1, stop = 10))
-		dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
-		if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
+		
+		#if there is at least one row in the table
+		if(nrow(learners) != 0){
+		  #creates a list of two elements - a vector of dates and a numeric empty vector  
+		  dates <- list(seq.Date(from = as.Date(signUpCount$x[1]), to = as.Date(tail(signUpCount$x, n =1)), by = 1) , numeric())
+		  
+		  #updated the max length of the sequence of days when statements were bought
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  
+		  #for each of the dates in the sign up period it assigns the number of statements sold in that day
+		  for(x in c(1:length(signUpCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
+		  }
+		} else {
+		  
+		  #if there are no rows in the table it just creates an empty list
+		  dates <- list(character(), numeric())
 		}
-		for(x in c(1:length(signUpCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(signUpCount$x[x]))]] <- signUpCount$freq[[x]]
-		}
+		
+		#it creates a list of lists - one list for each course run selected
 		freqs[[i]] <- dates
 	}
 
-	data <- data.frame(day = seq(from = 1, to = maxLength))
+	#creates a data frame with one column - day, with one row for each of the days in the max sign up sequence
+	if(maxLength > 1) {
+	  data <- data.frame(day = seq(from = 1, to = maxLength))
+	} else {
+	  data <- data.frame(day = numeric(0))
+	}
+	
+	#goes through each list in the freq list
 	for(x in c(1:length(freqs))){
+	  
+	    #creates a numeric vector of size max length initialised only with 0s
 			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
+			
+			#goes through each value in the 2nd vector of the list and replaces the 0s with that when there were statements sold 
+			if(length(freqs[[x]][[2]]) > 0){
+			  for(i in c(1:length(freqs[[x]][[2]]))){
+			    if(!is.na(freqs[[x]][[2]][i]))
+			      d[i] <- freqs[[x]][[2]][i]
+			  }
 			}
+			
+			#creates a column in the data frame with the name of the course run and the values of the counts of the statements sold
 			data[[names(enrolment_data[x])]] <- d
 	}
+	
+	#data frame with a 'day' column with all days in the sequence, and a column for each of the selected courses 
+	#with their respective counts of statements sold in every particular day
 	return(data)
 }
 
+#' FOr creating the steps first visited per day table
+#'
+#' @return data frame with a 'day' column and a column for each of the selected courses
+#'         with their respective counts of first visited steps in each day
 stepsFirstVisitedPerDay<-function(){
 	freqs <- list()
 
 	maxLength <- 0
+	
+	#step data is a list of data frames, one for each selected course run 
 	for(i in c(1:length(names(step_data)))){
+	  
+	  #creates a new data frame to store the step data of the current course run
 		steps <- step_data[[names(step_data)[i]]]
+		
+		#gets the data with first visited dates
 		steps <- steps[which(steps$first_visited_at != ""),]
+		
+		#counts the steps first visited for each day
 		stepsCount <- count(substr(as.character(steps$first_visited_at),start = 1, stop = 10))
-		dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
-		if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
+		
+		#checks if the data is empty or not
+		if(nrow(steps) != 0){
+		  
+		  #list of two elements - a vector of dates and a numeric empty vector
+		  dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
+		  
+		  #gets the max length of the sequence of dates
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  
+		  #for each of the dates in the sequence it assigns the number of steps first visited 
+		  for(x in c(1:length(stepsCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
+		  }
+		  
+		} else {
+		  #if there are no rows in the table it just creates a list of empty elements
+		  dates <- list(character(), numeric())
 		}
-		for(x in c(1:length(stepsCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
-		}
+		
+		#it creates a list of lists - one list for each selected course
 		freqs[[i]] <- dates
 	}
 
-	data <- data.frame(day = seq(from = 1, to = maxLength))
+	#creates a data frame with one column - day, with one row for each of the days in the max steps first visited sequence
+	if(maxLength > 1) {
+	  data <- data.frame(day = seq(from = 1, to = maxLength))
+	} else {
+	  data <- data.frame(day = numeric(0))
+	}
+	
+	#goes through each list in the freq list
 	for(x in c(1:length(freqs))){
+	  
+	    #creates a numeric vector with maxlength and 0s
 			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
+			
+			#goes through each value in the 2nd vector of the list and updates the 0s with that when there steps visited
+			if(length(freqs[[x]][[2]]) > 0){
+			  for(i in c(1:length(freqs[[x]][[2]]))){
+			    if(!is.na(freqs[[x]][[2]][i]))
+			      d[i] <- freqs[[x]][[2]][i]
+			  }
 			}
+			
+			#creates a new column with the name of the current course run and the values as number of steps first visited for each day
 			data[[names(step_data[x])]] <- d
 	}
+	
+	#data frame with 'day' column and columns for each of the selected course runs, presenting the number of first visited steps
 	return(data)
 }
 
@@ -1200,31 +1731,70 @@ commentsPerDay<-function(){
 }
 
 
+#' For rendering a chart of days vs number of steps marked as completed that day
+#'
+#' @return a data frame with 'day' column and for each day the value of the number of steps marked as completed in the selected courses
 stepsMarkedCompletedPerDay<-function(){
 	freqs <- list()
 
 	maxLength <- 0
+	
+	#step_data is a list of data frames, one for each of the selected course runs
 	for(i in c(1:length(names(step_data)))){
+	  
+	  #selects the step data for the current course
 		steps <- step_data[[names(step_data)[i]]]
+		
+		#selects the steps which were last completed at a date
 		steps <- steps[which(steps$last_completed_at != ""),]
+		
+		#counts the number of steps marked as completed for every day
 		stepsCount <- count(substr(as.character(steps$last_completed_at),start = 1, stop = 10))
-		dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
-		if(length(dates[[1]]) > maxLength){
-			maxLength <- length(dates[[1]])
+		
+		#checks if the data is empty or not
+		if(nrow(steps) != 0){
+		  #creates a list with 2 elements - a vector of dates and an empty numeric vector
+		  dates <- list(seq.Date(from = as.Date(stepsCount$x[1]), to = as.Date(tail(stepsCount$x, n =1)), by = 1) , numeric())
+		  
+		  #gets the max length of the sequence of days 
+		  if(length(dates[[1]]) > maxLength){
+		    maxLength <- length(dates[[1]])
+		  }
+		  
+		  #for each of the dates in the sequence it assigns the number of completed steps in that day
+		  for(x in c(1:length(stepsCount$x))){
+		    dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
+		  }
+		} else {
+		  #if there are no rows in the table it just creates a list of empty elements
+		  dates <- list(character(), numeric())
 		}
-		for(x in c(1:length(stepsCount$x))){
-			dates[[2]][[which(dates[[1]] == as.Date(stepsCount$x[x]))]] <- stepsCount$freq[[x]]
-		}
+	
+		#it creates a list of lists - one list for each selected course
 		freqs[[i]] <- dates
 	}
 
-	data <- data.frame(day = seq(from = 1, to = maxLength))
+	#creates a data frame with one column - day, with one row for each of the days in the max steps completed sequence
+	if(maxLength > 1) {
+	  data <- data.frame(day = seq(from = 1, to = maxLength))
+	} else {
+	  data <- data.frame(day = numeric(0))
+	}
+	
+	#goes through each list in the freq list
 	for(x in c(1:length(freqs))){
+	  
+	    #creates a numeric vector with maxlength and 0s
 			d <- numeric(maxLength)
-			for(i in c(1:length(freqs[[x]][[2]]))){
-				if(!is.na(freqs[[x]][[2]][i]))
-				d[i] <- freqs[[x]][[2]][i]
+			
+			if(length(freqs[[x]][[2]]) > 0){
+			  for(i in c(1:length(freqs[[x]][[2]]))){
+			    if(!is.na(freqs[[x]][[2]][i]))
+			      d[i] <- freqs[[x]][[2]][i]
+			  }
 			}
+			
+			#creates a new column with the name of the current course run and the values as number of steps marked completed for each day
 			data[[names(step_data[x])]] <- d
 	}
 	return(data)
