@@ -37,16 +37,17 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     id = "tabs", 
     menuItem("Home", tabName = "home", icon = icon("home")),
-    menuItem("Aggregate Enrolment Data", tabName = "enrolment", icon = icon("th")),
-    menuItem("Demographics", tabName = "demographics", icon = icon("pie-chart")),
+    menuItem("Aggregate Enrolment Data", tabName = "enrolment", icon = icon("database")),
+    menuItem("Demographics", tabName = "demographics", icon = icon("bar-chart")),
     menuItem("Statement Demographics", tabName = "statementDemographics", icon = icon("pie-chart")),
-    menuItem("Sign Ups and Statements Sold", tabName = "signUpsStatementsSold", icon = icon("graduation-cap")),
+    menuItem("Sign Ups and Statements Sold", tabName = "signUpsStatementsSold", icon = icon("area-chart")),
     menuItem("Step Completion", tabName = "stepCompletion", icon = icon("graduation-cap")),
-    menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("commenting-o")),
-    menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("commenting-o")),
-    menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comments")),
+    menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("comments")),
+    menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("comments-o")),
+    menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comment")),
     menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
-    menuItem("Team Members", tabName = "teamMembers", icon = icon("users"))
+    menuItem("Team Members", tabName = "teamMembers", icon = icon("users")),
+    menuItem("Surveys Analysis", tabName = "surveysAnalysis", icon = icon("bookmark"))
     # ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
     # ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
     # ,menuItem("Debug", tabName = "debug")
@@ -428,6 +429,10 @@ body <- dashboardBody(
             )
     )
     
+    # tabItem(tabName = "surveysAnalysis",
+    #         fluidRow()
+    #         )
+    # 
     # 	)
     # )
     # ,tabItem(tabName = "cumulative_measures", 
