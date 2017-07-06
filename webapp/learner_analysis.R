@@ -1700,6 +1700,36 @@ stepsFirstVisitedPerDay<-function(){
 	return(data)
 }
 
+commentsPerDay<-function(){
+	freqs <- list()
+
+	maxLength <- 0
+	for(i in c(1:length(names(comments_data)))){
+		comments <- comments_data[[names(comments_data)[i]]]
+		comments <- comments[which(comments$timestamp != ""),]
+		commentsCount <- count(substr(as.character(comments$timestamp),start = 1, stop = 10))
+		dates <- list(seq.Date(from = as.Date(commentsCount$x[1]), to = as.Date(tail(commentsCount$x, n =1)), by = 1) , numeric())
+		if(length(dates[[1]]) > maxLength){
+			maxLength <- length(dates[[1]])
+		}
+		for(x in c(1:length(commentsCount$x))){
+			dates[[2]][[which(dates[[1]] == as.Date(commentsCount$x[x]))]] <- commentsCount$freq[[x]]
+		}
+		freqs[[i]] <- dates
+	}
+
+	data <- data.frame(day = seq(from = 1, to = maxLength))
+	for(x in c(1:length(freqs))){
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(comments_data[x])]] <- d
+	}
+	return(data)
+}
+
 
 #' For rendering a chart of days vs number of steps marked as completed that day
 #'

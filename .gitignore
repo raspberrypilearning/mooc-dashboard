@@ -15,3 +15,5 @@ update/.idea
 !removeCarrigeReturn.sh
 *.sublime-*
 .Rproj.user
+*.Rproj
+
