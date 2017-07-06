@@ -1230,6 +1230,7 @@ function(input, output, session) {
 								var country = data.getValue(row, 0);
 								$('input#selected').val(country);
 								$('input#selected').trigger('change');"
+
     
     map <- gvisGeoChart(plotData, locationvar = "country", colorvar = "learners",
                         options = list(
@@ -2105,6 +2106,7 @@ function(input, output, session) {
 																}
 														}
 														 '  
+
                  
     )
   }) 
@@ -2492,31 +2494,35 @@ function(input, output, session) {
   
   # END STEP COMPLETION TAB
   
- 
-  
-  
+
   #START: CHARTS - COMMENTS ORIENTATED
-  
-  # Selector for which run to display comment related things
-  
-  output$runSelectorComments <- renderUI({
-    chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-    if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-    }
-    if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-    }
-    if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-    }
-    print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
-  })
-  
-  output$commentsBarChart <- renderChart2({
-    
-    #to update if the go button is pressed or the comment selector is changed
+
+	# Selector for which run to display comment related things
+		CommentButtonDependency <- eventReactive(input$runSelectorCommentsButton, {})
+		observeEvent(input$runSelectorCommentsButton, {
+			output$runSelectorComments <- renderUI({
+				CommentButtonDependency()
+				chartDependency()
+				runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+				if(input$run2 != "None"){
+					runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+				}
+				if(input$run3 != "None"){
+					runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+				}
+				if(input$run4 != "None"){
+					runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+				}
+				print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
+			})
+			if (isolate(input$commentovervewGraph) == "NumberofCommentsbyStep") {
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox1")
+				output$commentsBarChart <- renderChart2({
+          #to update if the go button is pressed or the comment selector is changed
     chartDependency()
     commentDependancy()
     
@@ -2529,150 +2535,178 @@ function(input, output, session) {
     #checking to see if the data needed to compute the chart is empty or not
     #if empty it displays an error message, if not it renders the chart
     if(nrow(sData)>0 && nrow(cData)>0){
-      histogram <- Highcharts$new()
-      #get the data for the barchart, passing the step and comment data for the selected course run
-      plotData <- getCommentsBarChart(sData, cData)
-      histogram$chart(type = "column" , width = 1200)
-      histogram$data(plotData[,c("reply","post")])
-      histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
-      histogram$yAxis(title = list(text = "Frequency"))
-      histogram$plotOptions (
-        column = list(
-          stacking = "normal"
-        ),
-        animation = FALSE
-      )
-      return(histogram)
-    } else {
+					plotData <- getCommentsBarChart(sData,cData)
+					histogram <- Highcharts$new()
+					histogram$chart(type = "column" , width = 1200)
+					histogram$data(plotData[,c("reply","post")])
+					histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
+					histogram$yAxis(title = list(text = "Frequency"))
+					histogram$plotOptions (
+						column = list(
+							stacking = "normal"
+						),
+						animation = FALSE
+					)
+					return(histogram)
+          } else {
       shiny::validate(
         need(nrow(sData)>0 && nrow(cData)>0,
              "No data available")
       )
     }
-    
-  })
-  
-  # Heatmap of comments made per step and date
-  output$stepDateCommentsHeat <- renderD3heatmap({
-    # Draw the chart when the "chooseCourseButton" is pressed by the user or the drop down value is changed
-    chartDependency()
-    commentDependancy()
-    learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-    
-    #gets the starts date of the course run and the comment data
-    startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
-    cData <- comments_data[[which(names(comments_data) == input$runChooserComments)]]
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "NumberofCommentsperDay") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox2")
+				output$commentsPerDayBarChart <- renderChart2({
+					chartDependency()
+					commentDependancy()
+					data<-commentsPerDay()
+					chart <- Highcharts$new()
+					chart$chart(type = "line", width = 1200)
+					chart$data(data[c(names(comments_data))])
+					chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+					chart$xAxis(categories = data$day)
+					chart$yAxis(title = list(text = "Frequency"))
+					return(chart)
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "NumberofCommentsbyStepandDate") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox3")
+				# Heatmap of comments made per step and date
+				output$stepDateCommentsHeat <- renderD3heatmap({
+					# Draw the chart when the "chooseCourseButton" is pressed by the user
+					chartDependency()
+					commentDependancy()
+					learners <- unlist(strsplit(input$filteredLearners, "[,]"))
+					startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
+          
+          
+           cData <- comments_data[[which(names(comments_data) == input$runChooserComments)]]
     
     #renders the heatmap if there is existing data and shows an error message if not
     if(nrow(cData)>0){
-      comments <- getCommentsHeatMap(cData, startDate)
-      d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
-              color = scales::col_quantile(input$palette, NULL,100),
-              scale = "column",
-              labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
-              labCol = colnames(comments)[-1])
-    } else {
+					comments <- getCommentsHeatMap(cData, startDate)
+
+					d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
+										color = scales::col_quantile(input$palette, NULL,100),
+										scale = "column",
+										labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
+										labCol = colnames(comments)[-1])
+      } else {
       shiny::validate(
         need(nrow(cData)>0,
              "No data available")
       )
     }
-    
-
-  })
-  
-  # Histogram of the comment and replies made per week
-  output$commentsRepliesWeekBar <- renderChart2({
-    
-    #to render the chart when the go button is pressed or the comment selector is changed
-    chartDependency()
-    commentDependancy()
-    
-    #comment data for the selected course
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "CommentsandRepliesbyWeek") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox4")
+				# Histogram of the comment and replies made per week
+				output$commentsRepliesWeekBar <- renderChart2({
+					chartDependency()
+					commentDependancy()
+              #comment data for the selected course
     cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
 
     
     #checks to see if the table data used to compute the data for the chart is empty or not
     #if not, it displays the chart, if yes it shows an error message
     if(nrow(cData)!=0){
-      histogram <- Highcharts$new()
-      histogram$chart(type = "column" , width = 550)
-      
-      #getting data for the chart and displaying the chart
-      plotData <- getCommentsBarChartWeek(cData)
-      histogram$data(plotData[,c("reply","post")])
-      histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
-      histogram$yAxis(title = list(text = "Frequency"))
-      histogram$plotOptions (
-        column = list(
-          stacking = "normal"
-        ),
-        animation = FALSE
-      )
-      return(histogram)
-    } else {
+					plotData <- getCommentsBarChartWeek(cDat)
+					
+					histogram <- Highcharts$new()
+					histogram$chart(type = "column" , width = 550)
+					histogram$data(plotData[,c("reply","post")])
+					histogram$xAxis (categories = plotData$week_number, title = list(text = "Week")
+					histogram$yAxis(title = list(text = "Frequency"))
+					histogram$plotOptions (
+						column = list(
+							stacking = "normal"
+						),
+						animation = FALSE
+					)
+					return(histogram)
+       } else {
       shiny::validate(
         need(nrow(cData)>0,
              "No data available")
       )
     }
-    
-    
-  })
-  
-  # Histogram of the number of authors per week
-  output$authorsWeekBar <- renderChart2({
-    
-    #to update the chart when the go button is pressed or comment overview run selector changed
-    chartDependency()
-    commentDependancy()
-    
-    #get comment data for the selected course run
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "NumberofCommentorsbyWeek") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::show(id = "commentBox5")
+				# Histogram of the number of authors per week
+				output$authorsWeekBar <- renderChart2({
+					chartDependency()
+					commentDependancy()
+          
+           #get comment data for the selected course run
     cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
     
     #checks if the table needed for getting chart data is empty or not
     #if not empty, it computes the chart, else it throws an error message
     if(nrow(cData)!=0){
-      plotData <- getNumberOfAuthorsByWeek(cData)
-      histogram <- Highcharts$new()
-      histogram$chart(type = "column" , width = 550)
-      histogram$data(plotData[,c("authors")])
-      histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
-      histogram$yAxis(title = list(text = "Frequency"))
-      histogram$plotOptions (
-        column = list(
-          stacking = "normal"
-        ),
-        animation = FALSE
-      )
-      return(histogram)
-    } else {
+					plotData <- getNumberOfAuthorsByWeek(cData)
+					histogram <- Highcharts$new()
+					histogram$chart(type = "column" , width = 550)
+					histogram$data(plotData[,c("authors")])
+					histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
+					histogram$yAxis(title = list(text = "Frequency"))
+					histogram$plotOptions (
+						column = list(
+							stacking = "normal"
+						),
+						animation = FALSE
+					)
+					return(histogram)
+      } else {
       shiny::validate(
         need(nrow(cData)>0,
              "No data available")
       )
     }
-    
-    
-  })
-  
-  output$totalMeasuresRunSelector <- renderUI({
-    chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-    if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-    }
-    if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-    }
-    if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-    }
-    print(selectInput("totalMeasuresRunChooser", label = "Run",
-                      choices = runs, width = "550px"))
-  })
-  
-  # Line chart of the average number of comments made per step completion percentage
+				})
+
+			}
+		})
+
+
+	output$totalMeasuresRunSelector <- renderUI({
+		chartDependency()
+		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+		if(input$run2 != "None"){
+			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+		}
+		if(input$run3 != "None"){
+			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+		}
+		if(input$run4 != "None"){
+			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+		}
+		print(selectInput("totalMeasuresRunChooser", label = "Run",
+		 choices = runs, width = "550px"))
+	})
+	
+	# Line chart of the average number of comments made per step completion percentage
   output$avgCommentsCompletionLine <- renderChart2({
     # Draw the chart when the "chooseCourseButton" is pressed by the user
     chartDependency()
@@ -2723,11 +2757,9 @@ function(input, output, session) {
     }
     
   })
-  
-  #END: CHARTS - COMMENTS ORIENTATED
-  
-  
-  
+	
+	#END: CHARTS - COMMENTS ORIENTATED
+ 
    
   # START COMMENT VIEWER TAB
   
@@ -3100,4 +3132,5 @@ function(input, output, session) {
   # }
   
   
+
 }
