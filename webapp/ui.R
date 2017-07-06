@@ -479,7 +479,7 @@ body <- dashboardBody(
     # 	)
     # )
   ),
-  tags$h5(textOutput("updatedTime"))
+  tags$h5(textOutput("updatedTime")))
 
 
 dashboardPage (header, sidebar, body, skin = "blue")# dashboardPage
