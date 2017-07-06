@@ -787,10 +787,10 @@ getCommentViewerData <- function(commentData, run,courseMetaData){
 	data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
 	data$likes <- as.numeric(data$likes)
 	data$likes <- as.integer(data$likes)
-	runsplit <- strsplit(run,"-")
+	runsplit <- strsplit(run," - ")
 	course <- trimws(runsplit[[1]])
-	courseRun <- as.character(courseMetaData$course_run)
-	shortenedCourse <- trimws(strsplit(courseRun, "-")[[1]])
+	courseRun <- as.character(courseMetaData$course_run[[which(courseMetaData$course == course[[1]] & courseMetaData$run == course[[2]])]])
+	shortenedCourse <- trimws(strsplit(courseRun, " - ")[[1]])
 	url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
 	data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
 	sorted <- data[order(-data$likes),]
@@ -1165,6 +1165,36 @@ stepsFirstVisitedPerDay<-function(){
 				d[i] <- freqs[[x]][[2]][i]
 			}
 			data[[names(step_data[x])]] <- d
+	}
+	return(data)
+}
+
+commentsPerDay<-function(){
+	freqs <- list()
+
+	maxLength <- 0
+	for(i in c(1:length(names(comments_data)))){
+		comments <- comments_data[[names(comments_data)[i]]]
+		comments <- comments[which(comments$timestamp != ""),]
+		commentsCount <- count(substr(as.character(comments$timestamp),start = 1, stop = 10))
+		dates <- list(seq.Date(from = as.Date(commentsCount$x[1]), to = as.Date(tail(commentsCount$x, n =1)), by = 1) , numeric())
+		if(length(dates[[1]]) > maxLength){
+			maxLength <- length(dates[[1]])
+		}
+		for(x in c(1:length(commentsCount$x))){
+			dates[[2]][[which(dates[[1]] == as.Date(commentsCount$x[x]))]] <- commentsCount$freq[[x]]
+		}
+		freqs[[i]] <- dates
+	}
+
+	data <- data.frame(day = seq(from = 1, to = maxLength))
+	for(x in c(1:length(freqs))){
+			d <- numeric(maxLength)
+			for(i in c(1:length(freqs[[x]][[2]]))){
+				if(!is.na(freqs[[x]][[2]][i]))
+				d[i] <- freqs[[x]][[2]][i]
+			}
+			data[[names(comments_data[x])]] <- d
 	}
 	return(data)
 }

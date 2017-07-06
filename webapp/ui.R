@@ -30,6 +30,12 @@ stepCompletionList <- list("Steps Marked As Complete" = "StepsMarkedAsComplete",
 						 "Steps Marked Completed Per Day" = "StepsMarkedCompletedPerDay",
 						 "Steps Marked As Complete By Step And Date" = "StepsMarkedAsCompleteByStepAndDate")
 
+commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbyStep",
+							"Number of Comments per Day" = "NumberofCommentsperDay",
+							"Number of Comments by Step and Date" = "NumberofCommentsbyStepandDate",
+							"Comments and Replies by Week" = "CommentsandRepliesbyWeek",
+							"Number of Commentors by Week" = "NumberofCommentorsbyWeek")
+
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -295,25 +301,37 @@ body <- dashboardBody(
 			fluidRow(
 				textInput("filteredLearners", ""),
 				box(uiOutput("runSelectorComments"),
+					selectInput("commentovervewGraph", label = "Choose a graph",
+						choices = commentOverviewList, selected = "NumberofCommentsbyStep",width = 550),
+					actionButton("runSelectorCommentsButton", label = "Display"),
 					title = "Run Selector",
 					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
 				),
 				box(showOutput("commentsBarChart", "highcharts"),
 					title = "Number of Comments by Step", 
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+					id="commentBox1",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+				),
+				box(showOutput("commentsPerDayBarChart", "highcharts"),
+					title = "Number of Comments per Day", 
+					id="commentBox2",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
 				),
 				box(d3heatmapOutput("stepDateCommentsHeat"),
 					title = "Number of Comments by Step and Date", 
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+					id="commentBox3",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
 				)
 			),#fluidRow
 			fluidRow(
 				box(showOutput("commentsRepliesWeekBar", "highcharts"),
-					title = "Comments and Replies by Week", 
-					status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE),
+					title = "Comments and Replies by Week",
+					id="commentBox4",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE),
 				box(showOutput("authorsWeekBar", "highcharts"),
 					title = "Number of Commentors by Week", 
-					status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE)
+					id="commentBox5",
+					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
 			)#fluidRow
 		),
 		tabItem(tabName = "commentsViewer",
@@ -342,9 +360,11 @@ body <- dashboardBody(
 			),
 			fluidRow(
 				box(
+					h5("Note: you can use the generated text-boxes below to filter out comments based on each column's text-box."),
 					DT::dataTableOutput("commentViewer"),
 					title = "Comments", 
 					status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
+
 				)
 			),
 			fluidRow(

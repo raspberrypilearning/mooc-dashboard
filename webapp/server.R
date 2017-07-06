@@ -1136,95 +1136,143 @@ function(input, output, session) {
 	#START: CHARTS - COMMENTS ORIENTATED
 
 	# Selector for which run to display comment related things
-	
-	output$runSelectorComments <- renderUI({
-		chartDependency()
-		runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-		if(input$run2 != "None"){
-			runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-		}
-		if(input$run3 != "None"){
-			runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-		}
-		if(input$run4 != "None"){
-			runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-		}
-		print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
-	})
+		CommentButtonDependency <- eventReactive(input$runSelectorCommentsButton, {})
+		observeEvent(input$runSelectorCommentsButton, {
+			output$runSelectorComments <- renderUI({
+				CommentButtonDependency()
+				chartDependency()
+				runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+				if(input$run2 != "None"){
+					runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+				}
+				if(input$run3 != "None"){
+					runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+				}
+				if(input$run4 != "None"){
+					runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+				}
+				print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
+			})
+			if (isolate(input$commentovervewGraph) == "NumberofCommentsbyStep") {
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox1")
+				output$commentsBarChart <- renderChart2({
+					chartDependency()
+					commentDependancy()
+					plotData <- getCommentsBarChart(step_data[[which(names(step_data) == input$runChooserComments)]],comments_data[[which(names(comments_data)==input$runChooserComments)]])
+					histogram <- Highcharts$new()
+					histogram$chart(type = "column" , width = 1200)
+					histogram$data(plotData[,c("reply","post")])
+					histogram$xAxis (categories = plotData$week_step)
+					histogram$yAxis(title = list(text = "Frequency"))
+					histogram$plotOptions (
+						column = list(
+							stacking = "normal"
+						),
+						animation = FALSE
+					)
+					return(histogram)
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "NumberofCommentsperDay") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox2")
+				output$commentsPerDayBarChart <- renderChart2({
+					chartDependency()
+					commentDependancy()
+					data<-commentsPerDay()
+					chart <- Highcharts$new()
+					chart$chart(type = "line", width = 1200)
+					chart$data(data[c(names(comments_data))])
+					chart$colors('#7cb5ec', '#434348','#8085e9','#00ffcc')
+					chart$xAxis(categories = data$day)
+					chart$yAxis(title = list(text = "Frequency"))
+					return(chart)
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "NumberofCommentsbyStepandDate") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox3")
+				# Heatmap of comments made per step and date
+				output$stepDateCommentsHeat <- renderD3heatmap({
+					# Draw the chart when the "chooseCourseButton" is pressed by the user
+					chartDependency()
+					commentDependancy()
+					learners <- unlist(strsplit(input$filteredLearners, "[,]"))
+					startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
+					comments <- getCommentsHeatMap(comments_data[[which(names(comments_data) == input$runChooserComments)]], startDate)
 
-	output$commentsBarChart <- renderChart2({
-		chartDependency()
-		commentDependancy()
-		plotData <- getCommentsBarChart(step_data[[which(names(step_data) == input$runChooserComments)]],comments_data[[which(names(comments_data)==input$runChooserComments)]])
-		histogram <- Highcharts$new()
-		histogram$chart(type = "column" , width = 1200)
-		histogram$data(plotData[,c("reply","post")])
-		histogram$xAxis (categories = plotData$week_step)
-		histogram$yAxis(title = list(text = "Frequency"))
-		histogram$plotOptions (
-			column = list(
-				stacking = "normal"
-			),
-			animation = FALSE
-		)
-		return(histogram)
-	})
+					
+					d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
+										color = "Blues",
+										scale = "column",
+										labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
+										labCol = colnames(comments)[-1])
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "CommentsandRepliesbyWeek") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox5")
+				shinyjs::show(id = "commentBox4")
+				# Histogram of the comment and replies made per week
+				output$commentsRepliesWeekBar <- renderChart2({
+					chartDependency()
+					commentDependancy()
+					plotData <- getCommentsBarChartWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
+					
+					histogram <- Highcharts$new()
+					histogram$chart(type = "column" , width = 550)
+					histogram$data(plotData[,c("reply","post")])
+					histogram$xAxis (categories = plotData$week_number)
+					histogram$yAxis(title = list(text = "Frequency"))
+					histogram$plotOptions (
+						column = list(
+							stacking = "normal"
+						),
+						animation = FALSE
+					)
+					return(histogram)
+				})
+			}
+			else if (isolate(input$commentovervewGraph) == "NumberofCommentorsbyWeek") {
+				shinyjs::hide(id = "commentBox1")
+				shinyjs::hide(id = "commentBox2")
+				shinyjs::hide(id = "commentBox3")
+				shinyjs::hide(id = "commentBox4")
+				shinyjs::show(id = "commentBox5")
+				# Histogram of the number of authors per week
+				output$authorsWeekBar <- renderChart2({
+					chartDependency()
+					commentDependancy()
+					plotData <- getNumberOfAuthorsByWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
+					histogram <- Highcharts$new()
+					histogram$chart(type = "column" , width = 550)
+					histogram$data(plotData[,c("authors")])
+					histogram$xAxis (categories = plotData$week_number)
+					histogram$yAxis(title = list(text = "Frequency"))
+					histogram$plotOptions (
+						column = list(
+							stacking = "normal"
+						),
+						animation = FALSE
+					)
+					return(histogram)
+				})
 
-	# Heatmap of comments made per step and date
-	output$stepDateCommentsHeat <- renderD3heatmap({
-		# Draw the chart when the "chooseCourseButton" is pressed by the user
-		chartDependency()
-		commentDependancy()
-		learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-		startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
-		comments <- getCommentsHeatMap(comments_data[[which(names(comments_data) == input$runChooserComments)]], startDate)
+			}
+		})
 
-		
-		d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
-							color = "Blues",
-							scale = "column",
-							labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
-							labCol = colnames(comments)[-1])
-	})
-	
-	# Histogram of the comment and replies made per week
-	output$commentsRepliesWeekBar <- renderChart2({
-		chartDependency()
-		commentDependancy()
-		plotData <- getCommentsBarChartWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
-		
-		histogram <- Highcharts$new()
-		histogram$chart(type = "column" , width = 550)
-		histogram$data(plotData[,c("reply","post")])
-		histogram$xAxis (categories = plotData$week_number)
-		histogram$yAxis(title = list(text = "Frequency"))
-		histogram$plotOptions (
-			column = list(
-				stacking = "normal"
-			),
-			animation = FALSE
-		)
-		return(histogram)
-	})
-	
-	# Histogram of the number of authors per week
-	output$authorsWeekBar <- renderChart2({
-		chartDependency()
-		commentDependancy()
-		plotData <- getNumberOfAuthorsByWeek(comments_data[[which(names(comments_data)==input$runChooserComments)]])
-		histogram <- Highcharts$new()
-		histogram$chart(type = "column" , width = 550)
-		histogram$data(plotData[,c("authors")])
-		histogram$xAxis (categories = plotData$week_number)
-		histogram$yAxis(title = list(text = "Frequency"))
-		histogram$plotOptions (
-			column = list(
-				stacking = "normal"
-			),
-			animation = FALSE
-		)
-		return(histogram)
-	})
 
 	output$totalMeasuresRunSelector <- renderUI({
 		chartDependency()
@@ -1586,9 +1634,9 @@ function(input, output, session) {
 						orientation = 'landscape',
 						text = 'Download PDF'),
 					list(
-						extend = 'excel',
+						extend = 'csv',
 						filename = paste(institution,'Mooc Enrolment Data', Sys.Date()),
-						text = 'Download Excel'
+						text = 'Download csv'
 					)
 				)
 			),
@@ -1886,7 +1934,7 @@ function(input, output, session) {
 				),
 				options = list(
 					scrollY = "700px",
-					lengthMenu = list(c(10,20,30),c('10','20','30')),
+					lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
 					pageLength = 20,
 					dom = 'lfrtBip',
 					buttons = list(
@@ -1897,9 +1945,9 @@ function(input, output, session) {
 							text = 'Download pdf'
 							),
 						list(
-							extend = 'excel',
+							extend = 'csv',
 							filename = 'Comments',
-							text = 'Download Excel'
+							text = 'Download csv'
 						)
 					)
 				),
@@ -1952,7 +2000,7 @@ function(input, output, session) {
 				),
 				options = list(
 					scrollY = "700px",
-					lengthMenu = list(c(10,20,30),c('10','20','30')),
+					lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
 					pageLength = 20,
 					dom = 'lfrtBip',
 					buttons = list(
@@ -1963,9 +2011,9 @@ function(input, output, session) {
 							text = 'Download pdf'
 						),
 						list(
-							extend = 'excel',
+							extend = 'csv',
 							filename = 'Comment Thread',
-							text = 'Download Excel'
+							text = 'Download csv'
 						)
 					)
 				),
