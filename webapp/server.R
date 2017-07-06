@@ -1962,7 +1962,7 @@ function(input, output, session) {
       
       yAxisTitle <- "Questions (%)"
     }
-    
+    updateTextInput(session, "scatterSlopeValue", value = "No data available")
     if(x == -1 || y == -1){
       shiny::validate(
         need(x != -1 && y != -1,
@@ -2243,10 +2243,10 @@ function(input, output, session) {
       shinyjs::hide(id = "box6")
       shinyjs::show(id = "box1")
       output$stepsCompleted <- renderChart2({
-        stepsCount <- getStepsCompletedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
+        sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
         
-        #if there is no data available it shows an error message
-        if(nrow(stepsCount)>0){
+        if(nrow(sData)>0){
+          stepsCount <- getStepsCompletedData(sData)
           a <- rCharts:::Highcharts$new()
           a$chart(type = "column", width = 1200)
           a$series(
@@ -2265,8 +2265,9 @@ function(input, output, session) {
           )
           return(a)
         } else {
+          #if there is no data available it shows an error message
           shiny::validate(
-            need(nrow(stepsCount)>0,
+            need(nrow(sData)>0,
                  "No data available")
           )
         }
@@ -2297,10 +2298,12 @@ function(input, output, session) {
       shinyjs::hide(id = "box6")
       shinyjs::show(id = "box2")
       output$StepsFirstVisited <- renderChart2({
-        stepsCount <- getStepsFirstVistedData(step_data[[which(names(step_data) == input$runChooserSteps)]])
+        #gets the step data for the selected course run
+        sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
         
-        #if there is no data available it shows an error message
-        if(nrow(stepsCount)>0){
+        #checks if the data is empty or not
+        if(nrow(sData)>0){
+          stepsCount <- getStepsFirstVistedData(sData)
           a <- rCharts:::Highcharts$new()
           a$chart(type = "column", width = 1200)
           a$series(
@@ -2319,8 +2322,9 @@ function(input, output, session) {
           )
           return(a)
         } else {
+          #if there is no data available it shows an error message
           shiny::validate(
-            need(nrow(stepsCount)>0,
+            need(nrow(sData)>0,
                  "No data available")
           )
         }

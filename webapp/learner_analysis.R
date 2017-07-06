@@ -603,13 +603,7 @@ getSetOfLearnersByDate <- function(courseDuration, startDate, enrolment){
 getStepsCompletedData <- function(stepData){
 	data <- stepData
 	completedSteps <- subset(data, last_completed_at != "")
-	
-	#check if the data frame is empty or not
-	if(nrow(data)!=0){
-	  completedSteps$week_step <- getWeekStep(completedSteps)
-	} else {
-	  completedSteps$week_step <- character()
-	}
+	completedSteps$week_step <- getWeekStep(completedSteps)
 	
 	#counts how many times each step was completed
 	stepsCount <- count(completedSteps, 'week_step')
@@ -624,13 +618,7 @@ getStepsCompletedData <- function(stepData){
 getStepsFirstVistedData <- function(stepData){
 	data <- stepData
 	firstVisitedSteps <- subset(data, first_visited_at != "")
-	
-	#check if the data frame is empty or not
-	if(nrow(data)!=0){
-	  firstVisitedSteps$week_step <- getWeekStep(firstVisitedSteps)
-	} else {
-	  firstVisitedSteps$week_step <- character()
-	}
+	firstVisitedSteps$week_step <- getWeekStep(firstVisitedSteps)
 	
 	#counts how many times each step has been first visited
 	stepsCount <- count(firstVisitedSteps, 'week_step')
@@ -1637,7 +1625,7 @@ statementsSoldData<-function(){
 	return(data)
 }
 
-#' Title
+#' FOr creating the steps first visited per day table
 #'
 #' @return data frame with a 'day' column and a column for each of the selected courses
 #'         with their respective counts of first visited steps in each day
