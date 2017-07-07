@@ -214,16 +214,18 @@ function(input, output, session) {
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run1", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    selectInput("run1", label = "Run", width = "450px", choices = c("All", paste(runs, start_dates, end_date, sep = " - ")))
   })
   output$runs2 <-renderUI({
+   
     runs <- getRuns(input$course2)
     start_dates <- getStartDates(input$course2)
     num_of_weeks <- getNoOfWeeks(input$course2)
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run2", label = "Run", width = "450px", choices = c("None", "All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    
+    selectInput("run2", label = "Run", width = "450px", choices = c("None", "All", paste(runs, start_dates, end_date, sep = " - ")))
   })
   output$runs3 <-renderUI({
     runs <- getRuns(input$course3)
@@ -232,7 +234,7 @@ function(input, output, session) {
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run3", label = "Run", width = "450px", choices = c("None", "All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    selectInput("run3", label = "Run", width = "450px", choices = c("None", "All", paste(runs, start_dates, end_date, sep = " - ")))
   })
   output$runs4 <-renderUI({
     runs <- getRuns(input$course4)
@@ -241,7 +243,7 @@ function(input, output, session) {
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run4", label = "Run", width = "450px", choices = c("None", "All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    selectInput("run4", label = "Run", width = "450px", choices = c("None", "All", paste(runs, start_dates, end_date, sep = " - ")))
   })
   
   output$chooseCourse <- renderUI({
