@@ -223,7 +223,7 @@ function(input, output, session) {
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run2", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    selectInput("run2", label = "Run", width = "450px", choices = c("None", "All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   output$runs3 <-renderUI({
     runs <- getRuns(input$course3)
@@ -232,7 +232,7 @@ function(input, output, session) {
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run3", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    selectInput("run3", label = "Run", width = "450px", choices = c("None", "All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   output$runs4 <-renderUI({
     runs <- getRuns(input$course4)
@@ -241,7 +241,7 @@ function(input, output, session) {
     
     #Using the start dates and number of weeks to find out the end dates
     end_date <- as.Date(start_dates) + as.integer(num_of_weeks)*7
-    selectInput("run4", label = "Run", width = "450px", choices = c("All",paste0(runs," : ", start_dates, "  -   ", end_date)))
+    selectInput("run4", label = "Run", width = "450px", choices = c("None", "All",paste0(runs," : ", start_dates, "  -   ", end_date)))
   })
   
   output$chooseCourse <- renderUI({
@@ -2825,6 +2825,8 @@ function(input, output, session) {
           "Link" = 6
         ),
         options = list(
+          autoWidth = TRUE,
+          columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5))),
           scrollY = "700px",
           lengthMenu = list(c(10,20,30),c('10','20','30')),
           pageLength = 20,
@@ -2891,6 +2893,8 @@ function(input, output, session) {
           "Link" = 5
         ),
         options = list(
+          autoWidth = TRUE,
+          columnDefs = list(list(width = '10%', targets = list(0,1,3,4))),
           scrollY = "700px",
           lengthMenu = list(c(10,20,30),c('10','20','30')),
           pageLength = 20,
