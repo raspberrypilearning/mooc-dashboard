@@ -2825,6 +2825,8 @@ function(input, output, session) {
           "Link" = 6
         ),
         options = list(
+          autoWidth = TRUE,
+          columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5))),
           scrollY = "700px",
           lengthMenu = list(c(10,20,30),c('10','20','30')),
           pageLength = 20,
@@ -2891,6 +2893,8 @@ function(input, output, session) {
           "Link" = 5
         ),
         options = list(
+          autoWidth = TRUE,
+          columnDefs = list(list(width = '10%', targets = list(0,1,3,4))),
           scrollY = "700px",
           lengthMenu = list(c(10,20,30),c('10','20','30')),
           pageLength = 20,
