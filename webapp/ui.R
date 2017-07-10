@@ -450,15 +450,21 @@ body <- dashboardBody(
     
     tabItem(tabName = "surveysAnalysis",
             fluidRow(
-              box(
-                fluidRow(
-                  tags$div(style = "display:inline-block; margin-left:15px", uiOutput("surveyRunSelector", inline = TRUE)),
-                  tags$div(style = "margin-left:15px", uiOutput("viewSurAnButton"))
-                ),
-                title = "Run Selector",
-                status = "primary", solidHeader = TRUE, width = 12,height = 200, collapsible = TRUE
-              )
-            ),
+                     box(
+                       fluidRow(
+                         tags$div(style = "display:inline-block; margin-left:15px", uiOutput("surveyRunSelector", inline = TRUE))
+                         
+                         ),
+                       fluidRow(
+                         #this button allows the user to upload csv files for pre and post survey responses
+                         tags$div(style = "display:inline-block; margin-left:15px",fileInput('file1','Choose CSV File', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'), width = "450px")
+                         ),
+                         tags$div(style = "margin-left:15px", uiOutput("viewSurAnButton"))
+                       ),
+                       title = "Uploading Files and Run Selector",
+                       status = "primary", solidHeader = TRUE, width = 12,height = 300, collapsible = TRUE
+                     )
+                     ),
             
             fluidRow(
               box(
