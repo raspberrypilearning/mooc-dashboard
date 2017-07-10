@@ -31,10 +31,10 @@ stepCompletionList <- list("Steps Marked As Complete" = "StepsMarkedAsComplete",
                            "Steps Marked As Complete By Step And Date" = "StepsMarkedAsCompleteByStepAndDate")
 
 commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbyStep",
-							"Number of Comments per Day" = "NumberofCommentsperDay",
-							"Number of Comments by Step and Date" = "NumberofCommentsbyStepandDate",
-							"Comments and Replies by Week" = "CommentsandRepliesbyWeek",
-							"Number of Commentors by Week" = "NumberofCommentorsbyWeek")
+                            "Number of Comments per Day" = "NumberofCommentsperDay",
+                            "Number of Comments by Step and Date" = "NumberofCommentsbyStepandDate",
+                            "Comments and Replies by Week" = "CommentsandRepliesbyWeek",
+                            "Number of Commentors by Week" = "NumberofCommentorsbyWeek")
 
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
@@ -84,11 +84,11 @@ body <- dashboardBody(
                       column(
                         width = 12,
                         selectInput("palette", " Heatmap Palette", c("Blues", "Reds", "Purples", "Oranges", "Greys", "Greens")),
-                    fixedRow(
-                    column(
-                      width = 2,
-                      # offset = 2,
-                      tags$div(uiOutput("chooseCourse", inline = TRUE)))))))),
+                        fixedRow(
+                          column(
+                            width = 2,
+                            # offset = 2,
+                            tags$div(uiOutput("chooseCourse", inline = TRUE)))))))),
                 title = "Go",
                 status = "primary", solidHeader = TRUE, width = 2, collapsible = FALSE
               ),
@@ -312,40 +312,40 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "commentsOverview",
             fluidRow(
-				textInput("filteredLearners", ""),
-				box(uiOutput("runSelectorComments"),
-					selectInput("commentovervewGraph", label = "Choose a graph",
-						choices = commentOverviewList, selected = "NumberofCommentsbyStep",width = 550),
-					actionButton("runSelectorCommentsButton", label = "Display"),
-					title = "Run Selector",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
-				),
-				box(showOutput("commentsBarChart", "highcharts"),
-					title = "Number of Comments by Step", 
-					id="commentBox1",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-				),
-				box(showOutput("commentsPerDayBarChart", "highcharts"),
-					title = "Number of Comments per Day", 
-					id="commentBox2",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-				),
-				box(d3heatmapOutput("stepDateCommentsHeat"),
-					title = "Number of Comments by Step and Date", 
-					id="commentBox3",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-				)
-			),#fluidRow
-			fluidRow(
-				box(showOutput("commentsRepliesWeekBar", "highcharts"),
-					title = "Comments and Replies by Week",
-					id="commentBox4",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE),
-				box(showOutput("authorsWeekBar", "highcharts"),
-					title = "Number of Commentors by Week", 
-					id="commentBox5",
-					status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
-)#fluidRow
+              textInput("filteredLearners", ""),
+              box(uiOutput("runSelectorComments"),
+                  selectInput("commentovervewGraph", label = "Choose a graph",
+                              choices = commentOverviewList, selected = "NumberofCommentsbyStep",width = 550),
+                  actionButton("runSelectorCommentsButton", label = "Display"),
+                  title = "Run Selector",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ),
+              box(showOutput("commentsBarChart", "highcharts"),
+                  title = "Number of Comments by Step", 
+                  id="commentBox1",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              ),
+              box(showOutput("commentsPerDayBarChart", "highcharts"),
+                  title = "Number of Comments per Day", 
+                  id="commentBox2",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              ),
+              box(d3heatmapOutput("stepDateCommentsHeat"),
+                  title = "Number of Comments by Step and Date", 
+                  id="commentBox3",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              )
+            ),#fluidRow
+            fluidRow(
+              box(showOutput("commentsRepliesWeekBar", "highcharts"),
+                  title = "Comments and Replies by Week",
+                  id="commentBox4",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE),
+              box(showOutput("authorsWeekBar", "highcharts"),
+                  title = "Number of Commentors by Week", 
+                  id="commentBox5",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
+            )#fluidRow
     ),
     tabItem(tabName = "commentsViewer",
             fluidRow(
@@ -446,44 +446,85 @@ body <- dashboardBody(
                 status = "primary", solidHeader = TRUE, width = 12,height = 1000, collapsible = TRUE
               )
             )
-    )
+    ),
     
-    # tabItem(tabName = "surveysAnalysis",
-    #         fluidRow()
-    #         )
-    # 
-    # 	)
-    # )
-    # ,tabItem(tabName = "cumulative_measures", 
-    # 	fluidRow(
-    # 		box(dygraphOutput("dateTimeSeries"),
-    # 			title = "Course Evolution",
-    # 			status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
-    # 	)
-    # ),
-    # tabItem(tabName = "social_network_analysis",
-    # 	fluidRow(
-    # 		box(forceNetworkOutput("network", width = "100%", height = "900px"),
-    # 				title = "Learner Network",
-    # 				status = "primary", solidHeader = TRUE, width = 6, height = 950, collapsible = TRUE),
-    # 		column(width = 6,
-    # 		 box(dygraphOutput("densityAndReciprocity"),
-    # 				 title = "Density and Reciprocity",
-    # 				 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE),
-    # 		 box(dygraphOutput("degreeGraph"),
-    # 				 title = "Degree Centrality",
-    # 				 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE)
-    # 		)#column
-    # 	)#fluidRow
-    # )
-    # ,#tabItem
-    # tabItem(tabName = "debug",
-    # 	fluidRow(
-    # 		box(textOutput("debug"),
-    # 			width = 12)
-    # 	)
-    # )
-  ),
-  tags$h5(textOutput("updatedTime")))
+    tabItem(tabName = "surveysAnalysis",
+            fluidRow(
+                     box(
+                       fluidRow(
+                         tags$div(style = "display:inline-block; margin-left:15px", uiOutput("surveyRunSelector", inline = TRUE))
+                         
+                         ),
+                       fluidRow(
+                         #this button allows the user to upload csv files for pre and post survey responses
+                         tags$div(style = "display:inline-block; margin-left:15px",fileInput('file1','Choose CSV File', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'), width = "450px")
+                         ),
+                         tags$div(style = "margin-left:15px", uiOutput("viewSurAnButton"))
+                       ),
+                       title = "Uploading Files and Run Selector",
+                       status = "primary", solidHeader = TRUE, width = 12,height = 300, collapsible = TRUE
+                     )
+                     ),
+            
+            fluidRow(
+              box(
+                DT::dataTableOutput("surveysAnalysisTable"),
+                title = "Surveys Analysis",
+                status = "primary", solidHeader = TRUE, width = 12, height = 200, collapsible = TRUE
+              )
+            ),
+            
+            fluidRow(
+              box(
+                DT::dataTableOutput("precourseAnalysis"),
+                title = "Pre-Course Responses",
+                status = "primary", solidHeader = TRUE, width = 12, height = 200, collapsible = TRUE
+              )
+            ),
+            fluidRow(
+              box(
+                DT::dataTableOutput("postcourseAnalysis"),
+                title = "Post-Course Responses",
+                status = "primary", solidHeader = TRUE, width = 12, height = 200, collapsible = TRUE
+              )
+            )
+    )
+  )
+)
+# 
+# 	)
+# )
+# ,tabItem(tabName = "cumulative_measures", 
+# 	fluidRow(
+# 		box(dygraphOutput("dateTimeSeries"),
+# 			title = "Course Evolution",
+# 			status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+# 	)
+# ),
+# tabItem(tabName = "social_network_analysis",
+# 	fluidRow(
+# 		box(forceNetworkOutput("network", width = "100%", height = "900px"),
+# 				title = "Learner Network",
+# 				status = "primary", solidHeader = TRUE, width = 6, height = 950, collapsible = TRUE),
+# 		column(width = 6,
+# 		 box(dygraphOutput("densityAndReciprocity"),
+# 				 title = "Density and Reciprocity",
+# 				 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE),
+# 		 box(dygraphOutput("degreeGraph"),
+# 				 title = "Degree Centrality",
+# 				 status = "primary", solidHeader = TRUE, width = NULL, collapsible = TRUE)
+# 		)#column
+# 	)#fluidRow
+# )
+# ,#tabItem
+# tabItem(tabName = "debug",
+# 	fluidRow(
+# 		box(textOutput("debug"),
+# 			width = 12)
+# 	)
+# )
+
+
+tags$h5(textOutput("updatedTime"))
 
 dashboardPage (header, sidebar, body, skin = "blue") # dashboardPage
