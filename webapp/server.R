@@ -2915,7 +2915,9 @@ function(input, output, session) {
             )
           )
         ),
-        rownames = FALSE
+        rownames = FALSE,
+        selection = 'single',
+        escape = FALSE
       )
     })
   })
