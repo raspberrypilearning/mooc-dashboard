@@ -457,7 +457,7 @@ body <- dashboardBody(
                          ),
                        fluidRow(
                          #this button allows the user to upload csv files for pre and post survey responses
-                         tags$div(style = "display:inline-block; margin-left:15px",fileInput('file1','Choose CSV File', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'), width = "450px")
+                         tags$div(style = "display:inline-block; margin-left:15px",fileInput('fileChooserSurveyPre','Choose CSV File', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'), width = "450px")
                          ),
                          tags$div(style = "margin-left:15px", uiOutput("viewSurAnButton"))
                        ),
@@ -470,22 +470,7 @@ body <- dashboardBody(
               box(
                 DT::dataTableOutput("surveysAnalysisTable"),
                 title = "Surveys Analysis",
-                status = "primary", solidHeader = TRUE, width = 12, height = 200, collapsible = TRUE
-              )
-            ),
-            
-            fluidRow(
-              box(
-                DT::dataTableOutput("precourseAnalysis"),
-                title = "Pre-Course Responses",
-                status = "primary", solidHeader = TRUE, width = 12, height = 200, collapsible = TRUE
-              )
-            ),
-            fluidRow(
-              box(
-                DT::dataTableOutput("postcourseAnalysis"),
-                title = "Post-Course Responses",
-                status = "primary", solidHeader = TRUE, width = 12, height = 200, collapsible = TRUE
+                status = "primary", solidHeader = TRUE, width = 12, height = 1300, collapsible = TRUE
               )
             )
     )

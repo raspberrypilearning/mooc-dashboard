@@ -3050,6 +3050,8 @@ function(input, output, session) {
   
   # END TEAM MEMBERS TAB
   
+  
+  
   # START SURVEYS ANALYSIS TAB
   
   #Selector to choose which run to be displayed
@@ -3076,8 +3078,13 @@ function(input, output, session) {
   
   #Dependency for the data tables to only load after the view surveys analysis button has been pressed
   viewSurAnPressed <- eventReactive(input$viewSurAnButton, {
-    return(input$runChooserSurey)
+    return(input$runChooserSurvey)
   })
+  
+  preCourseSurveyChosen <- eventReactive(input$fileChooserSurveyPre, {
+    return(input$fileChooserSurveyPre)
+  })
+  
   
   #Produce a table for the surveys analysis
   
@@ -3087,26 +3094,36 @@ function(input, output, session) {
     if(input$viewSurAnButton == 0){
       return()
     }
+    
+    #the chosen csv file
+    preCourseSurveyFile <- preCourseSurveyChosen()
+    if(is.null(preCourseSurveyFile)){
+      return()
+    }
     withProgress(message = "Processing",{
-      #add parameters
-      data <- getSurAnData()
+
+      #data frame with comment data for the selected course run
+      comments <- comments_data[[which(names(comments_data) == input$runChooserSurvey)]]
+      dfPreCourse <- read.csv(preCourseSurveyFile$datapath, header = TRUE)
+      headerPreCourse <- read.csv(preCourseSurveyFile$datapath, nrows = 2, header = FALSE)
+      
+
+      
+      header <- character(ncol(headerPreCourse))
+      print(class(header))
+      for(i in 1:ncol(headerPreCourse)){
+        header[i] <- paste(headerPreCourse[1,i], headerPreCourse[2,i], sep = " ")
+        
+      }
+      names(dfPreCourse) <- header
+        
+      data <- getBasicSurveyData(dfPreCourse, comments)
+
       DT::datatable(
-        data[,c("respondent_id", "collector_id", "start_date", "end_date", "answered_pre_survey", "answered_post_survey", "commented_step", "comments")], 
-        class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-        colnames = c(
-          "Respondent ID" = 1,
-          "Collector ID" = 2,
-          "Start Date" = 3,
-          "End Date" = 4,
-          "Answered Pre-Course Survey" = 5,
-          "Answered Post-Course Survey" = 6,
-          "Commented on step 1.2" = 7,
-          "Comment" = 8
-        ),
+        data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         options = list(
-          autoWidth = TRUE,
-          columnDefs = list(list(width = '10%', targets = list(0,1,2))),
           scrollY = "700px",
+          scrollX = TRUE,
           lenghtMenu = list(c(10,20,30), c('10', '20', '30')),
           pageLenght = 20,
           dom = 'lfrtBip',
@@ -3131,121 +3148,7 @@ function(input, output, session) {
     })
   }) 
   
-  #Produce a table for the pre-course responses
-  
-  output$surveysAnalysisTable <- renderDataTable({
-    chartDependency()
-    viewSurAnPressed()
-    if(input$viewSurAnButton == 0){
-      return()
-    }
-    withProgress(message = "Processing",{
-      data <- getPreData()
-      DT::datatable(
-        data[,c("respondent_id", "question1", "question2", "question3", "question4", "question5", "question6")], 
-        class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-        colnames = c(
-          "Respondent ID" = 1,
-          "How did you find out about this course?" = 2,
-          "To what extent do you agree with the following statements?" = 3,
-          "Have you taken a course delivered mostly or fully online before, including Massive Open Online Courses (MOOCs)?" = 4,
-          "What sort of online learning have you participated in? (Please tick all that apply.)" = 5,
-          "What previous experience, if any, do you have in this subject area?" = 6,
-          "Please share any additional thoughts about your expectations of FutureLearn." = 7
-        ),
-        options = list(
-          autoWidth = TRUE,
-          columnDefs = list(list(width = '10%', targets = list(0,1, 2))),
-          scrollY = "700px",
-          lenghtMenu = list(c(10,20,30), c('10', '20', '30')),
-          pageLenght = 20,
-          dom = 'lfrtBip',
-          buttons = list(
-            "print",
-            list(
-              extend = 'pdf',
-              filename = 'Surveys Analysis',
-              text = 'Download PDF'),
-            list(
-              extend = 'excel',
-              filename = 'Surveys Analysis',
-              text = 'Download Excel'
-              
-            )
-          )
-        ),
-        rownames = FALSE,
-        selection = 'single',
-        escape = FALSE
-      )
-    })
-  })
-  
-  #Produce a table for the post-course responses
-  
-  output$surveysAnalysisTable <- renderDataTable({
-    chartDependency()
-    viewSurAnPressed()
-    if(input$viewSurAnButton == 0){
-      return()
-    }
-    withProgress(message = "Processing",{
-      data <- getPostData()
-      DT::datatable(
-        data[,c("respondent_id", "question1", "question2", "question3", "question4", "question5", "question6", "question7", "question8", "question9", "question10", "question11", "question12", "question13", "question14", "question15", "question16", "question17", "question18", "question19", "question20", "question21")], 
-        class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-        colnames = c(
-          "Respondent ID" = 1,
-          "Please rate from 'strongly disliked' to 'strongly liked' how you felt about learning on FutureLearn. (Please select one option for each row.)" = 2,
-          "How easy was it to find your way around the site?" = 3,
-          "Please rate from 'strongly disliked' to 'strongly liked' how you felt about the course design and content. (Please select one option for each row.)" = 4,
-          "To what extent did you find the educator(s) engaging?" = 5,
-          "How did the course difficulty meet with your expectations?" = 6,
-          "Roughly how often did you visit the course?" = 7,
-          "How did you feel about the length of the course?" = 8,
-          "Where did you do the course? (Please tick all that apply.)" = 9,
-          "To what extent did FutureLearn meet your expectations in terms of the following? (Please select one option for each row.)" = 10,
-          "What was your favourite part of the course, and why?" = 11,
-          "What was your least favourite part of the course, and why?" = 12,
-          "How could the course be improved?" = 13,
-          "Are you interested in purchasing either a Statement of Participation or a Certificate of Achievement for this course?" = 14,
-          "Why are you interested in a Statement of Participation?" = 15,
-          "Why are you interested in a Certificate of Achievement?" = 16,
-          "Please let us know why you are unlikely to purchase either a Statement of Participation or a Certificate of Achievement" = 17,
-          "What would improve a Statement of Participation or a Certificate of Achievement?" = 18,
-          "How would you rate your overall experience of the course?" = 19,
-          "How likely would you be to recommend FutureLearn to a friend?" = 20,
-          "How will you pursue your interest in the subject now that the course is complete?" = 21,
-          "What would you like to study next?" = 22
-        ),
-        options = list(
-          autoWidth = TRUE,
-          columnDefs = list(list(width = '10%', targets = list(0,1, 2))),
-          scrollY = "700px",
-          lenghtMenu = list(c(10,20,30), c('10', '20', '30')),
-          pageLenght = 20,
-          dom = 'lfrtBip',
-          buttons = list(
-            "print",
-            list(
-              extend = 'pdf',
-              filename = 'Surveys Analysis',
-              text = 'Download PDF'),
-            list(
-              extend = 'excel',
-              filename = 'Surveys Analysis',
-              text = 'Download Excel'
-              
-            )
-          )
-        ),
-        rownames = FALSE,
-        selection = 'single',
-        escape = FALSE
-      )
-    })
-  })
-  
+ 
   # END SURVEY ANALYSIS TAB
   
   # Debug tool print statements.

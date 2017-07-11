@@ -1799,3 +1799,15 @@ stepsMarkedCompletedPerDay<-function(){
 	}
 	return(data)
 }
+
+getBasicSurveyData <- function(dfPreCourse, comments){
+  
+  stepComments <- subset(comments, comments$step == "1.2")[, c("author_id", "text")]
+  colnames(stepComments) <- c("Author ID", "Comment in step 1.2")
+  #stepComments[nrow(stepComments) + 1, ] <- c("Open-Ended Response", "nothing")
+
+  preCourseData <- merge(stepComments, dfPreCourse, by.x = "Author ID", by.y = "partner_export_id Open-Ended Response")
+
+  return(preCourseData)
+}
+
