@@ -468,8 +468,8 @@ body <- dashboardBody(
             
             fluidRow(
               box(
-                DT::dataTableOutput("surveysAnalysisTable"),
-                title = "Surveys Analysis",
+                DT::dataTableOutput("surveyAnalysisTable"),
+                title = "Pre-Course survey and comments in 1.2",
                 status = "primary", solidHeader = TRUE, width = 12, height = 1300, collapsible = TRUE
               )
             )

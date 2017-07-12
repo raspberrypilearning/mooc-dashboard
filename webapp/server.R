@@ -3075,7 +3075,7 @@ function(input, output, session) {
   #View surveys analysis button
   output$viewSurAnButton <- renderUI({
     chartDependency()
-    print(actionButton("viewSurAnButton", "Analyse Surveys"))
+    print(actionButton("viewSurAnButton", "View Survey"))
   })
   
   #Dependency for the data tables to only load after the view surveys analysis button has been pressed
@@ -3089,7 +3089,7 @@ function(input, output, session) {
   
   
   #Produce a table for the pre course survey analysis and the comment in step 1.2
-  output$surveysAnalysisTable <- renderDataTable({
+  output$surveyAnalysisTable <- renderDataTable({
     
     #updating the table when the choose course or view buttons are pressed 
     chartDependency()
