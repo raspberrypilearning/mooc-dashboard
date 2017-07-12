@@ -373,7 +373,7 @@ body <- dashboardBody(
             ),
             fluidRow(
               box(
-                h5("Note: you can use the generated text-boxes below to filter out comments based on each column's text-box."),
+                h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
                 DT::dataTableOutput("commentViewer"),
                 title = "Comments", 
                 status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
