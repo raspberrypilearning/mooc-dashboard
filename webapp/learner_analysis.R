@@ -1799,3 +1799,23 @@ stepsMarkedCompletedPerDay<-function(){
 	}
 	return(data)
 }
+
+
+#' Gets data for pre course survey table which also contains the comments in step 1.2
+#'
+#' @param dfPreCourse data frame with data from the pre course survey
+#' @param comments data frame with comment data for the selected course run
+#'
+#' @return data frame with the comment in 1.2 and pre course survey data
+getBasicSurveyData <- function(dfPreCourse, comments){
+  
+  #gets the author and comment text for those who commented in 1.2
+  stepComments <- subset(comments, comments$step == "1.2")[, c("author_id", "text")]
+  colnames(stepComments) <- c("Author ID", "Comment in step 1.2")
+
+  #merges the ids of the learners from comments and surveys
+  preCourseData <- merge(stepComments, dfPreCourse, by.x = "Author ID", by.y = "partner_export_id Open-Ended Response")
+
+  return(preCourseData)
+}
+
