@@ -14,6 +14,8 @@ require(wordcloud)
 require(DT)
 require(R.utils)
 require(RMySQL)
+require(tools)
+require(gdata)
 source("config.R")
 
 source("learner_filters.R")
@@ -3086,45 +3088,59 @@ function(input, output, session) {
   })
   
   
-  #Produce a table for the surveys analysis
-  
+  #Produce a table for the pre course survey analysis and the comment in step 1.2
   output$surveysAnalysisTable <- renderDataTable({
+    
+    #updating the table when the choose course or view buttons are pressed 
     chartDependency()
     viewSurAnPressed()
     if(input$viewSurAnButton == 0){
       return()
     }
     
-    #the chosen csv file
+    #the chosen csv or xls file
+    #if it's not of the right format it shows an error message
     preCourseSurveyFile <- preCourseSurveyChosen()
-    if(is.null(preCourseSurveyFile)){
+    if(file_ext(preCourseSurveyFile)!="csv" && file_ext(preCourseSurveyFile)!="xls"){
+      shiny::validate(
+        need(file_ext(preCourseSurveyFile)=="csv" || file_ext(preCourseSurveyFile)=="xls",
+             "Please choose a corresponding csv or xls file")
+      )
       return()
     }
     withProgress(message = "Processing",{
 
       #data frame with comment data for the selected course run
       comments <- comments_data[[which(names(comments_data) == input$runChooserSurvey)]]
-      dfPreCourse <- read.csv(preCourseSurveyFile$datapath, header = TRUE)
-      headerPreCourse <- read.csv(preCourseSurveyFile$datapath, nrows = 2, header = FALSE)
       
-
+      #reading in the data and the header details (double header) for the csv or xls files
+      if(file_ext(preCourseSurveyFile)=="csv"){
+        dfPreCourse <- read.csv(preCourseSurveyFile$datapath, header = TRUE)
+        headerPreCourse <- read.csv(preCourseSurveyFile$datapath, nrows = 2, header = FALSE)
+      } else if (file_ext(preCourseSurveyFile)=="xls"){
+        dfPreCourse <- read.xls(preCourseSurveyFile$datapath, sheet = "Sheet1", blank.lines.skip = FALSE, header = TRUE, skipNul = TRUE)
+        headerPreCourse <- read.xls(preCourseSurveyFile$datapath, sheet = "Sheet1", blank.lines.skip = FALSE, nrows = 2, header = FALSE, skipNul = TRUE)
+      }
       
+      #combining the 2 rows in the header into a single row and assigning the new header to the data
       header <- character(ncol(headerPreCourse))
-      print(class(header))
       for(i in 1:ncol(headerPreCourse)){
         header[i] <- paste(headerPreCourse[1,i], headerPreCourse[2,i], sep = " ")
         
       }
       names(dfPreCourse) <- header
-        
+      
+      #getting the table data and creating the table
       data <- getBasicSurveyData(dfPreCourse, comments)
 
       DT::datatable(
         data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         options = list(
-          scrollY = "700px",
+          autoWidth = TRUE,
+          columnDefs = list(list(width = '300px', targets = list(1)), list(width = '150px', targets = "_all")),
+          scrollY = "850px",
           scrollX = TRUE,
-          lenghtMenu = list(c(10,20,30), c('10', '20', '30')),
+          lenghtMenu = c(10,20,30),
           pageLenght = 20,
           dom = 'lfrtBip',
           buttons = list(
