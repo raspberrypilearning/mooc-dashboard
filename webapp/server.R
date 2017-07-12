@@ -2203,6 +2203,11 @@ function(input, output, session) {
             extend = 'excel',
             filename = paste(institution,'Mooc Enrolment Data', Sys.Date()),
             text = 'Download Excel'
+          ),
+          list(
+            extend = 'csv',
+            filename = paste(institution,'Mooc Enrolment Data', Sys.Date()),
+            text = 'Download CSV'
           )
         )
       ),
@@ -2832,7 +2837,7 @@ function(input, output, session) {
           autoWidth = TRUE,
           columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5))),
           scrollY = "700px",
-          lengthMenu = list(c(10,20,30),c('10','20','30')),
+          lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
           pageLength = 20,
           dom = 'lfrtBip',
           buttons = list(
@@ -2846,6 +2851,11 @@ function(input, output, session) {
               extend = 'excel',
               filename = 'Comments',
               text = 'Download Excel'
+            ),
+            list(
+              extend = 'csv',
+              filename = 'Comments',
+              text = 'Download CSV'
             )
           )
         ),
@@ -2900,7 +2910,7 @@ function(input, output, session) {
           autoWidth = TRUE,
           columnDefs = list(list(width = '10%', targets = list(0,1,3,4))),
           scrollY = "700px",
-          lengthMenu = list(c(10,20,30),c('10','20','30')),
+          lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
           pageLength = 20,
           dom = 'lfrtBip',
           buttons = list(
@@ -2914,6 +2924,11 @@ function(input, output, session) {
               extend = 'excel',
               filename = 'Comment Thread',
               text = 'Download Excel'
+            ),
+            list(
+              extend = 'csv',
+              filename = 'Comment Thread',
+              text = 'Download CSV'
             )
           )
         ),
@@ -3023,7 +3038,7 @@ function(input, output, session) {
           autoWidth = TRUE,
           columnDefs = list(list(width = '10%', targets = list(0,1,2))),
           scrollY = "700px",
-          lengthMenu = list(c(10,20,30),c('10','20','30')),
+          lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
           pageLength = 20,
           dom = 'lfrtBip',
           buttons = list(
@@ -3037,6 +3052,11 @@ function(input, output, session) {
               extend = 'excel',
               filename = 'Team Members',
               text = 'Download Excel'
+            ),
+            list(
+              extend = 'csv',
+              filename = 'Team Members',
+              text = 'Download CSV'
             )
           )
         ),
@@ -3156,6 +3176,11 @@ function(input, output, session) {
               extend = 'excel',
               filename = 'Surveys Analysis',
               text = 'Download Excel'
+            ),
+            list(
+              extend = 'csv',
+              filename = 'Surveys Analysis',
+              text = 'Download CSV'
             )
           )
         ),
