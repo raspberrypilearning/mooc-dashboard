@@ -469,7 +469,11 @@ body <- dashboardBody(
             fluidRow(
               box(
                 DT::dataTableOutput("surveyAnalysisTable"),
-                title = "Pre-Course survey and comments in 1.2",
+                
+                #download button for the survey analysis data - as a csv file
+                downloadButton('downloadSurveyAnalysis', ' Download as CSV'),
+                
+                title = "Pre-Course survey and Comments in step 1.2",
                 status = "primary", solidHeader = TRUE, width = 12, height = 1300, collapsible = TRUE
               )
             )
