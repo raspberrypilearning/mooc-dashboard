@@ -3166,22 +3166,7 @@ function(input, output, session) {
           pageLenght = 20,
           dom = 'lfrtBip',
           buttons = list(
-            "print",
-            list(
-              extend = 'pdf',
-              filename = 'Surveys Analysis',
-              text = 'Download PDF'
-            ),
-            list(
-              extend = 'excel',
-              filename = 'Surveys Analysis',
-              text = 'Download Excel'
-            ),
-            list(
-              extend = 'csv',
-              filename = 'Surveys Analysis',
-              text = 'Download CSV'
-            )
+            "print"
           )
         ),
         rownames = FALSE,
@@ -3189,9 +3174,40 @@ function(input, output, session) {
         escape = FALSE
       )
     })
-  }) 
+  })
   
- 
+  #download button for the survey analysis data - as a csv file
+  output$downloadSurveyAnalysis <- downloadHandler(
+    
+    filename = function() { paste("survey_analysis", '.csv', sep='') },
+    content = function(file) {
+      preCourseSurveyFile <- preCourseSurveyChosen()
+      
+      #data frame with comment data for the selected course run
+      comments <- comments_data[[which(names(comments_data) == input$runChooserSurvey)]]
+      
+      #reading in the data and the header details (double header) for the csv or xls files
+      if(file_ext(preCourseSurveyFile)=="csv"){
+        dfPreCourse <- read.csv(preCourseSurveyFile$datapath, header = TRUE)
+        headerPreCourse <- read.csv(preCourseSurveyFile$datapath, nrows = 2, header = FALSE)
+      } else if (file_ext(preCourseSurveyFile)=="xls"){
+        dfPreCourse <- read.xls(preCourseSurveyFile$datapath, sheet = "Sheet1", blank.lines.skip = FALSE, header = TRUE, skipNul = TRUE)
+        headerPreCourse <- read.xls(preCourseSurveyFile$datapath, sheet = "Sheet1", blank.lines.skip = FALSE, nrows = 2, header = FALSE, skipNul = TRUE)
+      }
+      #combining the 2 rows in the header into a single row and assigning the new header to the data
+      header <- character(ncol(headerPreCourse))
+      for(i in 1:ncol(headerPreCourse)){
+        header[i] <- paste(headerPreCourse[1,i], headerPreCourse[2,i], sep = " ")
+        
+      }
+      names(dfPreCourse) <- header
+      
+      #getting the table data 
+      data <- getBasicSurveyData(dfPreCourse, comments)
+      write.csv(data, file)
+    }
+  )
+
   # END SURVEY ANALYSIS TAB
   
   # Debug tool print statements.
