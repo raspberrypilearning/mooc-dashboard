@@ -2004,13 +2004,7 @@ function(input, output, session) {
       # Convert the regression model to a data frame
       regressionData <- fortify(regressionModel)
       # Extract the line of best fit
-      
-      print(regressionData)
-      
       regressionData$x <- regressionData$`.fitted`
-      
-      print(regressionData)
-      
       # Reorder and rename the columns
       regressionData <- regressionData[,c(2, 1)]
       colnames(regressionData) <- c("x", "y")
@@ -2289,9 +2283,36 @@ function(input, output, session) {
           
           #counts the number of times each step was marked as completed 
           stepsCount <- getStepsCompletedData(sData)
+          s <- getAllStepCompletedData(getAllTableData("Activity"))
+          res <- data.frame(numeric(), numeric())
+          colnames(res) <- c("Const", "Slope")
+          for(i in (1:nrow(s))){
+            for(j in (1:ncol(s))){
+              if(!is.null(s[i,j][[1]])){
+
+                s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
+                
+                model <- lm(freq ~ id, s[i,j][[1]])
+                print(model)
+                fit <- fortify(model)
+                print(fit)
+                
+                res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
+              }
+            }
+          }
+          colnames(res) <- c("Const", "Slope")
+          print(res)
+          
+          avg <- c(mean(res$Const), mean(res$Slope))
+
+          print(avg)
+          
           
           #add an id column for computing the regression line (as the step numbers can't be used)
           stepsCount$id <- seq.int(nrow(stepsCount))
+          stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
+          
           
           #computing the graphs
           a <- rCharts:::Highcharts$new()
@@ -2314,7 +2335,8 @@ function(input, output, session) {
           #creating the regression model and data
           model <- lm(freq ~ id, stepsCount)
           fit <- fortify(model)
-            
+          slope <- coef(model)[2]
+          
           #displaying the regression line
           a$series(name = "Regression line",
                   	 type = "line",
@@ -2322,6 +2344,12 @@ function(input, output, session) {
                      marker = list(enabled = FALSE)
 
            )
+          a$series(name = "Avg Regression line",
+                   type = "line",
+                   data = stepsCount$totalAvg,
+                   marker = list(enabled = FALSE)
+                   
+          )
           return(a)
         } else {
           #if there is no data available it shows an error message

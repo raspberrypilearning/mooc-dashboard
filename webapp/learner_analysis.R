@@ -2,6 +2,7 @@ library(reshape2)
 library(RMySQL)
 library(xts)
 library(networkD3)
+library(plyr)
 
 # Unused function that used to take a csv filename and return the data.
 getRawData <- function (filename, type) {
@@ -610,6 +611,26 @@ getStepsCompletedData <- function(stepData){
 
 	return (stepsCount)
 }
+
+
+getAllStepCompletedData <- function(allStepData){
+  completedSteps <- subset(allStepData, last_completed_at != "")
+  completedSteps$week_step <- getWeekStep(completedSteps)
+
+  #res <- tapply(completedSteps$week_step, )
+
+
+   #<- c("course", "course_run")
+  stepsCount <- tapply(completedSteps$week_step, list(completedSteps$course, completedSteps$course_run), count)
+
+print(stepsCount)
+
+  #counts how many times each step was completed
+  #stepsCount <- count(completedSteps, 'week_step')
+
+  return (stepsCount)
+}
+
 
 #' Gets the number of times each step was first visited for rendering the chart
 #'
