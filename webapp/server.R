@@ -2015,11 +2015,12 @@ function(input, output, session) {
       regressionData <- regressionData[,c(2, 1)]
       colnames(regressionData) <- c("x", "y")
       # Get the start and end coordinates of the line of best fit
-      startPoint <- subset(regressionData, y == min(y))
-      startPoint <- startPoint[1,]
-      endPoint <- subset(regressionData, y == max(y))
-      endPoint <- endPoint[1,]
-      regressionData <- rbind(startPoint, endPoint)
+      #I think it was used before to create the regression line using the first and last point
+      # startPoint <- subset(regressionData, y == min(y))
+      # startPoint <- startPoint[1,]
+      # endPoint <- subset(regressionData, y == max(y))
+      # endPoint <- endPoint[1,]
+      # regressionData <- rbind(startPoint, endPoint)
       
       # Create the scatter plot and pass in some options
       scatter <- hPlot(x ~ y, data = plotData, type = "scatter", color = "completed")
@@ -2027,7 +2028,8 @@ function(input, output, session) {
       scatter$series (list(
         list(
           data = toJSONArray2(regressionData, json = FALSE, names = FALSE), 
-          type = "line"
+          type = "line",
+          marker = list(enabled = FALSE)
         )
       ))
       scatter$xAxis (title = list(text = yAxisTitle), ticks = 15, min = 0)
