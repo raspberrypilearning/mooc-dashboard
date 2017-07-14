@@ -1995,6 +1995,7 @@ function(input, output, session) {
     } else {
       # Merge the x and y data frames together and rename the columns
       plotData <- merge(x, y, by = "learner_id")
+
       colnames(plotData)[c(2,3)] <- c("x", "y")
       # Produce the regression model 
       regressionModel <- lm(x ~ y, data = plotData)
@@ -2003,7 +2004,13 @@ function(input, output, session) {
       # Convert the regression model to a data frame
       regressionData <- fortify(regressionModel)
       # Extract the line of best fit
+      
+      print(regressionData)
+      
       regressionData$x <- regressionData$`.fitted`
+      
+      print(regressionData)
+      
       # Reorder and rename the columns
       regressionData <- regressionData[,c(2, 1)]
       colnames(regressionData) <- c("x", "y")
@@ -2013,6 +2020,7 @@ function(input, output, session) {
       endPoint <- subset(regressionData, y == max(y))
       endPoint <- endPoint[1,]
       regressionData <- rbind(startPoint, endPoint)
+      
       # Create the scatter plot and pass in some options
       scatter <- hPlot(x ~ y, data = plotData, type = "scatter", color = "completed")
       scatter$chart (width = 1200, height = 600, zoomType = "xy")
@@ -2276,16 +2284,23 @@ function(input, output, session) {
         sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
         
         if(nrow(sData)>0){
+          
+          #counts the number of times each step was marked as completed 
           stepsCount <- getStepsCompletedData(sData)
+          
+          #add an id column for computing the regression line (as the step numbers can't be used)
+          stepsCount$id <- seq.int(nrow(stepsCount))
+          
+          #computing the graphs
           a <- rCharts:::Highcharts$new()
           a$chart(type = "column", width = 1200)
-          a$series(
-            name = input$runChooserSteps,
-            type = column,
-            data = stepsCount$freq
+          a$series(name = input$runChooserSteps,
+                   type = "column",
+                   data = stepsCount$freq
           )
           a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
           a$yAxis(title = list(text = "Frequency"))
+
           a$plotOptions(
             column = list(
               animation = FALSE
@@ -2293,6 +2308,18 @@ function(input, output, session) {
             line = list(
               animation = FALSE)
           )
+          
+          #creating the regression model and data
+          model <- lm(freq ~ id, stepsCount)
+          fit <- fortify(model)
+            
+          #displaying the regression line
+          a$series(name = "Regression line",
+                  	 type = "line",
+                 	   data = fit$.fitted,
+                     marker = list(enabled = FALSE)
+
+           )
           return(a)
         } else {
           #if there is no data available it shows an error message
@@ -2304,13 +2331,7 @@ function(input, output, session) {
         
         
         
-        # model <- lm(stepsCount[,2] ~ stepsCount$week_step)
-        # fit <- predict(model,newData = stepsCount)
-        # a$series(
-        # 	name = "Best Fit",
-        #       	type = line,
-        #       	data = fit
-        #       )
+        
         
       })
     }
@@ -2333,7 +2354,13 @@ function(input, output, session) {
         
         #checks if the data is empty or not
         if(nrow(sData)>0){
+          #counts the number of times each step was first visited
           stepsCount <- getStepsFirstVistedData(sData)
+          
+          #rceating an id column needed for the regression model
+          stepsCount$id <- seq.int(nrow(stepsCount))
+          
+          #creating the chart
           a <- rCharts:::Highcharts$new()
           a$chart(type = "column", width = 1200)
           a$series(
@@ -2350,6 +2377,17 @@ function(input, output, session) {
             line = list(
               animation = FALSE)
           )
+          
+          #creating the regression model and data
+          model <- lm(freq ~ id, stepsCount)
+          fit <- fortify(model)
+          
+          #displaying the regression line
+          a$series(name = "Regression line",
+                   type = "line",
+                   data = fit$.fitted,
+                   marker = list(enabled = FALSE))
+                   
           return(a)
         } else {
           #if there is no data available it shows an error message

@@ -607,6 +607,7 @@ getStepsCompletedData <- function(stepData){
 	
 	#counts how many times each step was completed
 	stepsCount <- count(completedSteps, 'week_step')
+
 	return (stepsCount)
 }
 
