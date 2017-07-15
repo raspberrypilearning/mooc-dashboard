@@ -148,12 +148,46 @@ createTeamMembers= "CREATE TABLE TeamMembers (" \
 		"PRIMARY KEY (id)" \
 		");"
 
+createVideoStats= "CREATE TABLE VideoStats (" \
+  "id int(11) unsigned NOT NULL AUTO_INCREMENT," \
+  "title varchar(200) NOT NULL DEFAULT ''," \
+  "total_views int(11) NOT NULL," \
+  "total_downloads int(11) NOT NULL," \
+  "total_caption_views int(11) NOT NULL," \
+  "total_transcript_views int(11) NOT NULL," \
+  "viewed_hd int(11) NOT NULL," \
+  "viewed_five_percent double DEFAULT NULL," \
+  "viewed_ten_percent double DEFAULT NULL," \
+  "viewed_twentyfive_percent double DEFAULT NULL," \
+  "viewed_fifty_percent double DEFAULT NULL," \
+  "viewed_seventyfive_percent double DEFAULT NULL," \
+  "viewed_ninetyfive_percent double DEFAULT NULL," \
+  "viewed_onehundred_percent double DEFAULT NULL," \
+  "console_device_percentage double NOT NULL," \
+  "desktop_device_percentage double NOT NULL," \
+  "mobile_device_percentage double NOT NULL," \
+  "tv_device_percentage double NOT NULL," \
+  "tablet_device_percentage double NOT NULL," \
+  "unknown_device_percentage double NOT NULL," \
+  "europe_views_percentage double NOT NULL," \
+  "oceania_views_percentage double NOT NULL," \
+  "asia_views_percentage double NOT NULL," \
+  "north_america_views_percentage double NOT NULL," \
+  "south_america_views_percentage double NOT NULL," \
+  "africa_views_percentage double NOT NULL," \
+  "antarctica_views_percentage double NOT NULL," \
+  "university varchar(200) NOT NULL DEFAULT ''," \
+  "course varchar(200) NOT NULL DEFAULT ''," \
+  "course_run int(11) NOT NULL," \
+  "PRIMARY KEY (id)" \
+  ");"
+
 #create all tables, if tables exist, will be deleted
 drops = ['DROP TABLE IF EXISTS Comments','DROP TABLE IF EXISTS Enrolments','DROP TABLE IF EXISTS Assignments', \
 		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity', 'DROP TABLE IF EXISTS Courses', \
-		'DROP TABLE IF EXISTS TeamMembers']
+		'DROP TABLE IF EXISTS TeamMembers', 'DROP TABLE IF EXISTS VideoStats']
 
-creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers]
+creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers,createVideoStats]
 
 for d in drops:
 	cursor.execute(d)

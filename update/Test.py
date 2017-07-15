@@ -51,5 +51,5 @@ def removeCarrige():
 
 
 
-# printCsv()
-processCourses()
+printCsv()
+#processCourses()
