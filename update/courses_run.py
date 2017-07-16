@@ -83,7 +83,7 @@ class FLCourses:
 
 								run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path + "/overview",course_name)}
 								course_info[str(run_count)] = run_data
-								
+							#break	
 							run_count-=1
 
 						courses[course_name] = course_info
@@ -124,6 +124,9 @@ class FLCourses:
 					link = self.__mainsite + link
 					filename = split[7].replace('_', '-')+'.csv'
 					data[link] = filename
+				link = stats_dashboard_url.replace("stats-dashboard","extract-links")
+				filename = 'extract-links.csv'
+				data[link] = filename
 			return data
 
 	def getEnrolmentData(self, stats_dashboard_url,courseName):

@@ -147,6 +147,14 @@ class CSV_TO_SQL:
             'IGNORE 1 LINES '  + col +\
             "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
+        
+        elif 'extract-links' in datatype:
+            col = '(`Week Number`,`Step Number`,`Step Title`,`Step URL`,`Part`,`Field`,`Link Target`,`Link Caption`)'
+            load =  'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE ExtractLinks ' \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
+            'IGNORE 1 LINES '  + col +\
+            "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
+            + str(course_run) + ";"
 
         cursor.execute(load)
         self.__database.commit()
