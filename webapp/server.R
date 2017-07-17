@@ -2854,6 +2854,8 @@ function(input, output, session) {
     return(input$runChooser)
   })
   
+  c_data <- NULL
+  
   # Produces a data table for the comments
   output$commentViewer <- renderDataTable({
     chartDependency()
@@ -2863,19 +2865,21 @@ function(input, output, session) {
     }
     withProgress(message = "Processing Comments",{
       data <- getCommentViewerData(comments_data, viewPressed(), courseMetaData)
+      c_data <<- data
       DT::datatable(
-        data[,c("timestamp","week_step","text","thread","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+        data[,c("timestamp","week_step","text","nature", "thread","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Date" = 1,
           "Step" = 2,
           "Comment" = 3,
-          "Part of a Thread?" = 4,
-          "Likes" = 5,
-          "Link" = 6
+          "Comment Category" = 4,
+          "Part of a Thread?" = 5,
+          "Likes" = 6,
+          "Link" = 7
         ),
         options = list(
           autoWidth = TRUE,
-          columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5))),
+          columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5,6))),
           scrollY = "700px",
           lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
           pageLength = 20,
@@ -2981,6 +2985,41 @@ function(input, output, session) {
   
   #Makes the wordcloud code repeatable.
   wordcloud_rep <- repeatable(wordcloud)
+  
+  # output$commentsByCategory <- renderChart2({
+  #   chartDependency()
+  #   viewPressed()
+    
+    #get comment data for the selected course run
+    
+    
+    
+    
+    
+    # cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+    # 
+    # #checks if the table needed for getting chart data is empty or not
+    # #if not empty, it computes the chart, else it throws an error message
+    # if(nrow(cData)!=0){
+    #   plotData <- getNumberOfAuthorsByWeek(cData)
+    #   histogram <- Highcharts$new()
+    #   histogram$chart(type = "column" , width = 550)
+    #   histogram$data(plotData[,c("authors")])
+    #   histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
+    #   histogram$yAxis(title = list(text = "Frequency"))
+    #   histogram$plotOptions (
+    #     column = list(
+    #       stacking = "normal"
+    #     ),
+    #     animation = FALSE
+    #   )
+    #   return(histogram)
+    # } else {
+    #   shiny::validate(
+    #     need(nrow(cData)>0,
+    #          "No data available"))
+    # }
+  #})
   
   #Generates the terms for the word cloud
   terms <- reactive({

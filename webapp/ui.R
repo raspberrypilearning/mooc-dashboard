@@ -385,6 +385,11 @@ body <- dashboardBody(
                 title = "Comment Thread Viewer", 
                 status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
               )
+            ),
+            fluidRow(
+              box(showOutput("commentsByCategory", "highcharts"),
+                  title = "Comments by Category",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
             )
     ),
     tabItem(tabName = "totalMeasures",

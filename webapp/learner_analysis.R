@@ -912,22 +912,22 @@ getEmploymentDegreeCount <- function(enrolmentData){
 getCommentViewerData <- function(commentData, run, courseMetaData){
   
   #gets the data frame from the list corresponding to the course run
-	data <- commentData[[which(names(commentData) == run)]]
+	comments <- commentData[[which(names(commentData) == run)]]
 	
   #if the data frame is not empty 
-	if(nrow(data)!=0) {
+	if(nrow(comments)!=0) {
 	  #modify the timestamp column to contain just the date
-	  data$timestamp <- as.Date(substr(as.character(data$timestamp), start = 1, stop = 10))
+	  comments$timestamp <- as.Date(substr(as.character(comments$timestamp), start = 1, stop = 10))
 	  print(run)
 	  
 	  #activity steps under a specific form e.g. 1.3
-	  data$week_step <- getWeekStep(data)
+	  comments$week_step <- getWeekStep(comments)
 	  
-	  isReply <- unlist(lapply(data$parent_id, function(x) !is.na(x)))
-	  hasReply <- unlist(lapply(data$id, function(x) x %in% data$parent_id))
-	  data$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
-	  data$likes <- as.numeric(data$likes)
-	  data$likes <- as.integer(data$likes)
+	  isReply <- unlist(lapply(comments$parent_id, function(x) !is.na(x)))
+	  hasReply <- unlist(lapply(comments$id, function(x) x %in% comments$parent_id))
+	  comments$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
+	  comments$likes <- as.numeric(comments$likes)
+	  comments$likes <- as.integer(comments$likes)
 	  
 	  #to build the url 
 	  #splits the run name by '-' to separate the name of course and run number
@@ -944,19 +944,99 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
 	  
 	  #creates the url and adds it to each row in the data frame
 	  url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
-	  data$url <- paste0("<a href='",url,data$id,"'target='_blank'>link</a>")
+	  comments$url <- paste0("<a href='",url,comments$id,"'target='_blank'>link</a>")
 	  
 	  #sorting the comments in decreasing order by the number of likes
-	  data <- data[order(-data$likes),]
+	  comments <- comments[order(-comments$likes),]
+	  
+	  # starts comments categorisation script
+	  #parentgroup : to group the initiating post and replies together, for conversation id
+	  comments$parent_id[is.na(comments$parent_id)]<-0 # change the na shown in the csv to 0 so the next two lines could work
+	  comments$parent_group<-comments$parent_id
+	  comments$parent_group[comments$parent_id==0]<-comments$id[comments$parent_id==0]
+	  
+	  #change author id in the file to learner_id
+	  colnames(comments)[2]<-"learner_id"
+	  
+	  #order id within a parent group, initiating post =0
+	  comments$order<-0
+
+	  #number of initiating post (still include lonepost which continue to replies
+	  l=length(unique(comments$parent_group[comments$parent_id!=0])) #initiating post
+	  
+	  #make all non post to replies first
+	  comments$nature[comments$parent_id!=0]<-" first replies"
+
+	  # add the column to put in the initiator's learner_id a user replies to 
+	  comments$repliestowhom<-0
+	  
+	  # add the column to count the number of replies a new post/replies received.
+	  comments$replies<-0
+	  
+	  for (i in 1:l){
+	    parent_id<-(unique(comments$parent_group[comments$parent_id!=0]))[i]
+	    initiator_id<-comments$learner_id[comments$id==parent_id] 	
+	    comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
+	    
+	    #fill in number of replies a post/replies received and their order within an initiating post
+	    n=nrow(comments[comments$parent_group==parent_id,]) #n=the sum of initiating post and replies it receives
+	    comments$replies[comments$parent_group==parent_id]<-seq((n-1),0,by=(-1)) #n-1 cos initiating post does not count itself
+	    comments$order[comments$parent_group==parent_id]<-seq(0,(n-1),by=1) #n-1 cos the last reply receive 0
+	    
+	    #analyzing further replies and calculate selfreplies for first instance,i.e.,replies
+	    #comments line by line analysis
+	    for (j in (n-1):1){
+	      learner_id<-comments$learner_id[comments$order==j & (comments$parent_group==parent_id)]
+	      if (length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)])>0)){
+	        comments$nature[comments$order==j & comments$parent_group==parent_id]<-"further replies to own's replies"
+	        #orderposition<-min(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)]))
+	        
+	        #if (is.na(comments$selfreplies[comments$order==orderposition & comments$parent_group==parent_id])){
+	        #	selfrepliescount<-length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)]))
+	        #	comments$selfreplies[comments$order==orderposition & comments$parent_group==parent_id]<-selfrepliescount
+	        #} 		
+	      } #else { #for replies
+	      #	comments$fromeducator[comments$order==j & comments$parent_group==parent_id]<-(sum(comments$educator[comments$parent_group==parent_id][(j+1):n]))
+	      #	if (length(grep(learner_id,comments$learner_id[comments$parent_group==parent_id][(j+1):n]))>0) {
+	      #	comments$uniqueresponder[comments$order==j & comments$parent_group==parent_id]<-length(unique(comments$learner_id[comments$parent_group==parent_id][(j+1):n]))-1		
+	      #		if (comments$educator[comments$order==j & comments$parent_group==parent_id]==1){
+	      #		comments$fromeducator[comments$order==j & comments$parent_group==parent_id]<-comments$fromeducator[comments$order==j & comments$parent_group==parent_id]-1
+	      #		}
+	      #	} else {
+	      #	comments$uniqueresponder[comments$order==j & comments$parent_group==parent_id]<-length(unique(comments$learner_id[comments$parent_group==parent_id][(j+1):n]))		
+	      
+	      #	}
+	      
+	      #}
+	      
+	      
+	    }
+	    ## end of line by line comments analysis
+	  }
+	  
+	  comments$nature[comments$repliestowhom==comments$learner_id]<-"response to own's initiating post"
+	  comments$nature[(comments$replies==0 & comments$parent_id==0)]<-"lone post"
+	  comments$nature[(comments$replies!=0 & comments$parent_id==0)]<-"initiating post"
+	  
+	  
+	  ####Determine replies which is a continuing lone post for both initiating post and replies
+	  
+	  comments$nature[((comments$replies==comments$selfreplies) & (comments$selfreplies>0) & (comments$nature=="initiating post"))]<-"lone post continue to replies"
+	  
+	  for (i in 1:length(comments$nature[comments$nature=="lone post continue to replies"])){
+	    parent_id<-comments$id[comments$nature=="lone post continue to replies"][i]
+	    comments$nature[comments$parent_id==parent_id]<-"replies continue from lone post"
+	  }
 	} else {
 	  #if the data frame is empty (no data for a specific course run)
 	  #adding new empty columns for the table
-	  data$week_step <- character()
-	  data$thread <- character()
-	  data$url <- character()
+	  comments$week_step <- character()
+	  comments$thread <- character()
+	  comments$url <- character()
+	  comments$nature <- character()
 	}
   
-	return(data)
+	return(comments)
 }
 
 
