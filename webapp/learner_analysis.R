@@ -960,13 +960,13 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
 	  
 	  #order id within a parent group, initiating post =0
 	  comments$order<-0
-
+	  
 	  #number of initiating post (still include lonepost which continue to replies
 	  l=length(unique(comments$parent_group[comments$parent_id!=0])) #initiating post
 	  
 	  #make all non post to replies first
-	  comments$nature[comments$parent_id!=0]<-" first replies"
-
+	  comments$nature[comments$parent_id!=0]<-" first reply"
+	  
 	  # add the column to put in the initiator's learner_id a user replies to 
 	  comments$repliestowhom<-0
 	  
@@ -980,53 +980,37 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
 	    
 	    #fill in number of replies a post/replies received and their order within an initiating post
 	    n=nrow(comments[comments$parent_group==parent_id,]) #n=the sum of initiating post and replies it receives
-	    comments$replies[comments$parent_group==parent_id]<-seq((n-1),0,by=(-1)) #n-1 cos initiating post does not count itself
-	    comments$order[comments$parent_group==parent_id]<-seq(0,(n-1),by=1) #n-1 cos the last reply receive 0
+	    comments$replies[comments$parent_group==parent_id]<-seq((n-1),0,by=(-1)) #how many replies after the current comment, so initiating post receives n-1 reply, 1st reply receives n-2 reply,last reply receives 0 reply 
+	    comments$order[comments$parent_group==parent_id]<-seq(0,(n-1),by=1) #initiating post=0, 1st reply=1, 2nd reply=2, 3rd reply=3...
 	    
-	    #analyzing further replies and calculate selfreplies for first instance,i.e.,replies
-	    #comments line by line analysis
-	    for (j in (n-1):1){
-	      learner_id<-comments$learner_id[comments$order==j & (comments$parent_group==parent_id)]
-	      if (length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)])>0)){
-	        comments$nature[comments$order==j & comments$parent_group==parent_id]<-"further replies to own's replies"
-	        #orderposition<-min(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)]))
+	    
+	    if (length(unique(comments$learner_id[comments$parent_group==parent_id]))==1){ # to determine if all the replies under an initiating post come from the initiators, so they are all lone posts		
+	      comments$nature[comments$parent_group==parent_id]<-"lone post"
+	      comments$replies[comments$parent_group==parent_id]<-0
+	      comments$order[comments$parent_group==parent_id]<-0
+	      
+	    } else {
+	      
+	      
+	      #analyzing further replies and calculate selfreplies for first instance,i.e.,replies
+	      #comments line by line analysis
+	      for (j in (n-1):1){ # line by line analysis of the replies
+	        learner_id<-comments$learner_id[comments$order==j & (comments$parent_group==parent_id)]
+	        if (length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)])>0)){
+	          comments$nature[comments$order==j & comments$parent_group==parent_id]<-"further reply"
+	          
+	        } 
 	        
-	        #if (is.na(comments$selfreplies[comments$order==orderposition & comments$parent_group==parent_id])){
-	        #	selfrepliescount<-length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)]))
-	        #	comments$selfreplies[comments$order==orderposition & comments$parent_group==parent_id]<-selfrepliescount
-	        #} 		
-	      } #else { #for replies
-	      #	comments$fromeducator[comments$order==j & comments$parent_group==parent_id]<-(sum(comments$educator[comments$parent_group==parent_id][(j+1):n]))
-	      #	if (length(grep(learner_id,comments$learner_id[comments$parent_group==parent_id][(j+1):n]))>0) {
-	      #	comments$uniqueresponder[comments$order==j & comments$parent_group==parent_id]<-length(unique(comments$learner_id[comments$parent_group==parent_id][(j+1):n]))-1		
-	      #		if (comments$educator[comments$order==j & comments$parent_group==parent_id]==1){
-	      #		comments$fromeducator[comments$order==j & comments$parent_group==parent_id]<-comments$fromeducator[comments$order==j & comments$parent_group==parent_id]-1
-	      #		}
-	      #	} else {
-	      #	comments$uniqueresponder[comments$order==j & comments$parent_group==parent_id]<-length(unique(comments$learner_id[comments$parent_group==parent_id][(j+1):n]))		
-	      
-	      #	}
-	      
-	      #}
-	      
-	      
-	    }
-	    ## end of line by line comments analysis
+	      }#j
+	    }#if
+	    
+	    
 	  }
 	  
-	  comments$nature[comments$repliestowhom==comments$learner_id]<-"response to own's initiating post"
+	  comments$nature[comments$repliestowhom==comments$learner_id & comments$parent_id!=0 & comments$order!=0]<-"initiator's reply"
 	  comments$nature[(comments$replies==0 & comments$parent_id==0)]<-"lone post"
 	  comments$nature[(comments$replies!=0 & comments$parent_id==0)]<-"initiating post"
-	  
-	  
-	  ####Determine replies which is a continuing lone post for both initiating post and replies
-	  
-	  comments$nature[((comments$replies==comments$selfreplies) & (comments$selfreplies>0) & (comments$nature=="initiating post"))]<-"lone post continue to replies"
-	  
-	  for (i in 1:length(comments$nature[comments$nature=="lone post continue to replies"])){
-	    parent_id<-comments$id[comments$nature=="lone post continue to replies"][i]
-	    comments$nature[comments$parent_id==parent_id]<-"replies continue from lone post"
-	  }
+	  #finished comment categorisation script
 	} else {
 	  #if the data frame is empty (no data for a specific course run)
 	  #adding new empty columns for the table
