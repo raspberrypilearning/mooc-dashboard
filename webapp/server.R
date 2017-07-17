@@ -2283,9 +2283,13 @@ function(input, output, session) {
           
           #counts the number of times each step was marked as completed 
           stepsCount <- getStepsCompletedData(sData)
+          
+          #gets a data frame with step data for each course and run
           s <- getAllStepCompletedData(getAllTableData("Activity"))
           res <- data.frame(numeric(), numeric())
           colnames(res) <- c("Const", "Slope")
+          
+          #computes the slope and coefficient for each course and run
           for(i in (1:nrow(s))){
             for(j in (1:ncol(s))){
               if(!is.null(s[i,j][[1]])){
@@ -2304,6 +2308,7 @@ function(input, output, session) {
           colnames(res) <- c("Const", "Slope")
           print(res)
           
+          #computes average slope and coefficient
           avg <- c(mean(res$Const), mean(res$Slope))
 
           print(avg)
