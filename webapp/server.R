@@ -2849,12 +2849,16 @@ function(input, output, session) {
     print(actionButton("loadCloud", "Load Cloud"))
   })
   
+  c_data <- NULL
+  
   # Dependency for the data table to only load after the view comments button has been pressed
   viewPressed <- eventReactive(input$viewButton, {
+    data <- getCommentViewerData(comments_data, input$runChooser, courseMetaData)
+    c_data <<- data
     return(input$runChooser)
   })
   
-  c_data <- NULL
+  
   
   # Produces a data table for the comments
   output$commentViewer <- renderDataTable({
@@ -2864,8 +2868,7 @@ function(input, output, session) {
       return()
     }
     withProgress(message = "Processing Comments",{
-      data <- getCommentViewerData(comments_data, viewPressed(), courseMetaData)
-      c_data <<- data
+      data <- c_data
       DT::datatable(
         data[,c("timestamp","week_step","text","nature", "thread","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
@@ -2921,7 +2924,8 @@ function(input, output, session) {
     viewPressed()
     threadSelected()
     withProgress(message = "Retrieving Thread",{
-      data <- getCommentViewerData(comments_data, viewPressed(),courseMetaData)
+      #data <- getCommentViewerData(comments_data, viewPressed(),courseMetaData)
+      data <- c_data
       data$likes <- as.integer(data$likes)
       selectedRow <- data[input$commentViewer_rows_selected,]
       if(selectedRow$thread != "Yes"){
@@ -2929,7 +2933,7 @@ function(input, output, session) {
       }
       reply = TRUE
       parent = FALSE
-      if(is.na(selectedRow$parent_id)){
+      if(selectedRow$parent_id == 0){
         reply = FALSE
         parent = TRUE
       }
@@ -2986,10 +2990,15 @@ function(input, output, session) {
   #Makes the wordcloud code repeatable.
   wordcloud_rep <- repeatable(wordcloud)
   
-  # output$commentsByCategory <- renderChart2({
-  #   chartDependency()
-  #   viewPressed()
+   output$commentsByCategory <- renderChart2({
+     chartDependency()
+     viewPressed()
+   
+     
+    data <- c_data
+    categorisation <- count(data$nature)
     
+    print(categorisation)
     #get comment data for the selected course run
     
     
@@ -3019,7 +3028,7 @@ function(input, output, session) {
     #     need(nrow(cData)>0,
     #          "No data available"))
     # }
-  #})
+  })
   
   #Generates the terms for the word cloud
   terms <- reactive({
