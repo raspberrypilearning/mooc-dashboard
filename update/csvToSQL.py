@@ -140,7 +140,21 @@ class CSV_TO_SQL:
             "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
             'IGNORE 1 LINES '  + col +";"
 
-
+        elif 'video-stats' in datatype:
+            col = '(title,total_views,total_downloads,total_caption_views,total_transcript_views,viewed_hd,viewed_five_percent,viewed_ten_percent,viewed_twentyfive_percent,viewed_fifty_percent,viewed_seventyfive_percent,viewed_ninetyfive_percent,viewed_onehundred_percent,console_device_percentage,desktop_device_percentage,mobile_device_percentage,tv_device_percentage,tablet_device_percentage,unknown_device_percentage,europe_views_percentage,oceania_views_percentage,asia_views_percentage,north_america_views_percentage,south_america_views_percentage,africa_views_percentage,antarctica_views_percentage)'
+            load =  'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE VideoStats ' \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
+            'IGNORE 1 LINES '  + col +\
+            "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
+            + str(course_run) + ";"
+        
+        elif 'extract-links' in datatype:
+            col = '(`Week Number`,`Step Number`,`Step Title`,`Step URL`,`Part`,`Field`,`Link Target`,`Link Caption`)'
+            load =  'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE ExtractLinks ' \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
+            'IGNORE 1 LINES '  + col +\
+            "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
+            + str(course_run) + ";"
 
         cursor.execute(load)
         self.__database.commit()
