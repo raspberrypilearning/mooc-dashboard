@@ -387,7 +387,7 @@ body <- dashboardBody(
               )
             ),
             fluidRow(
-              box(showOutput("commentsByCategory", "highcharts"),
+              box(plotlyOutput("commentsByCategory"),
                   title = "Comments by Category",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
             )

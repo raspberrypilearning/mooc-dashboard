@@ -16,6 +16,7 @@ require(R.utils)
 require(RMySQL)
 require(tools)
 require(gdata)
+require(plotly)
 source("config.R")
 
 source("learner_filters.R")
@@ -2990,44 +2991,49 @@ function(input, output, session) {
   #Makes the wordcloud code repeatable.
   wordcloud_rep <- repeatable(wordcloud)
   
-   output$commentsByCategory <- renderChart2({
+   output$commentsByCategory <- renderPlotly({
      chartDependency()
      viewPressed()
    
      
     data <- c_data
     categorisation <- count(data$nature)
-    
-    print(categorisation)
-    #get comment data for the selected course run
-    
-    
-    
-    
-    
-    # cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+
+
+    # pie <- Highcharts$new()
+    # pie$chart(type = "pie")
+    # pie$title(text = "Comment categories")
+    # pie$series(name = "Category", colorByPoint = TRUE, data = list(list(name = "initiating post", y = categorisation$percentage[categorisation$x == "initiating post"][1]), 
+    #                                                                list(name = "lone post", y = categorisation$percentage[categorisation$x == "lone post"][1]),
+    #                                                                list(name = "first reply", y = categorisation$percentage[categorisation$x == "first reply"][1]),
+    #                                                                list(name = "further reply", y = categorisation$percentage[categorisation$x == "further reply"][1]),
+    #                                                                list(name = "initiator's reply", y = categorisation$percentage[categorisation$x == "initiator's reply"][1])))
+    # pie$tooltip(pointFormat = "{series.name}: <b>{point.percentage:.1f}%</b>")
+    # pie$plotOptions(pie = list(allowPointSelected = TRUE, cursor = "pointer", dataLabels = list(enabled = TRUE, format = "<b>{point.name}</b>: {point.percentage:.1f} %")))
     # 
-    # #checks if the table needed for getting chart data is empty or not
-    # #if not empty, it computes the chart, else it throws an error message
-    # if(nrow(cData)!=0){
-    #   plotData <- getNumberOfAuthorsByWeek(cData)
-    #   histogram <- Highcharts$new()
-    #   histogram$chart(type = "column" , width = 550)
-    #   histogram$data(plotData[,c("authors")])
-    #   histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
-    #   histogram$yAxis(title = list(text = "Frequency"))
-    #   histogram$plotOptions (
-    #     column = list(
-    #       stacking = "normal"
-    #     ),
-    #     animation = FALSE
-    #   )
-    #   return(histogram)
-    # } else {
-    #   shiny::validate(
-    #     need(nrow(cData)>0,
-    #          "No data available"))
-    # }
+    #  s <-sum(categorisation$freq)
+    # categorisation$percentage <- categorisation$freq/s * 100
+    # categorisation$percentage <- round(categorisation$percentage, 2)
+    # 
+    # 
+    # print(categorisation)
+    colors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)')
+   plot_ly(categorisation, labels = ~x, values = ~freq, type = 'pie',
+                  textposition = 'inside',
+                  textinfo = 'label+percent',
+                  insidetextfont = list(color = '#FFFFFF'),
+                  hoverinfo = 'text',
+                  text = ~paste('$', freq, ' billions'),
+                  marker = list(colors = colors,
+                                line = list(color = '#FFFFFF', width = 1)),
+                  #The 'pull' attribute can also be used to create space between the sectors
+                  showlegend = FALSE) %>%
+       layout(title = 'United States Personal Expenditures by Categories in 1960',
+              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+                  
+    
+  
   })
   
   #Generates the terms for the word cloud
