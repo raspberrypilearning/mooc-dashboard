@@ -3073,6 +3073,35 @@ function(input, output, session) {
   
   
   
+  # START LEARNERS ANALYSIS TAB
+  
+  
+  #Selector to choose which run to view comments of
+  output$learnersRunSelector <- renderUI({
+    chartDependency()
+    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    if(input$run2 != "None"){
+      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    }
+    if(input$run3 != "None"){
+      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+    }
+    if(input$run4 != "None"){
+      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+    }
+    print(selectInput("runChooserLearners", label = "Run", choices = runs, width = "550px"))
+  })
+  
+  # View comments button
+  output$viewLearnersButton <- renderUI({
+    chartDependency()
+    print(actionButton("viewLearnersButton","View analysis"))
+  })
+  
+  
+  
+  # END LEARNERS ANALYSIS TAB
+  
   
   
   # START TEAM MEMBERS TAB
