@@ -8,6 +8,7 @@ require(networkD3)
 require(shinyjs)
 require(DT)
 require(rjson)
+require(plotly)
 source("config.R")
 source("learner_filters.R")
 source("courses.R")
@@ -388,9 +389,9 @@ body <- dashboardBody(
               )
             ),
             fluidRow(
-              box(showOutput("commentsByCategory", "highcharts"),
+              box(plotlyOutput("commentsByCategory"),
                   title = "Comments by Category",
-                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
             )
     ),
     tabItem(tabName = "learnersAnalysis",
