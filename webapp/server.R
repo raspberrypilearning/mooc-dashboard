@@ -2994,8 +2994,7 @@ function(input, output, session) {
    output$commentsByCategory <- renderPlotly({
      chartDependency()
      viewPressed()
-   
-     
+ 
     data <- c_data
     categorisation <- count(data$nature)
 
@@ -3018,17 +3017,18 @@ function(input, output, session) {
     # 
     # print(categorisation)
     colors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)')
+  #  colors <- c('rgb(0, 204, 0)', 'rgb(240, 88, 0)', 'rgb(118, 17, 195)', 'rgb(0, 48, 240)', 'rgb(215, 11, 11)')
    plot_ly(categorisation, labels = ~x, values = ~freq, type = 'pie',
                   textposition = 'inside',
                   textinfo = 'label+percent',
                   insidetextfont = list(color = '#FFFFFF'),
                   hoverinfo = 'text',
-                  text = ~paste('$', freq, ' billions'),
+                  text = ~paste('', freq, 'comments'),
                   marker = list(colors = colors,
                                 line = list(color = '#FFFFFF', width = 1)),
                   #The 'pull' attribute can also be used to create space between the sectors
                   showlegend = FALSE) %>%
-       layout(title = 'United States Personal Expenditures by Categories in 1960',
+       layout(title = 'Comments by Category',
               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
                   
@@ -3076,9 +3076,6 @@ function(input, output, session) {
   })
   
   # END COMMENT VIEWER TAB
-  
-  
-  
   
   
   # START TEAM MEMBERS TAB
