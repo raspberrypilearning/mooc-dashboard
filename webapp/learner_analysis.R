@@ -949,68 +949,8 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
 	  #sorting the comments in decreasing order by the number of likes
 	  comments <- comments[order(-comments$likes),]
 	  
-	  # starts comments categorisation script
-	  #parentgroup : to group the initiating post and replies together, for conversation id
-	  comments$parent_id[is.na(comments$parent_id)]<-0 # change the na shown in the csv to 0 so the next two lines could work
-	  comments$parent_group<-comments$parent_id
-	  comments$parent_group[comments$parent_id==0]<-comments$id[comments$parent_id==0]
+	  comments <- getCommentsForClassification(comments)
 	  
-	  #change author id in the file to learner_id
-	  colnames(comments)[2]<-"learner_id"
-	  
-	  #order id within a parent group, initiating post =0
-	  comments$order<-0
-	  
-	  #number of initiating post (still include lonepost which continue to replies
-	  l=length(unique(comments$parent_group[comments$parent_id!=0])) #initiating post
-	  
-	  #make all non post to replies first
-	  comments$nature[comments$parent_id!=0]<-" first reply"
-	  
-	  # add the column to put in the initiator's learner_id a user replies to 
-	  comments$repliestowhom<-0
-	  
-	  # add the column to count the number of replies a new post/replies received.
-	  comments$replies<-0
-	  
-	  for (i in 1:l){
-	    parent_id<-(unique(comments$parent_group[comments$parent_id!=0]))[i]
-	    initiator_id<-comments$learner_id[comments$id==parent_id] 	
-	    comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
-	    
-	    #fill in number of replies a post/replies received and their order within an initiating post
-	    n=nrow(comments[comments$parent_group==parent_id,]) #n=the sum of initiating post and replies it receives
-	    comments$replies[comments$parent_group==parent_id]<-seq((n-1),0,by=(-1)) #how many replies after the current comment, so initiating post receives n-1 reply, 1st reply receives n-2 reply,last reply receives 0 reply 
-	    comments$order[comments$parent_group==parent_id]<-seq(0,(n-1),by=1) #initiating post=0, 1st reply=1, 2nd reply=2, 3rd reply=3...
-	    
-	    
-	    if (length(unique(comments$learner_id[comments$parent_group==parent_id]))==1){ # to determine if all the replies under an initiating post come from the initiators, so they are all lone posts		
-	      comments$nature[comments$parent_group==parent_id]<-"lone post"
-	      comments$replies[comments$parent_group==parent_id]<-0
-	      comments$order[comments$parent_group==parent_id]<-0
-	      
-	    } else {
-	      
-	      
-	      #analyzing further replies and calculate selfreplies for first instance,i.e.,replies
-	      #comments line by line analysis
-	      for (j in (n-1):1){ # line by line analysis of the replies
-	        learner_id<-comments$learner_id[comments$order==j & (comments$parent_group==parent_id)]
-	        if (length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)])>0)){
-	          comments$nature[comments$order==j & comments$parent_group==parent_id]<-"further reply"
-	          
-	        } 
-	        
-	      }#j
-	    }#if
-	    
-	    
-	  }
-	  
-	  comments$nature[comments$repliestowhom==comments$learner_id & comments$parent_id!=0 & comments$order!=0]<-"initiator's reply"
-	  comments$nature[(comments$replies==0 & comments$parent_id==0)]<-"lone post"
-	  comments$nature[(comments$replies!=0 & comments$parent_id==0)]<-"initiating post"
-	  #finished comment categorisation script
 	} else {
 	  #if the data frame is empty (no data for a specific course run)
 	  #adding new empty columns for the table
@@ -1022,6 +962,136 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
   
 	return(comments)
 }
+
+
+#' Used to differentiate the learners in a course run depending on the comments they make
+#'
+#' @param commentData comment data with categorised comments
+#'
+#' @return adata frame that contains the classification of learners in a course run
+getLearnerClassificationData <- function(commentData){
+  comments <- commentData
+  
+  comments_learner<-as.data.frame(table(comments$learner_id,comments$nature))
+  
+  colnames(comments_learner)<-c("learner_id","Type","Comments")
+  
+  #reshaping and renaming the column
+  comments_learner<-reshape(comments_learner,timevar = "Type", idvar=c("learner_id"),direction="wide")
+  colnames(comments_learner)<-c("learner_id","first.reply","further.reply","initiating.post","initiator.reply","lone.post")
+  
+  #adding up the total number of comments done
+  comments_learner$sumofcommentsmade<-apply(comments_learner[2:6],1,sum) 
+  
+  
+  #replies received: total, educators, other learners 
+  repliesreceived<-comments[(comments$nature=="initiating post"|comments$nature=="first reply"),] #excluding response and further reply to avoid double count
+  totalrepliesreceived<-aggregate(replies ~ learner_id, data=repliesreceived ,sum)
+  
+  #sum of likes for all comments 
+  likes<-aggregate(likes ~ learner_id ,data=comments ,sum)
+  
+  ####merge all df for learners
+  Multimerge<-function (x,y){
+    df<-merge(x,y,by="learner_id",all.x=TRUE,all.y=TRUE)
+    return(df)
+  }
+  
+  comments_learner <-Reduce(Multimerge,list(comments_learner,totalrepliesreceived,likes) )
+  
+  comments_learner[is.na(comments_learner)]<-0
+  comments_learner$learner_id<-as.character(comments_learner$learner_id)
+  
+  rm(Multimerge)
+  
+
+  #categorizing social learners depending on their comments
+  comments_learner$type[comments_learner$replies == 0]<-"Loner" 
+  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post == 0 & comments_learner$first.reply > 0 & comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Replier"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Initiator without replying"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies > 0]<-"Initiator who responds under their own initiating posts"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies > 0]<-"Active social learner"
+  comments_learner$type[comments_learner$lone.post > 0 &comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Active social learners without repeated turn-taking"
+  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Reluctant active social learners"
+  
+  return(comments_learner)
+}
+
+
+
+#' To categorize the comments in a specific course run
+#'
+#' @param commentData data frame with comment data for a specific course run
+#'
+#' @return data frame with comment data that contains classified comments
+getCommentsForClassification <- function(commentData){
+  
+  comments <- commentData
+  
+  # starts comments categorisation script
+  #parentgroup : to group the initiating post and replies together, for conversation id
+  comments$parent_id[is.na(comments$parent_id)]<-0 # change the na shown in the csv to 0 so the next two lines could work
+  comments$parent_group<-comments$parent_id
+  comments$parent_group[comments$parent_id==0]<-comments$id[comments$parent_id==0]
+  
+  #change author id in the file to learner_id
+  colnames(comments)[2]<-"learner_id"
+  
+  #order id within a parent group, initiating post =0
+  comments$order<-0
+  
+  #number of initiating post (still include lonepost which continue to replies
+  l=length(unique(comments$parent_group[comments$parent_id!=0])) #initiating post
+  
+  #make all non post to replies first
+  comments$nature[comments$parent_id!=0]<-" first reply"
+  
+  # add the column to put in the initiator's learner_id a user replies to 
+  comments$repliestowhom<-0
+  
+  # add the column to count the number of replies a new post/replies received.
+  comments$replies<-0
+  
+  for (i in 1:l){
+    parent_id<-(unique(comments$parent_group[comments$parent_id!=0]))[i]
+    initiator_id<-comments$learner_id[comments$id==parent_id] 	
+    comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
+    
+    #fill in number of replies a post/replies received and their order within an initiating post
+    n=nrow(comments[comments$parent_group==parent_id,]) #n=the sum of initiating post and replies it receives
+    comments$replies[comments$parent_group==parent_id]<-seq((n-1),0,by=(-1)) #how many replies after the current comment, so initiating post receives n-1 reply, 1st reply receives n-2 reply,last reply receives 0 reply 
+    comments$order[comments$parent_group==parent_id]<-seq(0,(n-1),by=1) #initiating post=0, 1st reply=1, 2nd reply=2, 3rd reply=3...
+    
+    
+    if (length(unique(comments$learner_id[comments$parent_group==parent_id]))==1){ # to determine if all the replies under an initiating post come from the initiators, so they are all lone posts		
+      comments$nature[comments$parent_group==parent_id]<-"lone post"
+      comments$replies[comments$parent_group==parent_id]<-0
+      comments$order[comments$parent_group==parent_id]<-0
+      
+    } else {
+      
+      
+      #analyzing further replies and calculate selfreplies for first instance,i.e.,replies
+      #comments line by line analysis
+      for (j in (n-1):1){ # line by line analysis of the replies
+        learner_id<-comments$learner_id[comments$order==j & (comments$parent_group==parent_id)]
+        if (length(grep(learner_id,comments$learner_id[(comments$order>0 & comments$order<j & comments$parent_group==parent_id)])>0)){
+          comments$nature[comments$order==j & comments$parent_group==parent_id]<-"further reply"
+          
+        } 
+      }
+    }
+  }
+  
+  comments$nature[comments$repliestowhom==comments$learner_id & comments$parent_id!=0 & comments$order!=0]<-"initiator's reply"
+  comments$nature[(comments$replies==0 & comments$parent_id==0)]<-"lone post"
+  comments$nature[(comments$replies!=0 & comments$parent_id==0)]<-"initiating post"
+  #finished comment categorisation script
+  
+  return(comments)
+}
+
+
 
 
 #' To get data about team interactions with the platform: name, date, step, comment, link

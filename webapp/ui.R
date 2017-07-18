@@ -51,6 +51,7 @@ sidebar <- dashboardSidebar(
     menuItem("Step Completion", tabName = "stepCompletion", icon = icon("graduation-cap")),
     menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("comments")),
     menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("comments-o")),
+    menuItem("Learners Analysis", tabName = "learnersAnalysis", icon = icon("user-circle-o")),
     menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comment")),
     menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
     menuItem("Team Members", tabName = "teamMembers", icon = icon("users")),
@@ -391,6 +392,18 @@ body <- dashboardBody(
               box(plotlyOutput("commentsByCategory"),
                   title = "Comments by Category",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            )
+    ),
+    tabItem(tabName = "learnersAnalysis",
+            fluidRow(
+              box(
+                fluidRow(
+                  tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersRunSelector", inline = TRUE)),
+                  tags$div(style = "margin-left:15px", uiOutput("viewLearnersButton"))
+                ),
+                title = "Selector", 
+                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE	
+              )
             )
     ),
     tabItem(tabName = "totalMeasures",
