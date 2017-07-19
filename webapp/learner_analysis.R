@@ -985,33 +985,38 @@ getLearnerClassificationData <- function(commentData){
   
   
   #replies received: total, educators, other learners 
-  repliesreceived<-comments[(comments$nature=="initiating post"|comments$nature=="first reply"),] #excluding response and further reply to avoid double count
+  #excluding response and further reply to avoid double count but not yet minus replies made by themselves
+  repliesreceived<-comments[(comments$nature=="initiating post"|comments$nature=="first reply"),] 
   totalrepliesreceived<-aggregate(replies ~ learner_id, data=repliesreceived ,sum)
   
   #sum of likes for all comments 
   likes<-aggregate(likes ~ learner_id ,data=comments ,sum)
   
-  ####merge all df for learners
+  #merge all df for learners
   Multimerge<-function (x,y){
     df<-merge(x,y,by="learner_id",all.x=TRUE,all.y=TRUE)
     return(df)
   }
   
+  #merging the data for the learners with the number of replies and likes
   comments_learner <-Reduce(Multimerge,list(comments_learner,totalrepliesreceived,likes) )
   
   comments_learner[is.na(comments_learner)]<-0
   comments_learner$learner_id<-as.character(comments_learner$learner_id)
   
+  #getting the correct number of replies made by a learner by substracting their own reply to themselves, either in terms of initiator' reply or further reply
+  comments_learner$replies<-comments_learner$replies-(comments_learner$further.reply+comments_learner$initiator.reply) 
+  colnames(comments_learner)[8]<-"replies.received"
+  
   rm(Multimerge)
   
-
   #categorizing social learners depending on their comments
   comments_learner$type[comments_learner$replies == 0]<-"Loner" 
   comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post == 0 & comments_learner$first.reply > 0 & comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Replier"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Initiator without replying"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies > 0]<-"Initiator who responds under their own initiating posts"
-  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies > 0]<-"Active social learner"
-  comments_learner$type[comments_learner$lone.post > 0 &comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Active social learners without repeated turn-taking"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies > 0 & (comments_learner$further.reply > 0 | comments_learner$initiator.reply > 0)]<-"Active social learner"
+  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Active social learners without repeated turn-taking"
   comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Reluctant active social learners"
   
   return(comments_learner)
@@ -1033,6 +1038,7 @@ getCommentsForClassification <- function(commentData){
   comments$parent_id[is.na(comments$parent_id)]<-0 # change the na shown in the csv to 0 so the next two lines could work
   comments$parent_group<-comments$parent_id
   comments$parent_group[comments$parent_id==0]<-comments$id[comments$parent_id==0]
+  comments<-comments[order(comments$parent_group,comments$id),]
   
   #change author id in the file to learner_id
   colnames(comments)[2]<-"learner_id"
@@ -1044,7 +1050,7 @@ getCommentsForClassification <- function(commentData){
   l=length(unique(comments$parent_group[comments$parent_id!=0])) #initiating post
   
   #make all non post to replies first
-  comments$nature[comments$parent_id!=0]<-" first reply"
+  comments$nature[comments$parent_id!=0]<-"first reply"
   
   # add the column to put in the initiator's learner_id a user replies to 
   comments$repliestowhom<-0
