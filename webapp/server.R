@@ -3103,7 +3103,37 @@ function(input, output, session) {
     print(actionButton("viewLearnersButton","View analysis"))
   })
   
+  #Dependency for the data table to only load after the view comments button has been pressed
+  viewPressedLearners <- eventReactive(input$viewLearnersButton,{
+   return(input$runChooserLearners)
+  })
   
+  output$learnersByCategory <- renderPlotly({
+    chartDependency()
+    viewPressedLearners()
+    
+    comments <- comments_data[[which(names(comments_data) == input$runChooserLearners)]]
+    data <- getCommentsForClassification(comments)
+    df <- getLearnerClassificationData(data)
+    
+    category <- count(df$type)
+    
+    colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)', 'rgb(1114, 147, 203)')
+    plot_ly(category, labels = ~x, values = ~freq, type = 'pie',
+            textposition = 'inside',
+            textinfo = 'label+percent',
+            insidetextfont = list (color = '#FFFFFF'),
+            hoverinfo = 'text',
+            text = ~paste(x, ': ', freq, 'learners'),
+            marker = list(colors = colors,
+                          line = list(color = '#FFFFFF', width = 1)),
+            showlegend = FALSE) %>%
+      layout(title = 'Learners by Category',
+             xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+            
+  })
+     
   
   # END LEARNERS ANALYSIS TAB
   

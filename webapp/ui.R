@@ -404,6 +404,11 @@ body <- dashboardBody(
                 title = "Selector", 
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE	
               )
+            ),
+            fluidRow(
+              box(plotlyOutput("learnersByCategory"),
+                  title = "Learners by Category",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
             )
     ),
     tabItem(tabName = "totalMeasures",
