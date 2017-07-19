@@ -406,9 +406,20 @@ body <- dashboardBody(
               )
             ),
             fluidRow(
-              box(plotlyOutput("learnersByCategory"),
+              box(
+                  plotlyOutput("learnersByCategory"),
+                 # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
+                 # tags$div(style = "margin-left:15px", uiOutput("viewLearnersActivityButton")),
                   title = "Learners by Category",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            ),
+            fluidRow(
+              box(
+                h5("Note: you can use the generated text-boxes below to filter based on each column's text-box."),
+                DT::dataTableOutput("learnerActivityViewer"),
+                title = "Learners' Activity", 
+                status = "primary", solidHeader = TRUE, width = 12, height = 1010 ,collapsible = TRUE
+              )
             )
     ),
     tabItem(tabName = "totalMeasures",
