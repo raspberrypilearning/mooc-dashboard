@@ -969,7 +969,8 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
 #' @param commentData comment data with categorised comments
 #'
 #' @return adata frame that contains the classification of learners in a course run
-getLearnerClassificationData <- function(commentData){
+
+getLearnerClassificationData <- function(commentData, run){
   comments <- commentData
   
   comments_learner<-as.data.frame(table(comments$learner_id,comments$nature))

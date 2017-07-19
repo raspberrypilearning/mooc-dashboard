@@ -3080,8 +3080,7 @@ function(input, output, session) {
   
   # START LEARNERS ANALYSIS TAB
   
-  
-  #Selector to choose which run to view comments of
+  #Selector to choose which run to view learners of
   output$learnersRunSelector <- renderUI({
     chartDependency()
     runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
@@ -3097,13 +3096,108 @@ function(input, output, session) {
     print(selectInput("runChooserLearners", label = "Run", choices = runs, width = "550px"))
   })
   
-  # View comments button
+  # #Selector to choose which type of learner to view activity of
+  # output$learnersTypeSelector <- renderUI({
+  #   chartDependency()
+  #   
+  #   comments <- comments_data[[which(names(comments_data) == input$runChooserLearners)]]
+  #   data <- getCommentsForClassification(comments)
+  #   df <- getLearnerClassificationData(data)
+  #   
+  #   types <- unique(df$type, incomparables = FALSE)
+  #   
+  #   print(selectInput("runChooserLearners", label = "Type", choices = types, width = "550px"))
+  # })
+  
+  # View learners button
   output$viewLearnersButton <- renderUI({
     chartDependency()
     print(actionButton("viewLearnersButton","View analysis"))
   })
   
+  #creating a global variable to store the data so that loading will be faster
+  s_data <- NULL
   
+  #Dependency for the pie chart and data table to only load after the view learners button has been pressed
+  
+  viewPressedLearners <- eventReactive(input$viewLearnersButton,{
+    
+    comments <- comments_data[[which(names(comments_data) == input$runChooserLearners)]]
+    data <- getCommentsForClassification(comments)
+    df <- getLearnerClassificationData(data)
+    
+    s_data <<- df
+    
+   return(input$runChooserLearners)
+  })
+  
+  #Create a pie chart to display percentages for different types of learners
+  output$learnersByCategory <- renderPlotly({
+    chartDependency()
+    viewPressedLearners()
+    
+    df <- s_data
+    
+    category <- count(df$type)
+    
+    colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)', 'rgb(1114, 147, 203)')
+    plot_ly(category, labels = ~x, values = ~freq, type = 'pie',
+            textposition = 'inside',
+            textinfo = 'label+percent',
+            insidetextfont = list (color = '#FFFFFF'),
+            hoverinfo = 'text',
+            text = ~paste(x, ': ', freq, 'learners'),
+            marker = list(colors = colors,
+                          line = list(color = '#FFFFFF', width = 1)),
+            showlegend = FALSE) %>%
+      layout(title = 'Learners by Category',
+             xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+            
+  })
+  
+  #Produce a data table for learners' activity
+  output$learnerActivityViewer <- renderDataTable({
+    chartDependency()
+    viewPressedLearners()
+    if(input$viewLearnersButton == 0){
+      return()
+    }
+    withProgress(message = "Processing Learners' List",{
+      
+      df <- s_data
+     
+      DT::datatable(
+        df[, c("learner_id", "initiating.post", "lone.post", "first.reply", "initiator.reply", "further.reply", "sumofcommentsmade", "replies", "likes", "type")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+        colnames = c(
+          "Learner ID" = 1,
+          "Initiating Posts" = 2,
+          "Lone Posts" = 3,
+          "First Replies" = 4,
+          "Initiator's Replies" = 5,
+          "Further Replies" = 6,
+          "Total" = 7,
+          "Replies Received" = 8,
+          "Likes Received" = 9,
+          "Type of Learner" = 10
+        ),
+        options = list(
+          autoWidth = TRUE,
+          scrollY = "700px",
+          lengthMenu = list(c(10, 20, 30, -1), c('10', '20', '30', 'All' )),
+          pageLength = 20,
+          dom = 'lfrtBip',
+          buttons = list(
+            "print"
+          )
+        ),
+        rownames = FALSE,
+        selection = 'single',
+        escape = FALSE
+      )
+    })
+  })
+     
   
   # END LEARNERS ANALYSIS TAB
   
