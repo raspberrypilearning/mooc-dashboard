@@ -1010,8 +1010,8 @@ getLearnerClassificationData <- function(commentData){
   comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post == 0 & comments_learner$first.reply > 0 & comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Replier"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Initiator without replying"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies > 0]<-"Initiator who responds under their own initiating posts"
-  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies > 0]<-"Active social learner"
-  comments_learner$type[comments_learner$lone.post > 0 &comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Active social learners without repeated turn-taking"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies > 0 & (comments_learner$further.reply > 0 | comments_learner$initiator.reply > 0)]<-"Active social learner"
+  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Active social learners without repeated turn-taking"
   comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Reluctant active social learners"
   
   return(comments_learner)
