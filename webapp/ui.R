@@ -37,7 +37,7 @@ commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbySt
                             "Comments and Replies by Week" = "CommentsandRepliesbyWeek",
                             "Number of Commentors by Week" = "NumberofCommentorsbyWeek")
 commentsTypeAnalysisList <- list("Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
-                                 "Table with comment types by day" = "TableWithCommentsTypesByDay")
+                                 "Table with Number of Comment by Day and Type" = "TableWithNumberOfCommentsByDayAndType")
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -355,7 +355,7 @@ body <- dashboardBody(
     tabItem(tabName = "commentsTypeAnalysis",
             fluidRow(
               box(uiOutput("runSelectorCommentsType"),
-                  selectInput("commentTypeGraph", label = "Choose a graph",
+                  selectInput("commentTypeOutput", label = "Choose an output",
                               choices = commentsTypeAnalysisList, selected = "NumberAndTypeOfCommentsByStep",width = 550),
                   actionButton("runSelectorCommentsTypeButton", label = "Display"),
                   title = "Run Selector",
@@ -365,12 +365,13 @@ body <- dashboardBody(
                   title = "Number and Types of Comments by Step", 
                   id="commentTypeBox1",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-              )
-              # box(showOutput("commentsPerDayBarChart", "highcharts"),
-              #     title = "Number of Comments per Day", 
-              #     id="commentTypeBox2",
-              #     status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-              # )
+              ),
+              box(
+                  h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
+                  DT::dataTableOutput("commentTypeByDateTable"),
+                  title = "Number of Comments by Date", 
+                  status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+              ), height = 1000
             )
     ),
     tabItem(tabName = "commentsViewer",

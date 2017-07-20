@@ -2839,8 +2839,8 @@ function(input, output, session) {
       }
       print(selectInput("runChooserCommentsType", label = "Run", choices = runs, width = "550px"))
     })
-    if (isolate(input$commentTypeGraph) == "NumberAndTypeOfCommentsByStep") {
-      #shinyjs::hide(id = "commentTypeBox2")
+    if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByStep") {
+      shinyjs::hide(id = "commentTypeBox2")
       shinyjs::show(id = "commentTypeBox1")
       output$commentsTypeBarChart <- renderChart2({
         
@@ -2848,33 +2848,102 @@ function(input, output, session) {
         chartDependency()
         commentTypeDependancy()
         
-        #step and comment data for the selected course run
-        sData <- step_data[[which(names(step_data) == input$runChooserCommentsType)]]
-        cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+        withProgress(message = "Processing comments", {
+          #step and comment data for the selected course run
+          sData <- step_data[[which(names(step_data) == input$runChooserCommentsType)]]
+          cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+          
+          #checking to see if the data needed to compute the chart is empty or not
+          #if empty it displays an error message, if not it renders the chart
+          if(nrow(sData)>0 && nrow(cData)>0){
+            plotData <- getCommentsTypeBarChart(sData,cData)
+            histogram <- Highcharts$new()
+            histogram$chart(type = "column" , width = 1200)
+            histogram$data(plotData[,c("lone post","initiating post", "first reply", "further reply", "initiator's reply")])
+            histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
+            histogram$yAxis(title = list(text = "Frequency"))
+            histogram$plotOptions (
+              column = list(
+                stacking = "normal"
+              ),
+              animation = FALSE
+            )
+            return(histogram)
+          } else {
+            shiny::validate(
+              need(nrow(sData)>0 && nrow(cData)>0,
+                   "No data available"))
+          }})
         
-        #checking to see if the data needed to compute the chart is empty or not
-        #if empty it displays an error message, if not it renders the chart
-        if(nrow(sData)>0 && nrow(cData)>0){
-          plotData <- getCommentsTypeBarChart(sData,cData)
-          histogram <- Highcharts$new()
-          histogram$chart(type = "column" , width = 1200)
-          histogram$data(plotData[,c("lone.post","initiating.post", "first.reply", "further.reply", "initiator.reply")])
-          histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
-          histogram$yAxis(title = list(text = "Frequency"))
-          histogram$plotOptions (
-            column = list(
-              stacking = "normal"
-            ),
-            animation = FALSE
-          )
-          return(histogram)
-        } else {
-          shiny::validate(
-            need(nrow(sData)>0 && nrow(cData)>0,
-                 "No data available"))
-        }
       })
-    } else {
+    } else if (isolate(input$commentTypeOutput) == "TableWithNumberOfCommentsByDayAndType"){
+      shinyjs::show(id = "commentTypeBox2")
+      shinyjs::hide(id = "commentTypeBox1")
+      
+      output$commentTypeByDateTable <- renderDataTable({
+        
+        #to update if the go button is pressed or the comment selector is changed
+        chartDependency()
+        commentTypeDependancy()
+        
+        withProgress(message = "Processing comments", {
+          
+          
+          cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+          
+          if(nrow(cData)>0) {
+            data <- getCommentsTypeNumberByDate(cData)
+            
+            DT::datatable(
+              data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+              colnames = c(
+                "Date" = 1,
+                "Lone posts" = 2,
+                "Initiating posts" = 3,
+                "First replies" = 4,
+                "Further replies" = 5,
+                "Initiator's replies" = 6
+              ),
+              options = list(
+                autoWidth = TRUE,
+                scrollY = "700px",
+                lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
+                pageLength = 20,
+                dom = 'lfrtBip',
+                buttons = list(
+                  "print",
+                  list(
+                    extend = 'pdf',
+                    filename = 'Comments',
+                    text = 'Download PDF'
+                  ),
+                  list(
+                    extend = 'excel',
+                    filename = 'Comments',
+                    text = 'Download Excel'
+                  ),
+                  list(
+                    extend = 'csv',
+                    filename = 'Comments',
+                    text = 'Download CSV'
+                  )
+                )
+              ),
+              rownames = FALSE,
+              selection = 'single',
+              escape = FALSE
+            )
+          } else {
+            shiny::validate(
+              need(nrow(cData)>0,
+                   "No data available"))
+          }
+          
+          
+        })
+        
+        
+      })
       
     }})
   
