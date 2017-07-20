@@ -408,7 +408,17 @@ body <- dashboardBody(
             fluidRow(
               box(
                   plotlyOutput("learnersByCategory"),
-                 # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
+                  tags$hr(),
+                  h4("LEGEND:"),
+                  h5("Loners = Never received replies", style="color:rgb(0,102,204)"),
+                  h5("Repliers = Only replied to others ", style="color:rgb(1114, 147, 203)"),
+                  h5("Initiators without replying = Never replied to others’ posts or underneath own initiating posts ", style="color:rgb(171, 104, 87)"),
+                  h5("Initiators who respond under their own posts = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(144, 103, 167)"),
+                  h5("Active social learners = Initiated posts, replied to others, and engaging in repeated turn-taking by replying under own initiating post or further replying ", style="color:rgb(211,94,96)"),
+                  h5("Active social learners without repeated turn-taking = Created posts, replied to others but never replied under own initiating post or further replied ", style="color:rgb(128,133,133)"),
+                  h5("Reluctant active social learners = Created lone posts, replied to others, further replied ", style="color:rgbrgb(0, 153, 76)"),
+                  #tags$hr(),
+                   # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
                  # tags$div(style = "margin-left:15px", uiOutput("viewLearnersActivityButton")),
                   title = "Learners by Category",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)

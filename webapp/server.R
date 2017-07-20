@@ -3140,7 +3140,7 @@ function(input, output, session) {
     
     category <- count(df$type)
     
-    colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)', 'rgb(1114, 147, 203)')
+    colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)','rgb(0,102,204)',  'rgb(1114, 147, 203)', 'rgb(0, 153, 76)')
     plot_ly(category, labels = ~x, values = ~freq, type = 'pie',
             textposition = 'inside',
             textinfo = 'label+percent',
