@@ -728,6 +728,71 @@ getCommentsBarChart <- function(stepData,comments){
 	return(plotData)
 }
 
+
+#' Get the number of each type of comments for each activity step
+#'
+#' @param sData data frame with step data for a specific course run
+#' @param cData data frame with comment data for a specific course run
+#'
+#' @return data from to construct the chart
+getCommentsTypeBarChart <- function(sData,cData){
+  
+  #making copies of the data frames
+  steps <- sData
+  c <- cData  
+  
+  #classifying the comments
+  comments <- getCommentsForClassification(c)
+  
+  stepLevels <- unique(getWeekStep(steps))
+  
+  #creating a data frame for the plot data: step, and each type of comments
+  plotData <-data.frame(week_step = stepLevels, lone.post = integer(length = length(stepLevels)), 
+                        initiating.post = integer(length = length(stepLevels)), first.reply = integer(length = length(stepLevels)), 
+                        further.reply = integer(length = length(stepLevels)), initiator.reply = integer(length = length(stepLevels)), stringsAsFactors = FALSE)
+  comments$week_step <- getWeekStep(comments)
+  
+  comments <- comments[,c("week_step", "nature", "learner_id")]
+
+  #counting the number of comments for each type
+  typesByStep <- aggregate(learner_id ~ week_step + nature, data = comments, length)
+
+  #constructing the data frame used for the chart
+  for(i in 1:length(plotData$week_step)){
+    if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "lone post"])!=0){
+      plotData$lone.post[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "lone post"]
+    } else {
+      plotData$lone.post[i] <- 0
+    }
+
+    if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiating post"])!=0){
+      plotData$initiating.post[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiating post"]
+    } else {
+      plotData$initiating.post[i] <- 0
+    }
+    
+    if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "first reply"])!=0){
+      plotData$first.reply[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "first reply"]
+    } else {
+      plotData$first.reply[i] <- 0
+    }
+    
+    if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "further reply"])!=0){
+      plotData$further.reply[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "further reply"]
+    } else {
+      plotData$further.reply[i] <- 0
+    }
+    
+    if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiator's reply"])!=0){
+      plotData$initiator.reply[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiator's reply"]
+    } else {
+      plotData$initiator.reply[i] <- 0
+    }
+    
+  }
+  return(plotData)
+}
+
 #' Returns the plot data for comments per week, just requires the comments data.
 #'
 #' @param comments data frame with comment data for the current course run
@@ -1011,13 +1076,13 @@ getLearnerClassificationData <- function(commentData){
   rm(Multimerge)
   
   #categorizing social learners depending on their comments
-  comments_learner$type[comments_learner$replies == 0]<-"Loner" 
-  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post == 0 & comments_learner$first.reply > 0 & comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Replier"
-  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Initiator without replying"
-  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies > 0]<-"Initiator who responds under their own initiating posts"
-  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies > 0 & (comments_learner$further.reply > 0 | comments_learner$initiator.reply > 0)]<-"Active social learner"
-  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Active social learners without repeated turn-taking"
-  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies > 0]<-"Reluctant active social learners"
+  comments_learner$type[comments_learner$replies.received == 0]<-"Loner" 
+  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post == 0 & comments_learner$first.reply > 0 & comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Replier"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Initiator without replying"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies.received > 0]<-"Initiator who responds under their own initiating posts"
+  comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies.received > 0 & (comments_learner$further.reply > 0 | comments_learner$initiator.reply > 0)]<-"Active social learner"
+  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Active social learners without repeated turn-taking"
+  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Reluctant active social learners"
   
   return(comments_learner)
 }
