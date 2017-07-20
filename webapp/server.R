@@ -204,6 +204,7 @@ function(input, output, session) {
   chartDependency <- eventReactive(input$chooseCourseButton, {})
   stepDependancy <- eventReactive(input$runChooserSteps, {})
   commentDependancy <- eventReactive(input$runChooserComments, {})
+  commentTypeDependancy <- eventReactive(input$runChooserCommentsType, {})
   measuresDependancy <- eventReactive(input$totalMeasuresRunChooser, {})
   
   
@@ -2818,6 +2819,73 @@ function(input, output, session) {
   })
   
   #END: CHARTS - COMMENTS ORIENTATED
+  
+  # START COMMENTS TYPE ANALYSIS
+  
+  CommentTypeButtonDependency <- eventReactive(input$runSelectorCommentsTypeButton, {})
+  observeEvent(input$runSelectorCommentsTypeButton, {
+    output$runSelectorCommentsType <- renderUI({
+      CommentTypeButtonDependency()
+      chartDependency()
+      runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+      if(input$run2 != "None"){
+        runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      }
+      if(input$run3 != "None"){
+        runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      }
+      if(input$run4 != "None"){
+        runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      }
+      print(selectInput("runChooserCommentsType", label = "Run", choices = runs, width = "550px"))
+    })
+    if (isolate(input$commentTypeGraph) == "NumberAndTypeOfCommentsByStep") {
+      #shinyjs::hide(id = "commentTypeBox2")
+      shinyjs::show(id = "commentTypeBox1")
+      output$commentsTypeBarChart <- renderChart2({
+        
+        #to update if the go button is pressed or the comment selector is changed
+        chartDependency()
+        commentTypeDependancy()
+        
+        #step and comment data for the selected course run
+        sData <- step_data[[which(names(step_data) == input$runChooserCommentsType)]]
+        cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+        
+        #checking to see if the data needed to compute the chart is empty or not
+        #if empty it displays an error message, if not it renders the chart
+        if(nrow(sData)>0 && nrow(cData)>0){
+          plotData <- getCommentsTypeBarChart(sData,cData)
+          histogram <- Highcharts$new()
+          histogram$chart(type = "column" , width = 1200)
+          histogram$data(plotData[,c("lone.post","initiating.post", "first.reply", "further.reply", "initiator.reply")])
+          histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
+          histogram$yAxis(title = list(text = "Frequency"))
+          histogram$plotOptions (
+            column = list(
+              stacking = "normal"
+            ),
+            animation = FALSE
+          )
+          return(histogram)
+        } else {
+          shiny::validate(
+            need(nrow(sData)>0 && nrow(cData)>0,
+                 "No data available"))
+        }
+      })
+    } else {
+      
+    }})
+  
+  
+  
+  
+  
+  
+  # END COMMENTS TYPE ANALYSIS
+  
+  
   
   
   # START COMMENT VIEWER TAB
