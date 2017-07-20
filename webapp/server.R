@@ -1997,7 +1997,7 @@ function(input, output, session) {
     } else {
       # Merge the x and y data frames together and rename the columns
       plotData <- merge(x, y, by = "learner_id")
-
+      
       colnames(plotData)[c(2,3)] <- c("x", "y")
       # Produce the regression model 
       regressionModel <- lm(x ~ y, data = plotData)
@@ -2304,7 +2304,7 @@ function(input, output, session) {
           )
           a$xAxis(categories = unlist(as.factor(stepsCount[,c("week_step")])), title = list(text = "Step"))
           a$yAxis(title = list(text = "Frequency"))
-
+          
           a$plotOptions(
             column = list(
               animation = FALSE
@@ -2316,14 +2316,14 @@ function(input, output, session) {
           #creating the regression model and data
           model <- lm(freq ~ id, stepsCount)
           fit <- fortify(model)
-            
+          
           #displaying the regression line
           a$series(name = "Regression line",
-                  	 type = "line",
-                 	   data = fit$.fitted,
-                     marker = list(enabled = FALSE)
-
-           )
+                   type = "line",
+                   data = fit$.fitted,
+                   marker = list(enabled = FALSE)
+                   
+          )
           return(a)
         } else {
           #if there is no data available it shows an error message
@@ -2391,7 +2391,7 @@ function(input, output, session) {
                    type = "line",
                    data = fit$.fitted,
                    marker = list(enabled = FALSE))
-                   
+          
           return(a)
         } else {
           #if there is no data available it shows an error message
@@ -3059,14 +3059,14 @@ function(input, output, session) {
   #Makes the wordcloud code repeatable.
   wordcloud_rep <- repeatable(wordcloud)
   
-   output$commentsByCategory <- renderPlotly({
-     chartDependency()
-     viewPressed()
- 
+  output$commentsByCategory <- renderPlotly({
+    chartDependency()
+    viewPressed()
+    
     data <- c_data
     categorisation <- count(data$nature)
-
-
+    
+    
     # pie <- Highcharts$new()
     # pie$chart(type = "pie")
     # pie$title(text = "Comment categories")
@@ -3084,24 +3084,23 @@ function(input, output, session) {
     # 
     # 
     # print(categorisation)
-    colors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)')
-  #  colors <- c('rgb(0, 204, 0)', 'rgb(240, 88, 0)', 'rgb(118, 17, 195)', 'rgb(0, 48, 240)', 'rgb(215, 11, 11)')
-   plot_ly(categorisation, labels = ~x, values = ~freq, type = 'pie',
-                  textposition = 'inside',
-                  textinfo = 'label+percent',
-                  insidetextfont = list(color = '#FFFFFF'),
-                  hoverinfo = 'text',
-                  text = ~paste('', freq, 'comments'),
-                  marker = list(colors = colors,
-                                line = list(color = '#FFFFFF', width = 1)),
-                  #The 'pull' attribute can also be used to create space between the sectors
-                  showlegend = FALSE) %>%
-       layout(title = 'Comments by Category',
-              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-                  
+    colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)','rgb(0,102,204)',  'rgb(1114, 147, 203)', 'rgb(0, 153, 76)')
+    plot_ly(categorisation, labels = ~x, values = ~freq, type = 'pie',
+            textposition = 'inside',
+            textinfo = 'label+percent',
+            insidetextfont = list(color = '#FFFFFF'),
+            hoverinfo = 'text',
+            text = ~paste('', freq, 'comments'),
+            marker = list(colors = colors,
+                          line = list(color = '#FFFFFF', width = 1)),
+            #The 'pull' attribute can also be used to create space between the sectors
+            showlegend = FALSE) %>%
+      layout(title = 'Comments by Category',
+             xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))%>%
+      config(displayModeBar = F)
     
-  
+    
   })
   
   #Generates the terms for the word cloud
@@ -3196,7 +3195,7 @@ function(input, output, session) {
     
     s_data <<- df
     
-   return(input$runChooserLearners)
+    return(input$runChooserLearners)
   })
   
   #Create a pie chart to display percentages for different types of learners
@@ -3220,8 +3219,9 @@ function(input, output, session) {
             showlegend = FALSE) %>%
       layout(title = 'Learners by Category',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-            
+             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))%>%
+      config(displayModeBar = F)
+    
   })
   
   #Produce a data table for learners' activity
@@ -3234,9 +3234,9 @@ function(input, output, session) {
     withProgress(message = "Processing Learners' List",{
       
       df <- s_data
-     
+      print(df)
       DT::datatable(
-        df[, c("learner_id", "initiating.post", "lone.post", "first.reply", "initiator.reply", "further.reply", "sumofcommentsmade", "replies", "likes", "type")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+        df[, c("learner_id", "initiating.post", "lone.post", "first.reply", "initiator.reply", "further.reply", "sumofcommentsmade", "replies.received", "likes", "type")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Learner ID" = 1,
           "Initiating Posts" = 2,
@@ -3265,11 +3265,11 @@ function(input, output, session) {
       )
     })
   })
-     
+  
   
   # END LEARNERS ANALYSIS TAB
   
-
+  
   # START TEAM MEMBERS TAB
   
   #Selector to choose which run to be displayed
@@ -3414,7 +3414,7 @@ function(input, output, session) {
       return()
     }
     withProgress(message = "Processing",{
-
+      
       #data frame with comment data for the selected course run
       comments <- comments_data[[which(names(comments_data) == input$runChooserSurvey)]]
       
@@ -3437,7 +3437,7 @@ function(input, output, session) {
       
       #getting the table data and creating the table
       data <- getBasicSurveyData(dfPreCourse, comments)
-
+      
       DT::datatable(
         data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         options = list(
@@ -3490,7 +3490,7 @@ function(input, output, session) {
       write.csv(data, file)
     }
   )
-
+  
   # END SURVEY ANALYSIS TAB
   
   # Debug tool print statements.
