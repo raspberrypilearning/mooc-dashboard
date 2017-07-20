@@ -197,14 +197,15 @@ body <- dashboardBody(
               box(showOutput("stateAgeColumn","highcharts"),
                   downloadButton("downloadStateLearnerAge","Download"),
                   title = "Statements Sold Age Ranges",
-                  status = "primary", solidHeader = TRUE, width = 8, height = 500,collapsible = TRUE
-              ),
+                  status = "primary", solidHeader = TRUE, width = 8, collapsible = TRUE
+              ), 
+              height = 500,
               box(
                 showOutput("stateGenderColumn","highcharts"),
                 downloadButton("downloadStateLearnerGender","Download"),
                 title = "Statements Sold Gender",
-                status = "primary", solidHeader = TRUE, width = 4, height = 500,collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 4, collapsible = TRUE
+              ), height = 500
             ),
             fluidRow(
               tabBox(
@@ -389,28 +390,28 @@ body <- dashboardBody(
                   tags$div(style = "margin-left:15px", uiOutput("loadCloud"))
                 ),
                 title = "Selector", 
-                status = "primary", solidHeader = TRUE, width = 6, height = 460 ,collapsible = TRUE	
-              ),
+                status = "primary", solidHeader = TRUE, width = 6 ,collapsible = TRUE	
+              ), height = 460,
               box(
                 plotOutput("stepWordCloud"),
                 title = "Word Cloud",
-                status = "primary", solidHeader = TRUE, width = 6, height = 460, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE
+              ), height = 460
             ),
             fluidRow(
               box(
                 h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
                 DT::dataTableOutput("commentViewer"),
                 title = "Comments", 
-                status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1010
             ),
             fluidRow(
               box(
                 DT::dataTableOutput("threadViewer"),
                 title = "Comment Thread Viewer", 
-                status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
+              ), height = 1000 
             ),
             fluidRow(
               box(plotlyOutput("commentsByCategory"),
@@ -432,7 +433,17 @@ body <- dashboardBody(
             fluidRow(
               box(
                   plotlyOutput("learnersByCategory"),
-                 # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
+                  tags$hr(),
+                  h4("LEGEND:"),
+                  h5("Loners = Never received replies", style="color:rgb(0,102,204)"),
+                  h5("Repliers = Only replied to others ", style="color:rgb(0, 153, 76)"),
+                  h5("Initiators without replying = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(171, 104, 87)"),
+                  h5("Initiators who respond under their own posts = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(144, 103, 167)"),
+                  h5("Active social learners = Initiated posts, replied to others, and engaging in repeated turn-taking by replying under own initiating post or further replying ", style="color:rgb(211,94,96)"),
+                  h5("Active social learners without repeated turn-taking = Created posts, replied to others but never replied under own initiating post or further replied ", style="color:rgb(128,133,133)"),
+                  h5("Reluctant active social learners = Created lone posts, replied to others, further replied ", style="color:rgb(1114, 147, 203)"),
+                  #tags$hr(),
+                   # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
                  # tags$div(style = "margin-left:15px", uiOutput("viewLearnersActivityButton")),
                   title = "Learners by Category",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
@@ -442,8 +453,8 @@ body <- dashboardBody(
                 h5("Note: you can use the generated text-boxes below to filter based on each column's text-box."),
                 DT::dataTableOutput("learnerActivityViewer"),
                 title = "Learners' Activity", 
-                status = "primary", solidHeader = TRUE, width = 12, height = 1010 ,collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1010 
             )
     ),
     tabItem(tabName = "totalMeasures",
@@ -455,8 +466,8 @@ body <- dashboardBody(
             fluidRow(
               box(showOutput("avgCommentsCompletionLine", "highcharts"),
                   title = "Average Number of Comments per Completion", 
-                  status = "primary", solidHeader = TRUE, width = 12, height = 700 ,collapsible = TRUE)
-            ),#fluidRow
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            ), height = 700,
             fluidRow(
               valueBoxOutput("totalComments", width = 6),
               valueBoxOutput("avgComments", width = 6),
@@ -479,8 +490,8 @@ body <- dashboardBody(
               box(htmlOutput("scatterPlot"),
                   textInput("scatterSlopeValue", ""),
                   title = "Scatter plot", 
-                  status = "primary", solidHeader = TRUE, width = 12,height = 700, collapsible = TRUE)
-            ),
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            ), height = 700,
             fluidRow(
               valueBoxOutput("scatterSlope", width = 6)
             )#fluidRow
@@ -494,16 +505,16 @@ body <- dashboardBody(
                   tags$div(style = "margin-left:15px", uiOutput("viewTeamButton"))
                 ),
                 title = "Run Selector",
-                status = "primary", solidHeader = TRUE, width = 12,height = 200, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 200
             ),
             
             fluidRow(
               box(
                 DT::dataTableOutput("teamMembersViewer"),
                 title = "Team Members Activity",
-                status = "primary", solidHeader = TRUE, width = 12,height = 1000, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1000
             )
     ),
     
@@ -521,8 +532,8 @@ body <- dashboardBody(
                          tags$div(style = "margin-left:15px", uiOutput("viewSurAnButton"))
                        ),
                        title = "Uploading Files and Run Selector",
-                       status = "primary", solidHeader = TRUE, width = 12,height = 300, collapsible = TRUE
-                     )
+                       status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+                     ), height = 300 
                      ),
             
             fluidRow(
@@ -533,8 +544,8 @@ body <- dashboardBody(
                 downloadButton('downloadSurveyAnalysis', ' Download as CSV'),
                 
                 title = "Pre-Course survey and Comments in step 1.2",
-                status = "primary", solidHeader = TRUE, width = 12, height = 1300, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1300
             )
     )
   )
