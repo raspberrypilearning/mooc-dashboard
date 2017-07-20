@@ -741,57 +741,129 @@ getCommentsTypeBarChart <- function(sData,cData){
   steps <- sData
   c <- cData  
   
-  #classifying the comments
+  #classifying the comments on the 5 existing types
   comments <- getCommentsForClassification(c)
   
   stepLevels <- unique(getWeekStep(steps))
   
   #creating a data frame for the plot data: step, and each type of comments
-  plotData <-data.frame(week_step = stepLevels, lone.post = integer(length = length(stepLevels)), 
-                        initiating.post = integer(length = length(stepLevels)), first.reply = integer(length = length(stepLevels)), 
-                        further.reply = integer(length = length(stepLevels)), initiator.reply = integer(length = length(stepLevels)), stringsAsFactors = FALSE)
+  plotData <-data.frame(week_step = stepLevels, "lone post" = integer(length = length(stepLevels)), 
+                        "initiating post" = integer(length = length(stepLevels)), "first reply" = integer(length = length(stepLevels)), 
+                        "further reply" = integer(length = length(stepLevels)), "initiator's reply" = integer(length = length(stepLevels)), stringsAsFactors = FALSE)
   comments$week_step <- getWeekStep(comments)
   
+  #extracting the necessary columns
   comments <- comments[,c("week_step", "nature", "learner_id")]
 
   #counting the number of comments for each type
   typesByStep <- aggregate(learner_id ~ week_step + nature, data = comments, length)
 
   #constructing the data frame used for the chart
+  #for each existing step in the course run it finds the number of comments for each comment type
   for(i in 1:length(plotData$week_step)){
+    
     if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "lone post"])!=0){
-      plotData$lone.post[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "lone post"]
+      plotData[i, "lone post"] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "lone post"]
     } else {
-      plotData$lone.post[i] <- 0
+      plotData[i, "lone post"] <- 0
     }
 
     if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiating post"])!=0){
-      plotData$initiating.post[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiating post"]
+      plotData[i, "initiating post"] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiating post"]
     } else {
-      plotData$initiating.post[i] <- 0
+      plotData[i, "initiating post"] <- 0
     }
     
     if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "first reply"])!=0){
-      plotData$first.reply[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "first reply"]
+      plotData[i, "first reply"] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "first reply"]
     } else {
-      plotData$first.reply[i] <- 0
+      plotData[i, "first reply"] <- 0
     }
     
     if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "further reply"])!=0){
-      plotData$further.reply[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "further reply"]
+      plotData[i, "further reply"] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "further reply"]
     } else {
-      plotData$further.reply[i] <- 0
+      plotData[i, "further reply"] <- 0
     }
     
     if(length(typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiator's reply"])!=0){
-      plotData$initiator.reply[i] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiator's reply"]
+      plotData[i, "initiator's reply"] <- typesByStep$learner_id[typesByStep$week_step == plotData$week_step[i] & typesByStep$nature == "initiator's reply"]
     } else {
-      plotData$initiator.reply[i] <- 0
+      plotData[i, "initiator's reply"] <- 0
     }
     
   }
   return(plotData)
 }
+
+
+
+#' Get the number and type of comments by day to display in a table
+#'
+#' @param commentsData data frame with comment data for a specific course run
+#'
+#' @return data frame with each day of the course run and the count of each comment type 
+getCommentsTypeNumberByDate <- function(commentsData){
+  comments <- commentsData
+  
+  #extract only the day (removes the time) from the timestamp
+  comments$timestamp <- as.Date(substr(as.character(comments$timestamp), start = 1, stop = 10))
+  dates <- unique(comments$timestamp)
+  
+  #creates a data frame which will be returned
+  data <- data.frame(date = as.Date(dates), lone.post = integer(length = length(dates)), 
+                     initiating.post = integer(length = length(dates)), first.reply = integer(length = length(dates)), 
+                     further.reply = integer(length = length(dates)), initiator.reply = integer(length = length(dates)), stringsAsFactors = FALSE)
+
+  #goes through each dat of the course
+  for(i in 1:length(dates)){
+    
+    #classifies the comments up to that day by their type and counts them
+    commentsUpToDate <- comments[comments$timestamp <= dates[i], ]
+    commentsUpToDate <- getCommentsForClassification(commentsUpToDate)
+    countTypes <- count(commentsUpToDate$nature)
+    
+    #updates the final data frame
+    if(length(countTypes$freq[countTypes$x == "lone post"])!=0){
+      data$lone.post[i] <- countTypes$freq[countTypes$x == "lone post"]
+    } else {
+      data$lone.post[i] <- 0
+    }
+
+    if(length(countTypes$freq[countTypes$x == "initiating post"])!=0){
+      data$initiating.post[i] <- countTypes$freq[countTypes$x == "initiating post"]
+    } else {
+      data$initiating.post[i] <- 0
+    }
+
+    if(length(countTypes$freq[countTypes$x == "first reply"])!=0){
+      data$first.reply[i] <- countTypes$freq[countTypes$x == "first reply"]
+    } else {
+      data$first.reply[i] <- 0
+    }
+
+    if(length(countTypes$freq[countTypes$x == "further reply"])!=0){
+      data$further.reply[i] <- countTypes$freq[countTypes$x == "further reply"]
+    } else {
+      data$further.reply[i] <- 0
+    }
+
+    if(length(countTypes$freq[countTypes$x == "initiator's reply"])!=0){
+      data$initiator.reply[i] <- countTypes$freq[countTypes$x == "initiator's reply"]
+    } else {
+      data$initiator.reply[i] <- 0
+    }
+
+  }
+  
+  #renames the column names
+  colnames(data) <- c("date", "lone post", "initiating post", "first reply", "further reply", "initiator's reply")
+
+  return(data)
+}
+
+
+
 
 #' Returns the plot data for comments per week, just requires the comments data.
 #'
