@@ -36,7 +36,8 @@ commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbySt
                             "Number of Comments by Step and Date" = "NumberofCommentsbyStepandDate",
                             "Comments and Replies by Week" = "CommentsandRepliesbyWeek",
                             "Number of Commentors by Week" = "NumberofCommentorsbyWeek")
-
+commentsTypeAnalysisList <- list("Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
+                                 "Table with comment types by day" = "TableWithCommentsTypesByDay")
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -50,6 +51,7 @@ sidebar <- dashboardSidebar(
     menuItem("Sign Ups and Statements Sold", tabName = "signUpsStatementsSold", icon = icon("area-chart")),
     menuItem("Step Completion", tabName = "stepCompletion", icon = icon("graduation-cap")),
     menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("comments")),
+    menuItem("Comments Type Analysis", tabName = "commentsTypeAnalysis", icon = icon("commenting")),
     menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("comments-o")),
     menuItem("Learners Analysis", tabName = "learnersAnalysis", icon = icon("user-circle-o")),
     menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comment")),
@@ -327,6 +329,7 @@ body <- dashboardBody(
                   id="commentBox1",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               ),
+              
               box(showOutput("commentsPerDayBarChart", "highcharts"),
                   title = "Number of Comments per Day", 
                   id="commentBox2",
@@ -337,7 +340,7 @@ body <- dashboardBody(
                   id="commentBox3",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               )
-            ),#fluidRow
+            ),
             fluidRow(
               box(showOutput("commentsRepliesWeekBar", "highcharts"),
                   title = "Comments and Replies by Week",
@@ -347,7 +350,28 @@ body <- dashboardBody(
                   title = "Number of Commentors by Week", 
                   id="commentBox5",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
-            )#fluidRow
+            )
+    ),
+    tabItem(tabName = "commentsTypeAnalysis",
+            fluidRow(
+              box(uiOutput("runSelectorCommentsType"),
+                  selectInput("commentTypeGraph", label = "Choose a graph",
+                              choices = commentsTypeAnalysisList, selected = "NumberAndTypeOfCommentsByStep",width = 550),
+                  actionButton("runSelectorCommentsTypeButton", label = "Display"),
+                  title = "Run Selector",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ),
+              box(showOutput("commentsTypeBarChart", "highcharts"),
+                  title = "Number and Types of Comments by Step", 
+                  id="commentTypeBox1",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              )
+              # box(showOutput("commentsPerDayBarChart", "highcharts"),
+              #     title = "Number of Comments per Day", 
+              #     id="commentTypeBox2",
+              #     status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              # )
+            )
     ),
     tabItem(tabName = "commentsViewer",
             fluidRow(
