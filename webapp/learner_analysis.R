@@ -806,7 +806,7 @@ getCommentsTypeBarChart <- function(sData,cData){
 getCommentsTypeNumberByDate <- function(commentsData){
   comments <- commentsData
   
-  #extract only the day (removes the time) from the timestamp
+  #extracts only the day (removes the time) from the timestamp
   comments$timestamp <- as.Date(substr(as.character(comments$timestamp), start = 1, stop = 10))
   dates <- unique(comments$timestamp)
   
@@ -814,8 +814,10 @@ getCommentsTypeNumberByDate <- function(commentsData){
   data <- data.frame(date = as.Date(dates), lone.post = integer(length = length(dates)), 
                      initiating.post = integer(length = length(dates)), first.reply = integer(length = length(dates)), 
                      further.reply = integer(length = length(dates)), initiator.reply = integer(length = length(dates)), stringsAsFactors = FALSE)
+
   
   #goes through each dat of the course
+
   for(i in 1:length(dates)){
     
     #classifies the comments up to that day by their type and counts them
@@ -823,7 +825,7 @@ getCommentsTypeNumberByDate <- function(commentsData){
     commentsUpToDate <- getCommentsForClassification(commentsUpToDate)
     countTypes <- count(commentsUpToDate$nature)
     
-    #updates the final data frame
+    #if there are comments of that type on that day then updates the final data frame with the respective number
     if(length(countTypes$freq[countTypes$x == "lone post"])!=0){
       data$lone.post[i] <- countTypes$freq[countTypes$x == "lone post"]
     } else {
@@ -853,7 +855,6 @@ getCommentsTypeNumberByDate <- function(commentsData){
     } else {
       data$initiator.reply[i] <- 0
     }
-    
   }
   
   #renames the column names
@@ -861,8 +862,6 @@ getCommentsTypeNumberByDate <- function(commentsData){
   
   return(data)
 }
-
-
 
 
 #' Returns the plot data for comments per week, just requires the comments data.
