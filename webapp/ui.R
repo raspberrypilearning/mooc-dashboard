@@ -37,7 +37,8 @@ commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbySt
                             "Comments and Replies by Week" = "CommentsandRepliesbyWeek",
                             "Number of Commentors by Week" = "NumberofCommentorsbyWeek")
 commentsTypeAnalysisList <- list("Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
-                                 "Table with Number of Comment by Day and Type" = "TableWithNumberOfCommentsByDayAndType")
+                                 "Number And Type of Comments by Day" = "NumberAndTypeOfCommentsByDay")
+                                 #"Table with Number of Comment by Day and Type" = "TableWithNumberOfCommentsByDayAndType")
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -367,12 +368,19 @@ body <- dashboardBody(
                   id="commentTypeBox1",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               ),
-              box(
-                  h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
-                  DT::dataTableOutput("commentTypeByDateTable"),
-                  title = "Number of Comments by Date", 
-                  status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
-              ), height = 1000
+              box(showOutput("commentsTypeLineChart", "highcharts"),
+                  title = "Number and Types of Comments by Day", 
+                  id="commentTypeBox2",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              )
+              # table which shows the number of comments for each type by day- in case it's needed
+              # box(
+              #     h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
+              #     DT::dataTableOutput("commentTypeByDateTable"),
+              #     id = "commentTypeBox3",
+              #     title = "Number of Comments by Date", 
+              #     status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+              # ), height = 1000
             )
     ),
     tabItem(tabName = "commentsViewer",
