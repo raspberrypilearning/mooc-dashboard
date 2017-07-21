@@ -2841,6 +2841,7 @@ function(input, output, session) {
     })
     if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByStep") {
       shinyjs::hide(id = "commentTypeBox2")
+      #shinyjs::hide(id = "commentTypeBox3")
       shinyjs::show(id = "commentTypeBox1")
       output$commentsTypeBarChart <- renderChart2({
         
@@ -2875,75 +2876,78 @@ function(input, output, session) {
                    "No data available"))
           }})
         
-      })
-    } else if (isolate(input$commentTypeOutput) == "TableWithNumberOfCommentsByDayAndType"){
-      shinyjs::show(id = "commentTypeBox2")
-      shinyjs::hide(id = "commentTypeBox1")
-      
-      output$commentTypeByDateTable <- renderDataTable({
+      }) else if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByDay"){
         
-        #to update if the go button is pressed or the comment selector is changed
-        chartDependency()
-        commentTypeDependancy()
-        
-        withProgress(message = "Processing comments", {
-          
-          
-          cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
-          
-          if(nrow(cData)>0) {
-            data <- getCommentsTypeNumberByDate(cData)
-            
-            DT::datatable(
-              data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-              colnames = c(
-                "Date" = 1,
-                "Lone posts" = 2,
-                "Initiating posts" = 3,
-                "First replies" = 4,
-                "Further replies" = 5,
-                "Initiator's replies" = 6
-              ),
-              options = list(
-                autoWidth = TRUE,
-                scrollY = "700px",
-                lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
-                pageLength = 20,
-                dom = 'lfrtBip',
-                buttons = list(
-                  "print",
-                  list(
-                    extend = 'pdf',
-                    filename = 'Comments',
-                    text = 'Download PDF'
-                  ),
-                  list(
-                    extend = 'excel',
-                    filename = 'Comments',
-                    text = 'Download Excel'
-                  ),
-                  list(
-                    extend = 'csv',
-                    filename = 'Comments',
-                    text = 'Download CSV'
-                  )
-                )
-              ),
-              rownames = FALSE,
-              selection = 'single',
-              escape = FALSE
-            )
-          } else {
-            shiny::validate(
-              need(nrow(cData)>0,
-                   "No data available"))
-          }
-          
-          
-        })
-        
-        
-      })
+      }
+    # } else if (isolate(input$commentTypeOutput) == "TableWithNumberOfCommentsByDayAndType"){
+    #   shinyjs::show(id = "commentTypeBox3")
+    #   shinyjs::hide(id = "commentTypeBox1")
+    #   shinyjs::hide(id = "commentTypeBox2")
+    #   
+    #   output$commentTypeByDateTable <- renderDataTable({
+    #     
+    #     #to update if the go button is pressed or the comment selector is changed
+    #     chartDependency()
+    #     commentTypeDependancy()
+    #     
+    #     withProgress(message = "Processing comments", {
+    #       
+    #       
+    #       cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+    #       
+    #       if(nrow(cData)>0) {
+    #         data <- getCommentsTypeNumberByDate(cData)
+    #         
+    #         DT::datatable(
+    #           data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+    #           colnames = c(
+    #             "Date" = 1,
+    #             "Lone posts" = 2,
+    #             "Initiating posts" = 3,
+    #             "First replies" = 4,
+    #             "Further replies" = 5,
+    #             "Initiator's replies" = 6
+    #           ),
+    #           options = list(
+    #             autoWidth = TRUE,
+    #             scrollY = "700px",
+    #             lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
+    #             pageLength = 20,
+    #             dom = 'lfrtBip',
+    #             buttons = list(
+    #               "print",
+    #               list(
+    #                 extend = 'pdf',
+    #                 filename = 'Comments',
+    #                 text = 'Download PDF'
+    #               ),
+    #               list(
+    #                 extend = 'excel',
+    #                 filename = 'Comments',
+    #                 text = 'Download Excel'
+    #               ),
+    #               list(
+    #                 extend = 'csv',
+    #                 filename = 'Comments',
+    #                 text = 'Download CSV'
+    #               )
+    #             )
+    #           ),
+    #           rownames = FALSE,
+    #           selection = 'single',
+    #           escape = FALSE
+    #         )
+    #       } else {
+    #         shiny::validate(
+    #           need(nrow(cData)>0,
+    #                "No data available"))
+    #       }
+    #       
+    #       
+    #     })
+    #     
+    #     
+    #   })
       
     }})
   
