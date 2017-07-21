@@ -451,11 +451,18 @@ body <- dashboardBody(
             ),
             fluidRow(
               box(
-                h5("Note: you can use the generated text-boxes below to filter based on each column's text-box."),
+                h5("Note: you can click on the learner id to see the comments by individual learners."),
                 DT::dataTableOutput("learnerActivityViewer"),
                 title = "Learners' Activity", 
                 status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
               ), height = 1010 
+            ),
+            fluidRow(
+              box(
+                DT::dataTableOutput("commentLearnersAnalysisViewer"),
+                title = "Comments Contributed Viewer", 
+                status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
+              ), height = 1000 
             )
     ),
     tabItem(tabName = "totalMeasures",

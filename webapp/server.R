@@ -3303,7 +3303,7 @@ function(input, output, session) {
     withProgress(message = "Processing Learners' List",{
       
       df <- s_data
-      print(df)
+
       DT::datatable(
         df[, c("learner_id", "initiating.post", "lone.post", "first.reply", "initiator.reply", "further.reply", "sumofcommentsmade", "replies.received", "likes", "type")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
@@ -3331,6 +3331,52 @@ function(input, output, session) {
         rownames = FALSE,
         selection = 'single',
         escape = FALSE
+      )
+    })
+  })
+  
+  # Checks if a comment has been selected
+  commentsLearnerSelected <- eventReactive( input$learnerActivityViewer_rows_selected, {
+    runif(input$learnerActivityViewer_rows_selected)
+  })
+  
+  #Produce a data table of the comments contributed by one particular learner
+  output$commentLearnersAnalysisViewer <- renderDataTable({
+    chartDependency()
+    viewPressedLearners()
+    commentsLearnerSelected()
+    withProgress(message = "Retrieving comments",{
+      
+      df <- s_data
+      
+      comments <- getCommentLearnersAnalysisViewerData(comments_data, input$runChooserLearners, courseMetaData)
+      selectedRow <- df[input$learnerActivityViewer_rows_selected,]
+      comments <- comments[comments$learner_id ==  selectedRow$learner_id, ]
+
+      DT::datatable(
+        comments[,c("timestamp", "step", "week_number", "text", "nature", "likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+        colnames = c(
+          "Date" = 1,
+          "Step" = 2,
+          "Week" = 3,
+          "Comment" = 4,
+          "Comment Category" = 5,
+          "Likes" = 6,
+          "Link" = 7
+        ),
+        options = list(
+          autoWidth = TRUE,
+          scrollY = "700px",
+          lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
+          pageLength = 20,
+          dom = 'lfrtBip',
+          buttons = list(
+            "print" 
+      )
+        ),
+      rownames = FALSE,
+      selection = 'single',
+      escape = FALSE
       )
     })
   })
