@@ -368,11 +368,12 @@ body <- dashboardBody(
                   id="commentTypeBox1",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               ),
-              box(showOutput("commentsTypeBarChart", "highcharts"),
-                  title = "Number and Types of Comments by Step", 
+              box(showOutput("commentsTypeLineChart", "highcharts"),
+                  title = "Number and Types of Comments by Day", 
                   id="commentTypeBox2",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               )
+              # table which shows the number of comments for each type by day- in case it's needed
               # box(
               #     h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
               #     DT::dataTableOutput("commentTypeByDateTable"),

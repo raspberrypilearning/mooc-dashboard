@@ -2839,10 +2839,13 @@ function(input, output, session) {
       }
       print(selectInput("runChooserCommentsType", label = "Run", choices = runs, width = "550px"))
     })
+    
     if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByStep") {
+      
+      shinyjs::show(id = "commentTypeBox1")
       shinyjs::hide(id = "commentTypeBox2")
       #shinyjs::hide(id = "commentTypeBox3")
-      shinyjs::show(id = "commentTypeBox1")
+      
       output$commentsTypeBarChart <- renderChart2({
         
         #to update if the go button is pressed or the comment selector is changed
@@ -2874,11 +2877,55 @@ function(input, output, session) {
             shiny::validate(
               need(nrow(sData)>0 && nrow(cData)>0,
                    "No data available"))
-          }})
+          }
+        })
+       })
+      } else if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByDay"){
         
-      }) else if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByDay"){
+        shinyjs::hide(id = "commentTypeBox1")
+        shinyjs::show(id = "commentTypeBox2")
+        #shinyjs::hide(id = "commentTypeBox3")
         
+        
+        output$commentsTypeLineChart <- renderChart2({ 
+          #to update if the go button is pressed or the comment selector is changed
+          chartDependency()
+          commentTypeDependancy()
+          
+          withProgress(message = "Processing comments", {
+            
+            #step and comment data for the selected course run
+            cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+            
+            
+            #checking to see if the data needed to compute the chart is empty or not
+            #if empty it displays an error message, if not it renders the chart
+            if(nrow(cData)>0){
+              
+              plotData <- getCommentsTypeNumberByDate(cData)
+              
+              histogram <- Highcharts$new()
+              histogram$chart(type = "line" , width = 1200)
+              histogram$data(plotData[,c("lone post","initiating post", "first reply", "further reply", "initiator's reply")])
+              histogram$xAxis (categories = as.character(plotData$date), title = list(text = "Date"))
+              histogram$yAxis(title = list(text = "Frequency"))
+              histogram$plotOptions (
+                column = list(
+                  stacking = "normal"
+                ),
+                animation = FALSE
+              )
+              return(histogram)
+            } else {
+              shiny::validate(
+                need(nrow(sData)>0 && nrow(cData)>0,
+                     "No data available"))
+            }
+          })
+        })
       }
+    })
+    # table which shows the number of comments for each type by day- in case it's needed
     # } else if (isolate(input$commentTypeOutput) == "TableWithNumberOfCommentsByDayAndType"){
     #   shinyjs::show(id = "commentTypeBox3")
     #   shinyjs::hide(id = "commentTypeBox1")
@@ -2949,7 +2996,7 @@ function(input, output, session) {
     #     
     #   })
       
-    }})
+
   
   
   
