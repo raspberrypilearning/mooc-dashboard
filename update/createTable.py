@@ -198,12 +198,25 @@ createExtractlinks= "CREATE TABLE ExtractLinks (" \
 		"KEY course (course,course_run)" \
 		");"
 
+createScrapedLinks= "CREATE TABLE ScrapedLinks (" \
+		"step_number int(11) NOT NULL," \
+		"step_title varchar(200) NOT NULL DEFAULT ''," \
+		"step_type varchar(200) NOT NULL DEFAULT ''," \
+		"step_edit_url varchar(200) NOT NULL DEFAULT ''," \
+		"step_url varchar(200) NOT NULL DEFAULT ''," \
+		"university varchar(200) NOT NULL DEFAULT ''," \
+		"course varchar(200) NOT NULL DEFAULT ''," \
+		"course_run int(11) NOT NULL," \
+		"PRIMARY KEY (university,course,course_run,step_url)," \
+		"KEY course (course,course_run)" \
+		");"
+
 #create all tables, if tables exist, will be deleted
 drops = ['DROP TABLE IF EXISTS Comments','DROP TABLE IF EXISTS Enrolments','DROP TABLE IF EXISTS Assignments', \
 		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity', 'DROP TABLE IF EXISTS Courses', \
-		'DROP TABLE IF EXISTS TeamMembers', 'DROP TABLE IF EXISTS VideoStats', 'DROP TABLE IF EXISTS ExtractLinks']
+		'DROP TABLE IF EXISTS TeamMembers', 'DROP TABLE IF EXISTS VideoStats', 'DROP TABLE IF EXISTS ExtractLinks', 'DROP TABLE IF EXISTS ScrapedLinks']
 
-creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers,createVideoStats, createExtractlinks]
+creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers,createVideoStats, createExtractlinks, createScrapedLinks]
 
 for d in drops:
 	cursor.execute(d)
