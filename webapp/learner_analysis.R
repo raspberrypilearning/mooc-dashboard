@@ -1086,6 +1086,72 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
     #sorting the comments in decreasing order by the number of likes
     comments <- comments[order(-comments$likes),]
     
+    comments$parent_id[is.na(comments$parent_id)]<-0 # change the na shown in the csv to 0 so the next two lines could work
+    #comments <- getCommentsForClassification(comments)
+    
+  } else {
+    #if the data frame is empty (no data for a specific course run)
+    #adding new empty columns for the table
+    comments$week_step <- character()
+    comments$thread <- character()
+    comments$url <- character()
+    comments$nature <- character()
+  }
+  
+  return(comments)
+}
+
+#' Used to get comment data for the comment viewer
+#'
+#' @param commentData list of data frames that contain comment data for the chosen courses and runs 
+#' @param run the chosen run for which to return comment data
+#' @param courseMetaData all sort of information about the course
+#'
+#' @return Returns comment data in the format needed for the comment viewer
+getCommentTypeAnalysisData <- function(commentData, run, courseMetaData){
+  
+  #gets the data frame from the list corresponding to the course run
+  comments <- commentData[[which(names(commentData) == run)]]
+  
+  #if the data frame is not empty 
+  if(nrow(comments)!=0) {
+    #modify the timestamp column to contain just the date
+    comments$timestamp <- as.Date(substr(as.character(comments$timestamp), start = 1, stop = 10))
+    print(run)
+    
+    #activity steps under a specific form e.g. 1.3
+    comments$week_step <- getWeekStep(comments)
+    
+    isReply <- unlist(lapply(comments$parent_id, function(x) !is.na(x)))
+    hasReply <- unlist(lapply(comments$id, function(x) x %in% comments$parent_id))
+    comments$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
+    
+    
+    #comments$mentor 
+    
+    comments$likes <- as.numeric(comments$likes)
+    comments$likes <- as.integer(comments$likes)
+    
+    #to build the url 
+    #splits the run name by '-' to separate the name of course and run number
+    runsplit <- strsplit(run,"-")
+    
+    #trims the leading and trailing whitespaces to get the correct name of the course
+    course <- trimws(runsplit[[1]])
+    
+    #based on the name of the course it get the shorten name with the run number
+    courseRun <- as.character(courseMetaData$course_run[courseMetaData$course == course[1]])[1]
+    
+    #gets the short name of the course 
+    shortenedCourse <- (strsplit(courseRun, "\\s"))[[1]][1]
+    
+    #creates the url and adds it to each row in the data frame
+    url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
+    comments$url <- paste0("<a href='",url,comments$id,"'target='_blank'>link</a>")
+    
+    #sorting the comments in decreasing order by the number of likes
+    comments <- comments[order(-comments$likes),]
+    
     comments <- getCommentsForClassification(comments)
     
   } else {
