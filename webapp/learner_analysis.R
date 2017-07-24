@@ -1103,8 +1103,7 @@ getCommentViewerData <- function(commentData, run, courseMetaData){
 #' @param commentData comment data with categorised comments
 #'
 #' @return adata frame that contains the classification of learners in a course run
-
-getLearnerClassificationData <- function(commentData, run){
+getLearnerClassificationData <- function(commentData){
   comments <- commentData
   
   comments_learner<-as.data.frame(table(comments$learner_id,comments$nature))
@@ -1151,8 +1150,8 @@ getLearnerClassificationData <- function(commentData, run){
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Initiator without replying"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies.received > 0]<-"Initiator who responds under their own initiating posts"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies.received > 0 & (comments_learner$further.reply > 0 | comments_learner$initiator.reply > 0)]<-"Active social learner"
-  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Active social learners without repeated turn-taking"
-  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Reluctant active social learners"
+  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Active social learner without repeated turn-taking"
+  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Reluctant active social learner"
   
   return(comments_learner)
 }
@@ -1195,8 +1194,11 @@ getCommentsForClassification <- function(commentData){
   
   for (i in 1:l){
     parent_id<-(unique(comments$parent_group[comments$parent_id!=0]))[i]
-    initiator_id<-comments$learner_id[comments$id==parent_id] 	
-    comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
+    initiator_id<-comments$learner_id[comments$id==parent_id] 
+    if(length(initiator_id)>0){
+      comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
+    }
+   
     
     #fill in number of replies a post/replies received and their order within an initiating post
     n=nrow(comments[comments$parent_group==parent_id,]) #n=the sum of initiating post and replies it receives
