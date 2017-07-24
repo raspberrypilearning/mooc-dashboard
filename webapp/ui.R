@@ -8,6 +8,7 @@ require(networkD3)
 require(shinyjs)
 require(DT)
 require(rjson)
+require(plotly)
 source("config.R")
 source("learner_filters.R")
 source("courses.R")
@@ -35,7 +36,9 @@ commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbySt
                             "Number of Comments by Step and Date" = "NumberofCommentsbyStepandDate",
                             "Comments and Replies by Week" = "CommentsandRepliesbyWeek",
                             "Number of Commentors by Week" = "NumberofCommentorsbyWeek")
-
+commentsTypeAnalysisList <- list("Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
+                                 "Number And Type of Comments by Day" = "NumberAndTypeOfCommentsByDay")
+                                 #"Table with Number of Comment by Day and Type" = "TableWithNumberOfCommentsByDayAndType")
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -49,7 +52,9 @@ sidebar <- dashboardSidebar(
     menuItem("Sign Ups and Statements Sold", tabName = "signUpsStatementsSold", icon = icon("area-chart")),
     menuItem("Step Completion", tabName = "stepCompletion", icon = icon("graduation-cap")),
     menuItem("Comments Overview", tabName = "commentsOverview", icon = icon("comments")),
+    menuItem("Comments Type Analysis", tabName = "commentsTypeAnalysis", icon = icon("commenting")),
     menuItem("Comments Viewer", tabName = "commentsViewer", icon = icon("comments-o")),
+    menuItem("Learners Analysis", tabName = "learnersAnalysis", icon = icon("user-circle-o")),
     menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comment")),
     menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
     menuItem("Team Members", tabName = "teamMembers", icon = icon("users")),
@@ -193,14 +198,15 @@ body <- dashboardBody(
               box(showOutput("stateAgeColumn","highcharts"),
                   downloadButton("downloadStateLearnerAge","Download"),
                   title = "Statements Sold Age Ranges",
-                  status = "primary", solidHeader = TRUE, width = 8, height = 500,collapsible = TRUE
-              ),
+                  status = "primary", solidHeader = TRUE, width = 8, collapsible = TRUE
+              ), 
+              height = 500,
               box(
                 showOutput("stateGenderColumn","highcharts"),
                 downloadButton("downloadStateLearnerGender","Download"),
                 title = "Statements Sold Gender",
-                status = "primary", solidHeader = TRUE, width = 4, height = 500,collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 4, collapsible = TRUE
+              ), height = 500
             ),
             fluidRow(
               tabBox(
@@ -325,6 +331,7 @@ body <- dashboardBody(
                   id="commentBox1",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               ),
+              
               box(showOutput("commentsPerDayBarChart", "highcharts"),
                   title = "Number of Comments per Day", 
                   id="commentBox2",
@@ -335,7 +342,7 @@ body <- dashboardBody(
                   id="commentBox3",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               )
-            ),#fluidRow
+            ),
             fluidRow(
               box(showOutput("commentsRepliesWeekBar", "highcharts"),
                   title = "Comments and Replies by Week",
@@ -345,7 +352,36 @@ body <- dashboardBody(
                   title = "Number of Commentors by Week", 
                   id="commentBox5",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
-            )#fluidRow
+            )
+    ),
+    tabItem(tabName = "commentsTypeAnalysis",
+            fluidRow(
+              box(uiOutput("runSelectorCommentsType"),
+                  selectInput("commentTypeOutput", label = "Choose an output",
+                              choices = commentsTypeAnalysisList, selected = "NumberAndTypeOfCommentsByStep",width = 550),
+                  actionButton("runSelectorCommentsTypeButton", label = "Display"),
+                  title = "Run Selector",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ),
+              box(showOutput("commentsTypeBarChart", "highcharts"),
+                  title = "Number and Types of Comments by Step", 
+                  id="commentTypeBox1",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              ),
+              box(showOutput("commentsTypeLineChart", "highcharts"),
+                  title = "Number and Types of Comments by Day", 
+                  id="commentTypeBox2",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              )
+              # table which shows the number of comments for each type by day- in case it's needed
+              # box(
+              #     h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
+              #     DT::dataTableOutput("commentTypeByDateTable"),
+              #     id = "commentTypeBox3",
+              #     title = "Number of Comments by Date", 
+              #     status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+              # ), height = 1000
+            )
     ),
     tabItem(tabName = "commentsViewer",
             fluidRow(
@@ -363,28 +399,78 @@ body <- dashboardBody(
                   tags$div(style = "margin-left:15px", uiOutput("loadCloud"))
                 ),
                 title = "Selector", 
-                status = "primary", solidHeader = TRUE, width = 6, height = 460 ,collapsible = TRUE	
-              ),
+                status = "primary", solidHeader = TRUE, width = 6 ,collapsible = TRUE	
+              ), height = 460,
               box(
                 plotOutput("stepWordCloud"),
                 title = "Word Cloud",
-                status = "primary", solidHeader = TRUE, width = 6, height = 460, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 6, collapsible = TRUE
+              ), height = 460
             ),
             fluidRow(
               box(
                 h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
                 DT::dataTableOutput("commentViewer"),
                 title = "Comments", 
-                status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1010
             ),
             fluidRow(
               box(
                 DT::dataTableOutput("threadViewer"),
                 title = "Comment Thread Viewer", 
-                status = "primary", solidHeader = TRUE, width = 12, height = 1000 ,collapsible = TRUE
+                status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
+              ), height = 1000 
+            ),
+            fluidRow(
+              box(plotlyOutput("commentsByCategory"),
+                  title = "Comments by Category",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            )
+    ),
+    tabItem(tabName = "learnersAnalysis",
+            fluidRow(
+              box(
+                fluidRow(
+                  tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersRunSelector", inline = TRUE)),
+                  tags$div(style = "margin-left:15px", uiOutput("viewLearnersButton"))
+                ),
+                title = "Selector", 
+                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE	
               )
+            ),
+            fluidRow(
+              box(
+                  plotlyOutput("learnersByCategory"),
+                  tags$hr(),
+                  h4("LEGEND:"),
+                  h5("Loners = Never received replies", style="color:rgb(0,102,204)"),
+                  h5("Repliers = Only replied to others ", style="color:rgb(0, 153, 76)"),
+                  h5("Initiators without replying = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(171, 104, 87)"),
+                  h5("Initiators who respond under their own posts = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(144, 103, 167)"),
+                  h5("Active social learners = Initiated posts, replied to others, and engaging in repeated turn-taking by replying under own initiating post or further replying ", style="color:rgb(211,94,96)"),
+                  h5("Active social learners without repeated turn-taking = Created posts, replied to others but never replied under own initiating post or further replied ", style="color:rgb(128,133,133)"),
+                  h5("Reluctant active social learners = Created lone posts, replied to others, further replied ", style="color:rgb(1114, 147, 203)"),
+                  #tags$hr(),
+                   # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
+                 # tags$div(style = "margin-left:15px", uiOutput("viewLearnersActivityButton")),
+                  title = "Learners by Category",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            ),
+            fluidRow(
+              box(
+                h5("Note: you can click on the learner id to see the comments by individual learners."),
+                DT::dataTableOutput("learnerActivityViewer"),
+                title = "Learners' Activity", 
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1010 
+            ),
+            fluidRow(
+              box(
+                DT::dataTableOutput("commentLearnersAnalysisViewer"),
+                title = "Comments Contributed Viewer", 
+                status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
+              ), height = 1000 
             )
     ),
     tabItem(tabName = "totalMeasures",
@@ -396,8 +482,8 @@ body <- dashboardBody(
             fluidRow(
               box(showOutput("avgCommentsCompletionLine", "highcharts"),
                   title = "Average Number of Comments per Completion", 
-                  status = "primary", solidHeader = TRUE, width = 12, height = 700 ,collapsible = TRUE)
-            ),#fluidRow
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            ), height = 700,
             fluidRow(
               valueBoxOutput("totalComments", width = 6),
               valueBoxOutput("avgComments", width = 6),
@@ -420,8 +506,8 @@ body <- dashboardBody(
               box(htmlOutput("scatterPlot"),
                   textInput("scatterSlopeValue", ""),
                   title = "Scatter plot", 
-                  status = "primary", solidHeader = TRUE, width = 12,height = 700, collapsible = TRUE)
-            ),
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
+            ), height = 700,
             fluidRow(
               valueBoxOutput("scatterSlope", width = 6)
             )#fluidRow
@@ -435,16 +521,16 @@ body <- dashboardBody(
                   tags$div(style = "margin-left:15px", uiOutput("viewTeamButton"))
                 ),
                 title = "Run Selector",
-                status = "primary", solidHeader = TRUE, width = 12,height = 200, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 200
             ),
             
             fluidRow(
               box(
                 DT::dataTableOutput("teamMembersViewer"),
                 title = "Team Members Activity",
-                status = "primary", solidHeader = TRUE, width = 12,height = 1000, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1000
             )
     ),
     
@@ -462,8 +548,8 @@ body <- dashboardBody(
                          tags$div(style = "margin-left:15px", uiOutput("viewSurAnButton"))
                        ),
                        title = "Uploading Files and Run Selector",
-                       status = "primary", solidHeader = TRUE, width = 12,height = 300, collapsible = TRUE
-                     )
+                       status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+                     ), height = 300 
                      ),
             
             fluidRow(
@@ -474,8 +560,8 @@ body <- dashboardBody(
                 downloadButton('downloadSurveyAnalysis', ' Download as CSV'),
                 
                 title = "Pre-Course survey and Comments in step 1.2",
-                status = "primary", solidHeader = TRUE, width = 12, height = 1300, collapsible = TRUE
-              )
+                status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+              ), height = 1300
             )
     )
   )
