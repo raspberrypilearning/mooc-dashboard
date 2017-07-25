@@ -806,7 +806,7 @@ getCommentsTypeBarChart <- function(sData,cData){
 getCommentsTypeNumberByDate <- function(commentsData){
   comments <- commentsData
   
-  #extract only the day (removes the time) from the timestamp
+  #extracts only the day (removes the time) from the timestamp
   comments$timestamp <- as.Date(substr(as.character(comments$timestamp), start = 1, stop = 10))
   dates <- unique(comments$timestamp)
   
@@ -814,8 +814,10 @@ getCommentsTypeNumberByDate <- function(commentsData){
   data <- data.frame(date = as.Date(dates), lone.post = integer(length = length(dates)), 
                      initiating.post = integer(length = length(dates)), first.reply = integer(length = length(dates)), 
                      further.reply = integer(length = length(dates)), initiator.reply = integer(length = length(dates)), stringsAsFactors = FALSE)
+
   
   #goes through each dat of the course
+
   for(i in 1:length(dates)){
     
     #classifies the comments up to that day by their type and counts them
@@ -823,7 +825,7 @@ getCommentsTypeNumberByDate <- function(commentsData){
     commentsUpToDate <- getCommentsForClassification(commentsUpToDate)
     countTypes <- count(commentsUpToDate$nature)
     
-    #updates the final data frame
+    #if there are comments of that type on that day then updates the final data frame with the respective number
     if(length(countTypes$freq[countTypes$x == "lone post"])!=0){
       data$lone.post[i] <- countTypes$freq[countTypes$x == "lone post"]
     } else {
@@ -853,7 +855,6 @@ getCommentsTypeNumberByDate <- function(commentsData){
     } else {
       data$initiator.reply[i] <- 0
     }
-    
   }
   
   #renames the column names
@@ -861,8 +862,6 @@ getCommentsTypeNumberByDate <- function(commentsData){
   
   return(data)
 }
-
-
 
 
 #' Returns the plot data for comments per week, just requires the comments data.
@@ -1172,7 +1171,6 @@ getCommentTypeAnalysisData <- function(commentData, run, courseMetaData){
 #' @param commentData comment data with categorised comments
 #'
 #' @return adata frame that contains the classification of learners in a course run
-
 getLearnerClassificationData <- function(commentData){
   comments <- commentData
   
@@ -1220,8 +1218,8 @@ getLearnerClassificationData <- function(commentData){
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Initiator without replying"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply == 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply > 0 & comments_learner$replies.received > 0]<-"Initiator who responds under their own initiating posts"
   comments_learner$type[comments_learner$initiating.post > 0 &  comments_learner$first.reply > 0 & comments_learner$replies.received > 0 & (comments_learner$further.reply > 0 | comments_learner$initiator.reply > 0)]<-"Active social learner"
-  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Active social learners without repeated turn-taking"
-  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Reluctant active social learners"
+  comments_learner$type[(comments_learner$lone.post > 0 | comments_learner$initiating.post > 0) & comments_learner$first.reply > 0 &  comments_learner$further.reply == 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Active social learner without repeated turn-taking"
+  comments_learner$type[comments_learner$initiating.post == 0 & comments_learner$lone.post > 0 & comments_learner$first.reply > 0 &  comments_learner$further.reply > 0 &  comments_learner$initiator.reply == 0 & comments_learner$replies.received > 0]<-"Reluctant active social learner"
   
   return(comments_learner)
 }
@@ -1264,8 +1262,11 @@ getCommentsForClassification <- function(commentData){
   
   for (i in 1:l){
     parent_id<-(unique(comments$parent_group[comments$parent_id!=0]))[i]
-    initiator_id<-comments$learner_id[comments$id==parent_id] 	
-    comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
+    initiator_id<-comments$learner_id[comments$id==parent_id] 
+    if(length(initiator_id)>0){
+      comments$repliestowhom[comments$parent_id==parent_id]<-initiator_id  #fill in the replies to whom in replies postings
+    }
+   
     
     #fill in number of replies a post/replies received and their order within an initiating post
     n=nrow(comments[comments$parent_group==parent_id,]) #n=the sum of initiating post and replies it receives

@@ -156,6 +156,14 @@ class CSV_TO_SQL:
             "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
 
+        elif 'scraped-links' in datatype:
+            col = '(step_number,step_title,step_type,step_edit_url,step_url)'
+            load =  'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE ScrapedLinks ' \
+            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
+            'IGNORE 1 LINES '  + col +\
+            "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
+            + str(course_run) + ";"
+
         cursor.execute(load)
         self.__database.commit()
         cursor.close()

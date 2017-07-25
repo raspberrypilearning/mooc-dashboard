@@ -39,8 +39,9 @@ commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbySt
 
 commentsTypeAnalysisList <- list("Comments' Analysis Table" = "CommentsAnalysisTable",
                                  "Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
-                                 "Table with Number of Comment by Day and Type" = "TableWithNumberOfCommentsByDayAndType",  
+                                 "Number and Type of Comments by Day" = "NumberAndTypeOfCommentsByDay",  
                                  "Comments by Category" = "CommentsByCategory")
+
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -381,13 +382,11 @@ body <- dashboardBody(
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
               ),
               
-              box(
-                  h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
-                  DT::dataTableOutput("commentTypeByDateTable"),
-                  title = "Number of Comments by Date", 
+              box(showOutput("commentsTypeLineChart", "highcharts"),
+                  title = "Number and Types of Comments by Day", 
                   id="commentTypeBox3",
                   status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
-              ), height = 1010,
+              ),
               
               box(plotlyOutput("commentsByCategory"),
                   title = "Comments by Category",
@@ -489,8 +488,8 @@ body <- dashboardBody(
             fluidRow(
               box(showOutput("avgCommentsCompletionLine", "highcharts"),
                   title = "Average Number of Comments per Completion", 
-                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
-            ), height = 700,
+                  status = "primary", solidHeader = TRUE, width = 12, height = 700, collapsible = TRUE)
+            ), 
             fluidRow(
               valueBoxOutput("totalComments", width = 6),
               valueBoxOutput("avgComments", width = 6),
@@ -513,8 +512,8 @@ body <- dashboardBody(
               box(htmlOutput("scatterPlot"),
                   textInput("scatterSlopeValue", ""),
                   title = "Scatter plot", 
-                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
-            ), height = 700,
+                  status = "primary", solidHeader = TRUE, width = 12, height = 700, collapsible = TRUE)
+            ), 
             fluidRow(
               valueBoxOutput("scatterSlope", width = 6)
             )#fluidRow
