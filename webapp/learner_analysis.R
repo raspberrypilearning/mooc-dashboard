@@ -612,21 +612,15 @@ getStepsCompletedData <- function(stepData){
   return (stepsCount)
 }
 
-
+#' Gets how many times each step was completed for each course run for computing the average regression
+#'
+#' @param allStepData data frame of activity data for a specific course run
+#'
+#' @return data frame which shows how many times each step was completed in each course run
 getAllStepCompletedData <- function(allStepData){
   completedSteps <- subset(allStepData, last_completed_at != "")
   completedSteps$week_step <- getWeekStep(completedSteps)
-
-  #res <- tapply(completedSteps$week_step, )
-
-
-   #<- c("course", "course_run")
   stepsCount <- tapply(completedSteps$week_step, list(completedSteps$course, completedSteps$course_run), count)
-
-print(stepsCount)
-
-  #counts how many times each step was completed
-  #stepsCount <- count(completedSteps, 'week_step')
 
   return (stepsCount)
 }
@@ -646,6 +640,20 @@ getStepsFirstVistedData <- function(stepData){
   stepsCount <- count(firstVisitedSteps, 'week_step')
   return (stepsCount)
 }
+
+#' Gets the number of times each step was first visited in every course runs for computing the average regression
+#'
+#' @param allStepData a data frame with activity information about a specified course run
+#'
+#' @return data frame which shows how many times each step was first visited in each course run
+getAllStepsFirstVisitedData <- function(allStepData){
+  firstVisitedSteps <- subset(allStepData, first_visited_at != "")
+  firstVisitedSteps$week_step <- getWeekStep(firstVisitedSteps)
+  stepsCount <- tapply(firstVisitedSteps$week_step, list(firstVisitedSteps$course, firstVisitedSteps$course_run), count)
+  
+  return (stepsCount)
+}
+
 
 # Returns the heat map of step completion, requires step data and the start date of the run
 getStepCompletionHeatMap <- function(stepData, startDate){
