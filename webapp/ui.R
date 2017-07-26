@@ -36,9 +36,12 @@ commentOverviewList <- list("Number of Comments by Step" = "NumberofCommentsbySt
                             "Number of Comments by Step and Date" = "NumberofCommentsbyStepandDate",
                             "Comments and Replies by Week" = "CommentsandRepliesbyWeek",
                             "Number of Commentors by Week" = "NumberofCommentorsbyWeek")
-commentsTypeAnalysisList <- list("Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
-                                 "Number And Type of Comments by Day" = "NumberAndTypeOfCommentsByDay")
-                                 #"Table with Number of Comment by Day and Type" = "TableWithNumberOfCommentsByDayAndType")
+
+commentsTypeAnalysisList <- list("Comments' Analysis Table" = "CommentsAnalysisTable",
+                                 "Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
+                                 "Number and Type of Comments by Day" = "NumberAndTypeOfCommentsByDay",  
+                                 "Comments by Category" = "CommentsByCategory")
+
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
 sidebar <- dashboardSidebar(
@@ -356,32 +359,47 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "commentsTypeAnalysis",
             fluidRow(
+              
               box(uiOutput("runSelectorCommentsType"),
                   selectInput("commentTypeOutput", label = "Choose an output",
-                              choices = commentsTypeAnalysisList, selected = "NumberAndTypeOfCommentsByStep",width = 550),
+                              choices = commentsTypeAnalysisList, selected = "CommentsAnalysisTable",width = 550),
                   actionButton("runSelectorCommentsTypeButton", label = "Display"),
                   title = "Run Selector",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
               ),
+              
+              box(
+                h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
+                DT::dataTableOutput("commentAnalysisTable"),
+                title = "Comments' Analysis", 
+                id="commentTypeBox1",
+                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+              ), height = 1010,
+              
               box(showOutput("commentsTypeBarChart", "highcharts"),
                   title = "Number and Types of Comments by Step", 
-                  id="commentTypeBox1",
-                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-              ),
-              box(showOutput("commentsTypeLineChart", "highcharts"),
-                  title = "Number and Types of Comments by Day", 
                   id="commentTypeBox2",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
-              )
-              # table which shows the number of comments for each type by day- in case it's needed
-              # box(
-              #     h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
-              #     DT::dataTableOutput("commentTypeByDateTable"),
-              #     id = "commentTypeBox3",
-              #     title = "Number of Comments by Date", 
-              #     status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
-              # ), height = 1000
-            )
+              ),
+              
+              box(showOutput("commentsTypeLineChart", "highcharts"),
+                  title = "Number and Types of Comments by Day", 
+                  id="commentTypeBox3",
+                  status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+              ),
+              
+              box(plotlyOutput("commentsByCategory"),
+                  tags$hr(),
+                  h4("LEGEND:"),
+                  h5("Initiating posts = Posts that receive replies"),
+                  h5("Lone posts = Posts that receive no replies, also including the replies posted by the same learner in response to his/her own post, where no other learners reply to that post"),
+                  h5("First replies = Replies to others’ initiating posts, i.e., the first time or the only time a learner replies to an initiating post created by another learner "),
+                  h5("Further replies = Further replies are replies that a learner makes under an initiating post that he/she has already replied to, i.e., the learner replies more than one time under an initiating post  "),
+                  h5("Initiator's replies = Replies to others’ replies to one’s own initiating post, i.e., initiator replies under his/her own initiating post.  "),
+                  title = "Comments by Category",
+                  id="commentTypeBox4",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
+            )    
     ),
     tabItem(tabName = "commentsViewer",
             fluidRow(
@@ -421,11 +439,6 @@ body <- dashboardBody(
                 title = "Comment Thread Viewer", 
                 status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
               ), height = 1000 
-            ),
-            fluidRow(
-              box(plotlyOutput("commentsByCategory"),
-                  title = "Comments by Category",
-                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE)
             )
     ),
     tabItem(tabName = "learnersAnalysis",
