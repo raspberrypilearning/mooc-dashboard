@@ -25,7 +25,7 @@ def printCsv():
             fullpath = os.path.join(root, f)
             if os.path.splitext(fullpath)[1] == '.csv':
                 if "saud" not in fullpath:
-                    matchObj = re.search(r'([0-9]+) - [0-9]+-[0-9]+-[0-9]+',fullpath)
+                    matchObj = re.search(r'([0-9]+) - [0-9]+-[0-9]+-[0-9]+|Courses Data',fullpath)
                     if matchObj:
                         filesDictionary[fullpath] = matchObj.group(1)
 
@@ -51,5 +51,5 @@ def removeCarrige():
 
 
 
-# printCsv()
-processCourses()
+printCsv()
+#processCourses()
