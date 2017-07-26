@@ -1125,8 +1125,7 @@ getCommentTypeAnalysisData <- function(commentData, run, courseMetaData){
     hasReply <- unlist(lapply(comments$id, function(x) x %in% comments$parent_id))
     comments$thread <- unlist(lapply(Reduce('|', list(isReply,hasReply)), function(x) if(x){"Yes"} else {"No"}))
     
-    
-    #comments$mentor 
+    mentors <- getAllTableData("TeamMembers")
     
     comments$likes <- as.numeric(comments$likes)
     comments$likes <- as.integer(comments$likes)
@@ -1148,10 +1147,26 @@ getCommentTypeAnalysisData <- function(commentData, run, courseMetaData){
     url <- paste0("https://www.futurelearn.com/courses/",shortenedCourse,"/",trimws(course[[2]]),"/comments/")
     comments$url <- paste0("<a href='",url,comments$id,"'target='_blank'>link</a>")
     
+    #classifies the comments and learners
+    comments <- getCommentsForClassification(comments)
+    comments_learners <- getLearnerClassificationData(comments)
+    
+    #tells if the is a mentor involved in the thread
+    comments$mentor <- "No"
+    comments$parent_id[comments$parent_id == 0] <- comments$id[comments$parent_id == 0]
+    threads <- unique(comments$parent_id)
+    for(thread in threads){
+      if(length(intersect(comments$learner_id[comments$parent_id == thread], mentors$id)) > 0){
+        comments$mentor[comments$parent_id == thread] <- "Yes"
+      }
+    }
+  
+    #merge the learner types and comments to see what type of learner commented 
+    comments_learners <- comments_learners[, c("learner_id", "type")]
+    comments <- merge(comments, comments_learners, by = "learner_id")
+    
     #sorting the comments in decreasing order by the number of likes
     comments <- comments[order(-comments$likes),]
-    
-    comments <- getCommentsForClassification(comments)
     
   } else {
     #if the data frame is empty (no data for a specific course run)

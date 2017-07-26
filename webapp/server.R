@@ -2945,19 +2945,21 @@ function(input, output, session) {
         withProgress(message = "Processing Comments",{
           dataf <- getCommentTypeAnalysisData(comments_data, input$runChooserCommentsType, courseMetaData)
           DT::datatable(
-            dataf[,c("timestamp","week_step","text","nature", "thread","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
+            dataf[,c("timestamp","week_step","text","nature", "thread","mentor", "type", "likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
             colnames = c(
               "Date" = 1,
               "Step" = 2,
               "Comment" = 3,
               "Comment Category" = 4,
               "Part of a Thread?" = 5,
-              "Likes" = 6,
-              "Link" = 7
+              "Mentor intervened in the thread?" = 6,
+              "Learner type" = 7,
+              "Likes" = 8,
+              "Link" = 9
             ),
             options = list(
               autoWidth = TRUE,
-              columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5,6))),
+              #columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5,6))),
               scrollY = "700px",
               lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
               pageLength = 20,

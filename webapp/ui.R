@@ -389,6 +389,13 @@ body <- dashboardBody(
               ),
               
               box(plotlyOutput("commentsByCategory"),
+                  tags$hr(),
+                  h4("LEGEND:"),
+                  h5("Initiating posts = Posts that receive replies"),
+                  h5("Lone posts = Posts that receive no replies, also including the replies posted by the same learner in response to his/her own post, where no other learners reply to that post"),
+                  h5("First replies = Replies to others’ initiating posts, i.e., the first time or the only time a learner replies to an initiating post created by another learner "),
+                  h5("Further replies = Further replies are replies that a learner makes under an initiating post that he/she has already replied to, i.e., the learner replies more than one time under an initiating post  "),
+                  h5("Initiator's replies = Replies to others’ replies to one’s own initiating post, i.e., initiator replies under his/her own initiating post.  "),
                   title = "Comments by Category",
                   id="commentTypeBox4",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE)
