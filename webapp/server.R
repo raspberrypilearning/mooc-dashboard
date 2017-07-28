@@ -3027,22 +3027,7 @@ function(input, output, session) {
               pageLength = 20,
               dom = 'lfrtBip',
               buttons = list(
-                "print", 
-                list(
-                  extend = 'pdf',
-                  filename = 'Comments',
-                  text = 'Download PDF'
-                ),
-                list(
-                  extend = 'excel',
-                  filename = 'Comments',
-                  text = 'Download Excel'
-                ),
-                list(
-                  extend = 'csv',
-                  filename = 'Comments',
-                  text = 'Download CSV'
-                )
+                "print"
               )
             ),
             rownames = FALSE,
@@ -3051,6 +3036,16 @@ function(input, output, session) {
           )
         })
       })
+      
+      #download button for the comments analysis data - as a csv file
+      output$downloadCommentAnalysis <- downloadHandler(
+        
+        filename = function() { paste("comment_analysis", '.csv', sep='') },
+        content = function(file) {
+          dataf <- getCommentTypeAnalysisData(comments_data, input$runChooserCommentsType, courseMetaData)
+          write.csv(dataf, file)
+        }
+      )
     } else if(isolate(input$commentTypeOutput) == "CommentsByCategory"){
       shinyjs::show(id = "commentTypeBox4")
       shinyjs::hide(id = "commentTypeBox1")
@@ -3161,22 +3156,7 @@ output$commentViewer <- renderDataTable({
         pageLength = 20,
         dom = 'lfrtBip',
         buttons = list(
-          "print", 
-          list(
-            extend = 'pdf',
-            filename = 'Comments',
-            text = 'Download PDF'
-          ),
-          list(
-            extend = 'excel',
-            filename = 'Comments',
-            text = 'Download Excel'
-          ),
-          list(
-            extend = 'csv',
-            filename = 'Comments',
-            text = 'Download CSV'
-          )
+          "print"
         )
       ),
       rownames = FALSE,
@@ -3185,6 +3165,15 @@ output$commentViewer <- renderDataTable({
     )
   })
 })
+
+#download button for comments viewer data - as a csv file
+output$downloadCommentViewer <- downloadHandler(
+  filename = function() { paste("comments_viewer", '.csv', sep='') },
+  content = function(file) {
+    data <- c_data
+    write.csv(data, file)
+  }
+)
 
 # Checks if a comment has been selected
 threadSelected <- eventReactive( input$commentViewer_rows_selected, {
@@ -3237,22 +3226,7 @@ output$threadViewer <- renderDataTable({
         pageLength = 20,
         dom = 'lfrtBip',
         buttons = list(
-          "print", 
-          list(
-            extend = 'pdf',
-            filename = 'Comment Thread',
-            text = 'Download PDF'
-          ),
-          list(
-            extend = 'excel',
-            filename = 'Comment Thread',
-            text = 'Download Excel'
-          ),
-          list(
-            extend = 'csv',
-            filename = 'Comment Thread',
-            text = 'Download CSV'
-          )
+          "print"
         )
       ),
       rownames = FALSE,
@@ -3261,6 +3235,35 @@ output$threadViewer <- renderDataTable({
     )
   })
 })
+
+#download button for thread viewer data - as a csv file
+output$downloadThreadViewer <- downloadHandler(
+  filename = function() { paste("thread_viewer", '.csv', sep='') },
+  content = function(file) {
+    data <- c_data
+    data$likes <- as.integer(data$likes)
+    selectedRow <- data[input$commentViewer_rows_selected,]
+    if(selectedRow$thread != "Yes"){
+      return()
+    }
+    
+    reply = TRUE
+    parent = FALSE
+    if(selectedRow$parent_id == 0){
+      reply = FALSE
+      parent = TRUE
+    }
+    
+    if(parent){
+      rows <- data[c(which(data$id == selectedRow$id), which(data$parent_id == selectedRow$id)),]
+    } else {
+      rows <- data[c(which(data$id == selectedRow$parent_id), which(data$parent_id == selectedRow$parent_id),  which(data$id == selectedRow$id)),]
+    }
+    
+    rows <- rows[order(rows$timestamp),]
+    write.csv(rows, file)
+  }
+)
 
 #Makes the wordcloud code repeatable.
 wordcloud_rep <- repeatable(wordcloud)
@@ -3472,6 +3475,15 @@ output$learnerActivityViewer <- renderDataTable({
   })
 })
 
+#download button for learners activity data - as a csv file
+output$downloadLearnersActivity <- downloadHandler(
+  filename = function() { paste("learners_analysis", '.csv', sep='') },
+  content = function(file) {
+    df <- s_data
+    write.csv(df, file)
+  }
+)
+
 # Checks if a comment has been selected
 commentsLearnerSelected <- eventReactive( input$learnerActivityViewer_rows_selected, {
   runif(input$learnerActivityViewer_rows_selected)
@@ -3517,6 +3529,20 @@ output$commentLearnersAnalysisViewer <- renderDataTable({
     )
   })
 })
+
+#download button for comments contributed data - as a csv file
+output$downloadCommentsContributed <- downloadHandler(
+  filename = function() { paste("comments_contributed", '.csv', sep='') },
+  content = function(file) {
+    df <- s_data
+  
+    comments <- getCommentLearnersAnalysisViewerData(comments_data, input$runChooserLearners, courseMetaData)
+    selectedRow <- df[input$learnerActivityViewer_rows_selected,]
+    comments <- comments[comments$learner_id ==  selectedRow$learner_id, ]
+    
+    write.csv(comments, file)
+  }
+)
 
 
 # END LEARNERS ANALYSIS TAB
@@ -3577,22 +3603,7 @@ output$teamMembersViewer <- renderDataTable({
         pageLength = 20,
         dom = 'lfrtBip',
         buttons = list(
-          "print",
-          list(
-            extend = 'pdf',
-            filename = 'Team Members',
-            text = 'Download PDF'
-          ),
-          list(
-            extend = 'excel',
-            filename = 'Team Members',
-            text = 'Download Excel'
-          ),
-          list(
-            extend = 'csv',
-            filename = 'Team Members',
-            text = 'Download CSV'
-          )
+          "print"
         )
       ),
       rownames = FALSE,
@@ -3601,6 +3612,17 @@ output$teamMembersViewer <- renderDataTable({
     )
   })
 })
+
+#download button for team members data - as a csv file
+output$downloadTeamMembers <- downloadHandler(
+  filename = function() { paste("team_members", '.csv', sep='') },
+  content = function(file) {
+    
+    data <- getTeamMembersData(team_data, comments_data, viewTeamPressed(), courseMetaData)
+    write.csv(data, file)
+  }
+)
+
 
 # Checks if a comment has been selected
 threadSelected <- eventReactive( input$commentViewer_rows_selected, {
