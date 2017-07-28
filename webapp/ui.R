@@ -97,7 +97,7 @@ body <- dashboardBody(
                             width = 2,
                             # offset = 2,
                             tags$div(uiOutput("chooseCourse", inline = TRUE)))))))),
-                title = "Go",
+                title = "Customisation",
                 status = "primary", solidHeader = TRUE, width = 2, collapsible = FALSE
               ),
               box(
