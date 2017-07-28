@@ -371,7 +371,11 @@ body <- dashboardBody(
               box(
                 h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
                 DT::dataTableOutput("commentAnalysisTable"),
+                
+                #download button for comments analysis data - as a csv file
+                downloadButton('downloadCommentAnalysis', ' Download as CSV'),
                 title = "Comments' Analysis", 
+                
                 id="commentTypeBox1",
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
               ), height = 1010,
@@ -429,6 +433,9 @@ body <- dashboardBody(
               box(
                 h5("Note: you can use the generated text-boxes below to filter comments based on each column's text-box."),
                 DT::dataTableOutput("commentViewer"),
+                
+                #download button for comment viewer data - as a csv file
+                downloadButton('downloadCommentViewer', ' Download as CSV'),
                 title = "Comments", 
                 status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
               ), height = 1010
@@ -436,6 +443,9 @@ body <- dashboardBody(
             fluidRow(
               box(
                 DT::dataTableOutput("threadViewer"),
+                
+                #download button for thread viewer data - as a csv file
+                downloadButton('downloadThreadViewer', ' Download as CSV'),
                 title = "Comment Thread Viewer", 
                 status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
               ), height = 1000 
@@ -457,13 +467,13 @@ body <- dashboardBody(
                   plotlyOutput("learnersByCategory"),
                   tags$hr(),
                   h4("LEGEND:"),
-                  h5("Loners = Never received replies", style="color:rgb(0,102,204)"),
-                  h5("Repliers = Only replied to others ", style="color:rgb(0, 153, 76)"),
-                  h5("Initiators without replying = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(171, 104, 87)"),
-                  h5("Initiators who respond under their own posts = Never replied to others’ posts or underneath own initiating posts ",  style="color:rgb(144, 103, 167)"),
-                  h5("Active social learners = Initiated posts, replied to others, and engaging in repeated turn-taking by replying under own initiating post or further replying ", style="color:rgb(211,94,96)"),
-                  h5("Active social learners without repeated turn-taking = Created posts, replied to others but never replied under own initiating post or further replied ", style="color:rgb(128,133,133)"),
-                  h5("Reluctant active social learners = Created lone posts, replied to others, further replied ", style="color:rgb(1114, 147, 203)"),
+                  h5("Loners = Never received replies"),
+                  h5("Repliers = Only replied to others "),
+                  h5("Initiators without replying = Never replied to others’ posts or underneath own initiating posts "),
+                  h5("Initiators who respond under their own posts = Never replied to others’ posts or underneath own initiating posts "),
+                  h5("Active social learners = Initiated posts, replied to others, and engaging in repeated turn-taking by replying under own initiating post or further replying "),
+                  h5("Active social learners without repeated turn-taking = Created posts, replied to others but never replied under own initiating post or further replied "),
+                  h5("Reluctant active social learners = Created lone posts, replied to others, further replied "),
                   #tags$hr(),
                    # tags$div(style = "display:inline-block; margin-left:15px", uiOutput("learnersTypeSelector", inline = TRUE)),
                  # tags$div(style = "margin-left:15px", uiOutput("viewLearnersActivityButton")),
@@ -474,6 +484,9 @@ body <- dashboardBody(
               box(
                 h5("Note: you can click on the learner id to see the comments by individual learners."),
                 DT::dataTableOutput("learnerActivityViewer"),
+                
+                #download button for learners activity data - as a csv file
+                downloadButton('downloadLearnersActivity', ' Download as CSV'),
                 title = "Learners' Activity", 
                 status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
               ), height = 1010 
@@ -481,6 +494,9 @@ body <- dashboardBody(
             fluidRow(
               box(
                 DT::dataTableOutput("commentLearnersAnalysisViewer"),
+                
+                #download button for comments contributed data - as a csv file
+                downloadButton('downloadCommentsContributed', ' Download as CSV'),
                 title = "Comments Contributed Viewer", 
                 status = "primary", solidHeader = TRUE, width = 12,collapsible = TRUE
               ), height = 1000 
@@ -541,6 +557,9 @@ body <- dashboardBody(
             fluidRow(
               box(
                 DT::dataTableOutput("teamMembersViewer"),
+                
+                #download button for team members data - as a csv file
+                downloadButton('downloadTeamMembers', ' Download as CSV'),
                 title = "Team Members Activity",
                 status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
               ), height = 1000
