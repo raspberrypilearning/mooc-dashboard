@@ -1062,7 +1062,7 @@ function(input, output, session) {
     
     #creating the gender chart
     a <- rCharts:::Highcharts$new()
-    a$chart(type = "column", width = 350)
+    a$chart(type = "column", width = 400)
     
     #x-axis with the gender values
     a$xAxis(categories = data$levels)
@@ -1320,7 +1320,7 @@ function(input, output, session) {
     
     #creating the column chart
     a <- rCharts:::Highcharts$new()
-    a$chart(type = "column", width = 350)
+    a$chart(type = "column", width = 400)
     
     #x-axis contains the gender levels
     a$xAxis(categories = data$levels)

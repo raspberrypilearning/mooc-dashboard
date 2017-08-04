@@ -102,7 +102,7 @@ body <- dashboardBody(
               ),
               box(
                 tags$div(style="display:inline-block; margin-right:15px", 
-                         selectInput("course2", label = "Courses", width = "450px", choices = c("None",courses))),
+                         selectInput("course2", label = "Courses", width = "450px", choices = c("None",courses, "All"))),
                 tags$div(style="display:inline-block; margin-right:15px", uiOutput("runs2", inline = TRUE)),
                 title = "Course selection",
                 status = "primary", solidHeader = TRUE, width = 10, collapsible = FALSE
