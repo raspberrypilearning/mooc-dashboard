@@ -1666,9 +1666,11 @@ learnersEducationData <- function(dataType){
 }
 
 learnersHDIData <- function(){
+  
   data <- data.frame(levels = c("Very High","High","Medium","Low"))
   
   for(x in names(enrolment_data)){
+    
     enrolments <- enrolment_data[[x]][which(enrolment_data[[x]]$country != "Unknown"), ]
     countries<- as.character(enrolments$country)
     hdilevels <- countryCodesToHDI(countries)
