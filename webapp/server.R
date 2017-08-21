@@ -2295,25 +2295,34 @@ function(input, output, session) {
           for(i in (1:nrow(s))){
             for(j in (1:ncol(s))){
               if(!is.null(s[i,j][[1]])){
-
+                
+                #creates a new column numbering the steps
                 s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
                 
+                #creating the regression model (slope and intercept)
                 model <- lm(freq ~ id, s[i,j][[1]])
+                
+                #fortifying the model
                 fit <- fortify(model)
                 
+                #addins a new row to the results data frame
                 res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
               }
             }
           }
+          #renaming the column names
           colnames(res) <- c("Const", "Slope")
+          print(res)
           
-          #computes average slope and coefficient
+          #computes average slope and coefficient for all courses
           avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE))
+          print(avg)
           
           #add an id column for computing the regression line (as the step numbers can't be used)
           stepsCount$id <- seq.int(nrow(stepsCount))
-          stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
           
+          #computing the regression line points
+          stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
           
           #computing the graphs
           a <- rCharts:::Highcharts$new()
@@ -2333,10 +2342,15 @@ function(input, output, session) {
               animation = FALSE)
           )
           
-          #creating the regression model and data
+          #creating the regression model and data for the current course run
           model <- lm(freq ~ id, stepsCount)
+          print(model)
+          
           fit <- fortify(model)
+          
+          #extracting the slope
           slope <- coef(model)[2]
+          print(fit)
           
           #displaying the regression line
           a$series(name = "Regression line",
@@ -3021,7 +3035,7 @@ function(input, output, session) {
             ),
             options = list(
               autoWidth = TRUE,
-              #columnDefs = list(list(width = '10%', targets = list(0,1,3,4,5,6))),
+              columnDefs = list(list(width = '8%', targets = list(0,1,3,4,5,6,7,8))),
               scrollY = "700px",
               lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
               pageLength = 20,
