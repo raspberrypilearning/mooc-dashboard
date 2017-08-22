@@ -684,7 +684,6 @@ computeAverageRegressionLine <- function(stepData) {
         fit <- fortify(model)
         
         #addins a new row to the results data frame
-        print(summary(model))
         if(!is.na(coef(model)[1]) && !is.na(coef(model)[2]) && !is.na(summary(model)$coefficients[2,2])){
           res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2], StdError = summary(model)$coefficients[2,2], SampleSize = nrow(s[i,j][[1]])))
         }

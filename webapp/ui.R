@@ -286,13 +286,21 @@ body <- dashboardBody(
               showOutput("stepsCompleted","highcharts"),
               title = "Steps Marked As Complete",
               id="box1",
-              status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE,
+              tags$div(style = "margin-left:15px; font-size:15px ", textOutput("runTestTextSMC")), 
+              tags$div(style = "display:inline-block; margin-left:15px", uiOutput("alphaValueSelectorSMC", inline = TRUE)),
+              tags$div(style = "margin-left:15px", uiOutput("runTestButtonSMC")),
+              tags$div(style = "margin-left:15px; color:  #002080; font-size:20px ", textOutput("testResultSMC")) 
             )),
             fluidRow(box(
               showOutput("StepsFirstVisited","highcharts"),
               title = "Steps First Visited",
               id="box2",
-              status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE
+              status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE, collapsed = TRUE,
+              tags$div(style = "margin-left:15px; font-size:15px ", textOutput("runTestTextSFV")), 
+              tags$div(style = "display:inline-block; margin-left:15px", uiOutput("alphaValueSelectorSFV", inline = TRUE)),
+              tags$div(style = "margin-left:15px", uiOutput("runTestButtonSFV")),
+              tags$div(style = "margin-left:15px; color:  #002080; font-size:20px ", textOutput("testResultSFV")) 
             )),
             fluidRow(box(
               d3heatmapOutput("firstVisitedHeat"),
