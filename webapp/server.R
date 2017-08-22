@@ -2249,6 +2249,10 @@ function(input, output, session) {
   
   # Selector for which run to display on the step tab
   
+  avgRegLine1 <- NULL
+  avgRegLine2 <- NULL
+  
+  
   StepButtonDependency <- eventReactive(input$runSelectorStepsButton, {})
   observeEvent(input$runSelectorStepsButton, {
     output$runSelectorSteps <- renderUI({
@@ -2292,42 +2296,18 @@ function(input, output, session) {
             #counts the number of times each step was marked as completed 
             stepsCount <- getStepsCompletedData(sData)
             
-            #gets a data frame with step data for each course and run
-            s <- getAllStepCompletedData(getAllTableData("Activity"))
-            res <- data.frame(numeric(), numeric())
-            colnames(res) <- c("Const", "Slope")
-            
-            #computes the slope and coefficient for each course and run
-            for(i in (1:nrow(s))){
-              for(j in (1:ncol(s))){
-                if(!is.null(s[i,j][[1]])){
-                  
-                  #creates a new column numbering the steps
-                  s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
-                  
-                  #creating the regression model (slope and intercept)
-                  model <- lm(freq ~ id, s[i,j][[1]])
-                  
-                  #fortifying the model
-                  fit <- fortify(model)
-                  
-                  #addins a new row to the results data frame
-                  res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
-                }
-              }
+            #store the average regression line in a global variable to compute it only once
+            if(is.null(avgRegLine1)){
+              #gets a data frame with step data for each course and run
+              s <- getAllStepCompletedData(getAllTableData("Activity"))
+              avgRegLine1 <<- computeAverageRegressionLine(s)
             }
-            #renaming the column names
-            colnames(res) <- c("Const", "Slope")
-            print(res)
-            
-            #computes average slope and coefficient for all courses
-            avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE))
             
             #add an id column for computing the regression line (as the step numbers can't be used)
             stepsCount$id <- seq.int(nrow(stepsCount))
             
             #computing the regression line points
-            stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
+            stepsCount$totalAvg <- avgRegLine1[2] * stepsCount$id + avgRegLine1[1]
             
             #computing the graphs
             a <- rCharts:::Highcharts$new()
@@ -2349,27 +2329,39 @@ function(input, output, session) {
             
             #creating the regression model and data for the current course run
             model <- lm(freq ~ id, stepsCount)
-            print(model)
+            print(summary(model))
             
             fit <- fortify(model)
-            print(fit)
+            #print(fit)
             
             #extracting the slope
             slope <- coef(model)[2]
             print(slope)
+            
+            db <- slope - avgRegLine1[2]
+            print(db)
+            sd <- sqrt(summary(model)$coefficients[2,2]^2 + avgRegLine1[3]^2)
+           # sd <- summary(model)$coefficients[2,2]
+            print(sd)
+            t_value <- db/sd
+            print(t_value)
+            
+            df <- model$df.residual
+            print(df)
+            
+            p_value <- 2*pt(-abs(t_value), df)
+            print(p_value)
             
             #displaying the regression line
             a$series(name = "Regression line",
                      type = "line",
                      data = fit$.fitted,
                      marker = list(enabled = FALSE)
-                     
             )
             a$series(name = "Avg Regression line",
                      type = "line",
                      data = stepsCount$totalAvg,
                      marker = list(enabled = FALSE)
-                     
             )
             return(a)
           } else {
@@ -2411,33 +2403,41 @@ function(input, output, session) {
             #rceating an id column needed for the regression model
             stepsCount$id <- seq.int(nrow(stepsCount))
             
-            #gets a data frame with step data for each course and run
-            s <- getAllStepsFirstVisitedData(getAllTableData("Activity"))
-            res <- data.frame(numeric(), numeric())
-            colnames(res) <- c("Const", "Slope")
             
-            #computes the slope and coefficient for each course and run
-            for(i in (1:nrow(s))){
-              for(j in (1:ncol(s))){
-                if(!is.null(s[i,j][[1]])){
-                  
-                  s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
-                  
-                  model <- lm(freq ~ id, s[i,j][[1]])
-                  fit <- fortify(model)
-                  
-                  res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
-                }
-              }
+            if(is.null(avgRegLine2)){
+              #gets a data frame with step data for each course and run
+              s <- getAllStepsFirstVisitedData(getAllTableData("Activity"))
+              avgRegLine2 <<- computeAverageRegressionLine(s)
             }
-            colnames(res) <- c("Const", "Slope")
-            print(res)
             
-            #computes average slope and coefficient
-            avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE))
-            print(avg)
+            # 
+            # #gets a data frame with step data for each course and run
+            # s <- getAllStepsFirstVisitedData(getAllTableData("Activity"))
+            # res <- data.frame(numeric(), numeric())
+            # colnames(res) <- c("Const", "Slope")
+            # 
+            # #computes the slope and coefficient for each course and run
+            # for(i in (1:nrow(s))){
+            #   for(j in (1:ncol(s))){
+            #     if(!is.null(s[i,j][[1]])){
+            #       
+            #       s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
+            #       
+            #       model <- lm(freq ~ id, s[i,j][[1]])
+            #       fit <- fortify(model)
+            #       
+            #       res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
+            #     }
+            #   }
+            # }
+            # colnames(res) <- c("Const", "Slope")
+            # print(res)
+            # 
+            # #computes average slope and coefficient
+            # avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE))
+            # print(avg)
             
-            stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
+            stepsCount$totalAvg <- avgRegLine2[2] * stepsCount$id + avgRegLine2[1]
             
             
             #creating the chart
@@ -3080,11 +3080,7 @@ function(input, output, session) {
             ),
             options = list(
               autoWidth = TRUE,
-<<<<<<< HEAD
               columnDefs = list(list(width = '8%', targets = list(0,1,3,4,5,6,7,8))),
-=======
-              columnDefs = list(list(width = '10%', targets = list(0,1,2,3,4,5,6,7,8))),
->>>>>>> f9f16ca0f30e195c517c8be1d23f9da785ec05ac
               scrollY = "700px",
               lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
               pageLength = 20,
