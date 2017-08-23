@@ -655,6 +655,53 @@ getAllStepsFirstVisitedData <- function(allStepData){
 }
 
 
+
+#' Gets values of the average regression line
+#'
+#' @param stepData data frame with step data
+#'
+#' @return a data frame with the average values necessary to the average regression line
+computeAverageRegressionLine <- function(stepData) {
+  
+  s <- stepData
+  
+  #creating a data frame to store the mean values of the regression lines
+  res <- data.frame(numeric(), numeric(), numeric(), numeric())
+  colnames(res) <- c("Const", "Slope", "StdError", "SampleSize")
+  
+  #computes the slope and coefficient for each course and run
+  for(i in (1:nrow(s))){
+    for(j in (1:ncol(s))){
+      if(!is.null(s[i,j][[1]])){
+        
+        #creates a new column numbering the steps
+        s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
+        
+        #creating the regression model (slope and intercept)
+        model <- lm(freq ~ id, s[i,j][[1]])
+        
+        #fortifying the model
+        fit <- fortify(model)
+        
+        #addins a new row to the results data frame
+        if(!is.na(coef(model)[1]) && !is.na(coef(model)[2]) && !is.na(summary(model)$coefficients[2,2])){
+          res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2], StdError = summary(model)$coefficients[2,2], SampleSize = nrow(s[i,j][[1]])))
+        }
+      }
+    }
+  }
+  #renaming the column names
+  colnames(res) <- c("Const", "Slope", "StdError", "SampleSize")
+  
+  #computes average slope and coefficient for all courses
+  avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE), mean(res$StdError, na.rm = TRUE), round(mean(res$SampleSize, na.rm = TRUE), digits = 0))
+  
+  return (avg)
+}
+
+
+
+
 # Returns the heat map of step completion, requires step data and the start date of the run
 getStepCompletionHeatMap <- function(stepData, startDate){
   data <-stepData

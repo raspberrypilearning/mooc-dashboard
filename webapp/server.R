@@ -2249,12 +2249,15 @@ function(input, output, session) {
   
   # Selector for which run to display on the step tab
   
+  
+  
+  
   StepButtonDependency <- eventReactive(input$runSelectorStepsButton, {})
   observeEvent(input$runSelectorStepsButton, {
     output$runSelectorSteps <- renderUI({
       StepButtonDependency()
       chartDependency()
-      # stepDependancy()
+      #stepDependancy()
       
       runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
       if(input$run2 != "None"){
@@ -2281,6 +2284,11 @@ function(input, output, session) {
       shinyjs::hide(id = "box5")
       shinyjs::hide(id = "box6")
       shinyjs::show(id = "box1")
+      
+      #two variables to store information about the regression lines
+      regLineSMC <- NULL
+      avgRegLineSMC <- NULL
+      
       output$stepsCompleted <- renderChart2({
         
         withProgress(message = "Processing",{
@@ -2292,33 +2300,18 @@ function(input, output, session) {
             #counts the number of times each step was marked as completed 
             stepsCount <- getStepsCompletedData(sData)
             
-            #gets a data frame with step data for each course and run
-            s <- getAllStepCompletedData(getAllTableData("Activity"))
-            res <- data.frame(numeric(), numeric())
-            colnames(res) <- c("Const", "Slope")
-            
-            #computes the slope and coefficient for each course and run
-            for(i in (1:nrow(s))){
-              for(j in (1:ncol(s))){
-                if(!is.null(s[i,j][[1]])){
-                  
-                  s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
-                  
-                  model <- lm(freq ~ id, s[i,j][[1]])
-                  fit <- fortify(model)
-                  
-                  res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
-                }
-              }
+            #store the average regression line in a global variable to compute it only once
+            if(is.null(avgRegLineSMC)){
+              #gets a data frame with step data for each course and run
+              s <- getAllStepCompletedData(getAllTableData("Activity"))
+              avgRegLineSMC <<- computeAverageRegressionLine(s)
             }
-            colnames(res) <- c("Const", "Slope")
-            
-            #computes average slope and coefficient
-            avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE))
             
             #add an id column for computing the regression line (as the step numbers can't be used)
             stepsCount$id <- seq.int(nrow(stepsCount))
-            stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
+            
+            #computing the regression line points
+            stepsCount$totalAvg <- avgRegLineSMC[2] * stepsCount$id + avgRegLineSMC[1]
             
             
             #computing the graphs
@@ -2339,23 +2332,33 @@ function(input, output, session) {
                 animation = FALSE)
             )
             
-            #creating the regression model and data
+            #creating the regression model and data for the current course run
             model <- lm(freq ~ id, stepsCount)
+            #print(summary(model))
+            
             fit <- fortify(model)
+            
+            #extracting the slope
             slope <- coef(model)[2]
             
-            #displaying the regression line
+            #storing all the reg line info in a variable
+            regLineSMC <<- c(coef(model)[1], slope, summary(model)$coefficients[2,2], model$df.residual + 2)
+            names(regLineSMC) <<- c("Const", "Slope", "StdError", "SampleSize")
+              
+            #making sure the average regression line values do not go below 0
+            stepsCount <- stepsCount[which(stepsCount$totalAvg > 0), ]
+            
+            #displaying the regression lines
             a$series(name = "Regression line",
                      type = "line",
                      data = fit$.fitted,
                      marker = list(enabled = FALSE)
-                     
             )
             a$series(name = "Avg Regression line",
                      type = "line",
+                     color = "#3115e5",
                      data = stepsCount$totalAvg,
                      marker = list(enabled = FALSE)
-                     
             )
             return(a)
           } else {
@@ -2365,14 +2368,54 @@ function(input, output, session) {
                    "No data available")
             )
           }
-          
-          
-          
-          
-          
         })
-        
       })
+      
+      #instruction to run a significance test to check the difference of the two slopes
+      output$runTestTextSMC <- renderText({
+        "Run a test to check if the difference between the slope of the regression line of the selected course and the average slope of all regression lines is statistically significant"
+      })
+      
+      #Selector to choose the alpha value for the statistical significance
+      output$alphaValueSelectorSMC <- renderUI({
+        alphaValues <- c(0.1, 0.05, 0.01)
+        print(selectInput("alphaValueSelectorSMC", label = "Choose alpha:", choices = alphaValues, width = "550px"))
+      })
+      
+      # Run statistical significance test button
+      output$runTestButtonSMC <- renderUI({
+        print(actionButton("runTestButtonSMC","Run test"))
+      })
+      
+      #to perform the test when pressing the button
+      observeEvent(input$runTestButtonSMC, {
+        
+        #the chosen alpha value
+        alpha <- as.numeric(input$alphaValueSelectorSMC)
+        
+        db <- regLineSMC[2] - avgRegLineSMC[2]
+        
+        #one of these 2 formulas should be the correct one
+        #sd <- sqrt(regLine1[3]^2 + avgRegLine1[3]^2)
+        sd <- regLineSMC[3]
+        
+        t_value <- db/sd
+        
+        df <- regLineSMC[4] - 2
+        
+        #calculating the p-value
+        p_value <- 2*pt(-abs(t_value), df)
+        
+        #printing the result of the test
+        output$testResultSMC <- renderText({
+          if(p_value <= alpha){
+            return (paste("Test result: there is a statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+          } else {
+            return (paste("Test result: there is NO statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+          }
+        })
+      })
+      
     }
     else if (isolate(input$graphName) == "StepsFirstVisited") {
       # Step completed column chart
@@ -2387,6 +2430,11 @@ function(input, output, session) {
       shinyjs::hide(id = "box5")
       shinyjs::hide(id = "box6")
       shinyjs::show(id = "box2")
+      
+      regLineSFV <- NULL
+      avgRegLineSFV <- NULL
+      
+      
       output$StepsFirstVisited <- renderChart2({
         
         withProgress(message = "Processing",{
@@ -2402,33 +2450,14 @@ function(input, output, session) {
             #rceating an id column needed for the regression model
             stepsCount$id <- seq.int(nrow(stepsCount))
             
-            #gets a data frame with step data for each course and run
-            s <- getAllStepsFirstVisitedData(getAllTableData("Activity"))
-            res <- data.frame(numeric(), numeric())
-            colnames(res) <- c("Const", "Slope")
             
-            #computes the slope and coefficient for each course and run
-            for(i in (1:nrow(s))){
-              for(j in (1:ncol(s))){
-                if(!is.null(s[i,j][[1]])){
-                  
-                  s[i,j][[1]]$id <- seq.int(nrow(s[i,j][[1]]))
-                  
-                  model <- lm(freq ~ id, s[i,j][[1]])
-                  fit <- fortify(model)
-                  
-                  res <- rbind(res, c(Const = coef(model)[1], Slope = coef(model)[2]))
-                }
-              }
+            if(is.null(avgRegLineSFV)){
+              #gets a data frame with step data for each course and run
+              s <- getAllStepsFirstVisitedData(getAllTableData("Activity"))
+              avgRegLineSFV <<- computeAverageRegressionLine(s)
             }
-            colnames(res) <- c("Const", "Slope")
-            print(res)
             
-            #computes average slope and coefficient
-            avg <- c(mean(res$Const, na.rm = TRUE), mean(res$Slope, na.rm = TRUE))
-            print(avg)
-            
-            stepsCount$totalAvg <- avg[2] * stepsCount$id + avg[1]
+            stepsCount$totalAvg <- avgRegLineSFV[2] * stepsCount$id + avgRegLineSFV[1]
             
             
             #creating the chart
@@ -2453,6 +2482,13 @@ function(input, output, session) {
             model <- lm(freq ~ id, stepsCount)
             fit <- fortify(model)
             
+            #storing information about the regression line in a single variable
+            regLineSFV <<- c(coef(model)[1], coef(model)[2], summary(model)$coefficients[2,2], model$df.residual + 2)
+            names(regLineSFV) <<- c("Const", "Slope", "StdError", "SampleSize")
+            
+            #making sure the average regression line values do not go below 0
+            stepsCount <- stepsCount[which(stepsCount$totalAvg > 0), ]
+            
             #displaying the regression line
             a$series(name = "Regression line",
                      type = "line",
@@ -2460,6 +2496,7 @@ function(input, output, session) {
                      marker = list(enabled = FALSE))
             a$series(name = "Avg Regression line",
                      type = "line",
+                     color = "#3115e5",
                      data = stepsCount$totalAvg,
                      marker = list(enabled = FALSE)
                      
@@ -2474,16 +2511,54 @@ function(input, output, session) {
             )
           }
           
-          # model <- lm(stepsCount[,2] ~ stepsCount$week_step)
-          # fit <- predict(model,newData = stepsCount)
-          # a$series(
-          # 	name = "Best Fit",
-          #       	type = line,
-          #       	data = fit
-          #       )
           
         })
         
+      })
+      
+      #instructing to use a statistical significance test to check if the difference between the two slopes is significant
+      output$runTestTextSFV <- renderText({
+        "Run a test to check if the difference between the slope of the regression line of the selected course and the average slope of all regression lines is statistically significant"
+      })
+      
+      #Selector to choose the alpha value for the statistical significance
+      output$alphaValueSelectorSFV <- renderUI({
+        alphaValues <- c(0.1, 0.05, 0.01)
+        print(selectInput("alphaValueSelectorSFV", label = "Choose alpha:", choices = alphaValues, width = "550px"))
+      })
+      
+      # Run statistical significance test button
+      output$runTestButtonSFV <- renderUI({
+        print(actionButton("runTestButtonSFV","Run test"))
+      })
+      
+      #performing the statistical test when pressing the button
+      observeEvent(input$runTestButtonSFV, {
+        
+        #the chosen alpha value
+        alpha <- as.numeric(input$alphaValueSelectorSFV)
+        
+        db <- regLineSFV[2] - avgRegLineSFV[2]
+        
+        #one of these 2 formulas should be the right one
+        #sd <- sqrt(regLineSFV[3]^2 + avgRegLineSFV[3]^2)
+        sd <- regLineSFV[3]
+        
+        t_value <- db/sd
+        
+        df <- regLineSFV[4] - 2
+        
+        #calculating the p-value
+        p_value <- 2*pt(-abs(t_value), df)
+        
+        #printing the result of the test
+        output$testResultSFV <- renderText({
+          if(p_value <= alpha){
+            return (paste("Test result: there is a statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+          } else {
+            return (paste("Test result: there is NO statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+          }
+        })
       })
     }
     else if (isolate(input$graphName) == "StepsFirstVisitedByStepAndDate") {
@@ -3071,7 +3146,7 @@ function(input, output, session) {
             ),
             options = list(
               autoWidth = TRUE,
-              columnDefs = list(list(width = '10%', targets = list(0,1,2,3,4,5,6,7,8))),
+              columnDefs = list(list(width = '8%', targets = list(0,1,3,4,5,6,7,8))),
               scrollY = "700px",
               lengthMenu = list(c(10,20,30, -1),c('10','20','30', 'All')),
               pageLength = 20,
