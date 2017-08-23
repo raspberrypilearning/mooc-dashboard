@@ -2285,6 +2285,7 @@ function(input, output, session) {
       shinyjs::hide(id = "box6")
       shinyjs::show(id = "box1")
       
+      #two variables to store information about the regression lines
       regLineSMC <- NULL
       avgRegLineSMC <- NULL
       
@@ -2333,25 +2334,21 @@ function(input, output, session) {
             
             #creating the regression model and data for the current course run
             model <- lm(freq ~ id, stepsCount)
-            print(summary(model))
+            #print(summary(model))
             
             fit <- fortify(model)
-            #print(fit)
             
             #extracting the slope
             slope <- coef(model)[2]
-            print(slope)
             
+            #storing all the reg line info in a variable
             regLineSMC <<- c(coef(model)[1], slope, summary(model)$coefficients[2,2], model$df.residual + 2)
             names(regLineSMC) <<- c("Const", "Slope", "StdError", "SampleSize")
               
-            
-            
-            #making sure the regression line values do not go below 0
+            #making sure the average regression line values do not go below 0
             stepsCount <- stepsCount[which(stepsCount$totalAvg > 0), ]
             
-            #displaying the regression line
-            
+            #displaying the regression lines
             a$series(name = "Regression line",
                      type = "line",
                      data = fit$.fitted,
@@ -2374,12 +2371,12 @@ function(input, output, session) {
         })
       })
       
-      #just some text about running a test
+      #instruction to run a significance test to check the difference of the two slopes
       output$runTestTextSMC <- renderText({
         "Run a test to check if the difference between the slope of the regression line of the selected course and the average slope of all regression lines is statistically significant"
       })
       
-      #Selector to choose the p value for the statistical significance
+      #Selector to choose the alpha value for the statistical significance
       output$alphaValueSelectorSMC <- renderUI({
         alphaValues <- c(0.1, 0.05, 0.01)
         print(selectInput("alphaValueSelectorSMC", label = "Choose alpha:", choices = alphaValues, width = "550px"))
@@ -2395,25 +2392,19 @@ function(input, output, session) {
         
         #the chosen alpha value
         alpha <- as.numeric(input$alphaValueSelectorSMC)
-        print(regLineSMC)
-        
         
         db <- regLineSMC[2] - avgRegLineSMC[2]
-        print(db)
         
+        #one of these 2 formulas should be the correct one
         #sd <- sqrt(regLine1[3]^2 + avgRegLine1[3]^2)
         sd <- regLineSMC[3]
-        print(sd)
         
         t_value <- db/sd
-        print(t_value)
         
         df <- regLineSMC[4] - 2
-        print(df)
         
         #calculating the p-value
         p_value <- 2*pt(-abs(t_value), df)
-        print(p_value)
         
         #printing the result of the test
         output$testResultSMC <- renderText({
@@ -2491,10 +2482,11 @@ function(input, output, session) {
             model <- lm(freq ~ id, stepsCount)
             fit <- fortify(model)
             
+            #storing information about the regression line in a single variable
             regLineSFV <<- c(coef(model)[1], coef(model)[2], summary(model)$coefficients[2,2], model$df.residual + 2)
             names(regLineSFV) <<- c("Const", "Slope", "StdError", "SampleSize")
             
-            #making sure the regression line values do not go below 0
+            #making sure the average regression line values do not go below 0
             stepsCount <- stepsCount[which(stepsCount$totalAvg > 0), ]
             
             #displaying the regression line
@@ -2523,11 +2515,13 @@ function(input, output, session) {
         })
         
       })
+      
+      #instructing to use a statistical significance test to check if the difference between the two slopes is significant
       output$runTestTextSFV <- renderText({
         "Run a test to check if the difference between the slope of the regression line of the selected course and the average slope of all regression lines is statistically significant"
       })
       
-      #Selector to choose the p value for the statistical significance
+      #Selector to choose the alpha value for the statistical significance
       output$alphaValueSelectorSFV <- renderUI({
         alphaValues <- c(0.1, 0.05, 0.01)
         print(selectInput("alphaValueSelectorSFV", label = "Choose alpha:", choices = alphaValues, width = "550px"))
@@ -2543,24 +2537,19 @@ function(input, output, session) {
         
         #the chosen alpha value
         alpha <- as.numeric(input$alphaValueSelectorSFV)
-        print(regLineSFV)
         
         db <- regLineSFV[2] - avgRegLineSFV[2]
-        print(db)
         
+        #one of these 2 formulas should be the right one
         #sd <- sqrt(regLineSFV[3]^2 + avgRegLineSFV[3]^2)
         sd <- regLineSFV[3]
-        print(sd)
         
         t_value <- db/sd
-        print(t_value)
         
         df <- regLineSFV[4] - 2
-        print(df)
         
         #calculating the p-value
         p_value <- 2*pt(-abs(t_value), df)
-        print(p_value)
         
         #printing the result of the test
         output$testResultSFV <- renderText({
