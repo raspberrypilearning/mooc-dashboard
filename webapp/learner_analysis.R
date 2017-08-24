@@ -1316,7 +1316,6 @@ getLearnerClassificationData <- function(commentData){
 }
 
 
-
 #' To categorize the comments in a specific course run
 #'
 #' @param commentData data frame with comment data for a specific course run
@@ -1384,7 +1383,6 @@ getCommentsForClassification <- function(commentData){
       }
     }
   }
-  
   comments$nature[comments$repliestowhom==comments$learner_id & comments$parent_id!=0 & comments$order!=0]<-"initiator's reply"
   comments$nature[(comments$replies==0 & comments$parent_id==0)]<-"lone post"
   comments$nature[(comments$replies!=0 & comments$parent_id==0)]<-"initiating post"
@@ -1392,8 +1390,6 @@ getCommentsForClassification <- function(commentData){
   
   return(comments)
 }
-
-
 
 
 #' To get data about team interactions with the platform: name, date, step, comment, link

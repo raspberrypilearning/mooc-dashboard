@@ -61,7 +61,8 @@ sidebar <- dashboardSidebar(
     menuItem("Total Measures", tabName = "totalMeasures", icon = icon("comment")),
     menuItem("Correlations", tabName = "correlations", icon = icon("puzzle-piece")),
     menuItem("Team Members", tabName = "teamMembers", icon = icon("users")),
-    menuItem("Surveys Analysis", tabName = "surveysAnalysis", icon = icon("bookmark"))
+    menuItem("Surveys Analysis", tabName = "surveysAnalysis", icon = icon("bookmark")),
+    menuItem("Learner paths", tabName = "learnerPaths", icon = icon("random"))
     # ,menuItem("Cumulative Measures", tabName = "cumulative_measures", icon = icon("pie-chart"))
     # ,menuItem("Social Network Analysis", tabName = "social_network_analysis", icon = icon("hashtag"))
     # ,menuItem("Debug", tabName = "debug")
@@ -603,9 +604,33 @@ body <- dashboardBody(
                 status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
               ), height = 1300
             )
+    ),
+    
+    tabItem(tabName = "learnerPaths",
+            fluidRow(
+              box(
+                fluidRow(
+                  tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runPathSelector", inline = TRUE))
+                ),
+                fluidRow(
+                  tags$div(style = "display:inline-block; margin-left:15px", uiOutput("weekPathSelector", inline = TRUE)),
+                  tags$div(style = "margin-left:15px", uiOutput("viewWeekPathButton"))
+                ),
+                  title = "Course run and week selector",
+                  status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
+            )), 
+            fluidRow(
+              box(
+                sankeyNetworkOutput("sankeyLearnerPaths"),#, width = "100%", height = "500px"),
+                title = "Learner paths by course week", 
+                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE
+              )
+            )
+
     )
   )
 )
+
 # 
 # 	)
 # )
