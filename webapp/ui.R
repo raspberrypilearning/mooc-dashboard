@@ -621,7 +621,7 @@ body <- dashboardBody(
             )), 
             fluidRow(
               box(
-                sankeyNetworkOutput("sankeyLearnerPaths"),#, width = "100%", height = "500px"),
+                sankeyNetworkOutput("sankeyLearnerPaths", width = "100%", height = "500px"),
                 title = "Learner paths by course week", 
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE
               )

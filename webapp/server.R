@@ -3899,8 +3899,8 @@ function(input, output, session) {
   
   
   #START LEARNER PATHS TAB
-  #StepButtonDependency <- eventReactive(input$runSelectorStepsButton, {})
-  #observeEvent(input$runSelectorStepsButton, {
+
+    #populate the drop down with the selected course runs
     output$runPathSelector <- renderUI({
       chartDependency()
       
@@ -3918,7 +3918,7 @@ function(input, output, session) {
       print(selectInput("runPathSelector", label = "Run", choices = runs, width = "550px"))
     })
     
-    
+    #populate the drop down of the week selector for the selected course run
     output$weekPathSelector <- renderUI({
       chartDependency()
       cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
@@ -3927,60 +3927,115 @@ function(input, output, session) {
       print(selectInput("weekPathSelector", label = "Week of the course", choices = weeks, width = "550px"))
     })
     
+    #creating the button to create the sankey diagram
     output$viewWeekPathButton <- renderUI({
       chartDependency()
       print(actionButton("viewWeekPathButton","View path"))
     })
+    
+    #for dependencies about the button for creating the learning path
     learnerPathButtonDependency <- eventReactive(input$viewWeekPathButton, {})
     
+    
+    #creating the sankey diagram
+    #it shows how many learners go from one step to another (e.g. how many go from step 1.1 to 1.2, or how many jump to 1.3 etc)
     output$sankeyLearnerPaths <- renderSankeyNetwork({
     
+      #to re-create the diagram when pressing the button
       learnerPathButtonDependency()
       
+      #getting the course and step data for the selected course run
       cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
       sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
       sData$week_step <- getWeekStep(sData)
-      stepsVisits <- count(sData$week_step[sData$week_number == input$weekPathSelector])
+      
+      #getting the step data for the selected week only
+      sData <- sData[sData$week_number == input$weekPathSelector, ]
+
+      #counting  how many times each step was visited in the selected week
+      stepsVisits <- count(sData$week_step)
       print(stepsVisits)
       
-      #print(sData)
-      
-      nodes = data.frame("name" =
-                            c("Node A", # Node 0
-                              "Node B", # Node 1
-                            "Node C", # Node 2
-                              "Node D"))# Node 3
+      #getting the unique steps visited in the selected week
+      steps <- unique(sData$week_step)
 
-       links = as.data.frame(matrix(c(
-         0, 1, 10, # Each row represents a link. The first number
-         0, 2, 20, # represents the node being conntected from.
-         1, 3, 30, # the second number represents the node connected to.
-         2, 3, 40),# The third number is the value of the node
-         byrow = TRUE, ncol = 3))
-       names(links) = c("source", "target", "value")
-      print(nodes)
-      print(links)
+      #creating a data frame to store values to be put in the sankey diagram
+      m <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+      colnames(m) <- steps
+      rownames(m) <- steps
+      
+      #populating the table
+      for(step in steps){
+        for(i in (1:(nrow(sData)-1))){
+          if(sData$week_step[i] == step){
+            m[step, sData$week_step[i+1]] <- m[step, sData$week_step[i+1]] + 1
+          }
+        }
+      }
+      
+      print(m)
+
+        # for(i in (1:(nrow(sData)-1))){
+        #   if(sData$week_step[i] == "1.01"){
+        #     print(sData$week_step[i+1])
+        #   }
+        # }
+      
+      
+      # nodes = data.frame("name" =
+      #                       c("Node A", # Node 0
+      #                         "Node B", # Node 1
+      #                       "Node C", # Node 2
+      #                         "Node D"))# Node 3
+      # 
+      #  links = as.data.frame(matrix(c(
+      #    0, 1, 10, # Each row represents a link. The first number
+      #    0, 2, 20, # represents the node being conntected from.
+      #    1, 3, 30, # the second number represents the node connected to.
+      #    2, 3, 40),# The third number is the value of the node
+      #    byrow = TRUE, ncol = 3))
+      #  names(links) = c("source", "target", "value")
+      # print(nodes)
+      # print(links)
        
-       
-      nodes = data.frame("name" = stepsVisits$x)
+      #naming the nodes in the sankey diagram and adding an 'other' node 
+      #which signifies the situations when after a step a person jumped to a different week or quit the course 
+      nodes <- data.frame("name" = stepsVisits$x, stringsAsFactors = FALSE)
+      nodes <- rbind(nodes, data.frame("name" = "other"))
       print(nodes)
-      links <- data.frame("source" = seq.int(0, nrow(stepsVisits) -2, by = 1), "target" = seq.int(1, nrow(stepsVisits)-1, by = 1), "value" = numeric(length = (length(stepsVisits) - 1)), stringsAsFactors = FALSE)
-      for(i in 1:(nrow(stepsVisits)-1)){
-        # print(stepsVisits$x[i])
-        # print(stepsVisits$x[i+1])
-        # print(stepsVisits$freq[i+1])
-       #links <- rbind(links, data.frame("source" = stepsVisits$x[i], "target" = stepsVisits$x[i+1], "value" = stepsVisits$freq[i+1]))
-         #links$source[i] <- i-1
-        #links$target[i] <- i
-        links$value[i] <- stepsVisits$freq[i+1]
-        
+      
+      #creating the links data frame to create the links in the sankey diagram
+      links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
+      
+      #populating the links data frame with the sources, targets and values from the table
+      for(i in 1:(nrow(nodes)-2)){
+        for(j in i:(nrow(nodes)-2)){
+          if(m[i, j+1] > 0){
+            links <- rbind(links, data.frame("source" = i-1, "target" = j, "value" = m[i, j+1], "type" = nodes[i, 1]))
+          }
+        }
+      }
+
+      #calculating the values between a step node and the 'others' node - how many persons went from a step to a following week step or just quit
+      for(i in 1:(nrow(nodes)-1)){
+        s <- 0
+        for(j in 1:i){
+          s<-s+m[i,j]
+        }
+        if(i == nrow(nodes)-1){
+          s <- s - m[i, 1]
+        }
+        if(s>0){
+          links <- rbind(links, data.frame("source" = i-1, "target" = nrow(nodes)-1, "value" = s, "type" = nodes[i, 1]))
+        }
       }
       print(links)
-      sankeyNetwork(Links = links, Nodes = nodes,
-                    Source = "source", Target = "target",
-                    Value = "value", NodeID = "name",
-                   fontSize= 15,
-                   nodeWidth = 10)
+
+      #creating the sankey network
+       sankeyNetwork(Links = links, Nodes = nodes,
+                     Source = "source", Target = "target",
+                     Value = "value", NodeID = "name", LinkGroup = "type", units = 'learners', 
+                     fontSize= 15, nodeWidth = 10)
     
     
     })
