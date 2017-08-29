@@ -2259,7 +2259,7 @@ function(input, output, session) {
       chartDependency()
       #stepDependancy()
       
-      runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+      isolate({runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
       if(input$run2 != "None"){
         runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
       }
@@ -2268,7 +2268,7 @@ function(input, output, session) {
       }
       if(input$run4 != "None"){
         runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-      }
+      }})
       print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
     })
     if (isolate(input$graphName) == "StepsMarkedAsComplete") {
@@ -3895,6 +3895,145 @@ function(input, output, session) {
   )
   
   # END SURVEY ANALYSIS TAB
+  
+  
+  
+  #START LEARNER PATHS TAB
+
+    #populate the drop down with the selected course runs
+    output$runPathSelector <- renderUI({
+      chartDependency()
+      
+      isolate({runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+      if(input$run2 != "None"){
+        runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      }
+      if(input$run3 != "None"){
+        runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      }
+      if(input$run4 != "None"){
+        runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      }})
+      
+      print(selectInput("runPathSelector", label = "Run", choices = runs, width = "550px"))
+    })
+    
+    #populate the drop down of the week selector for the selected course run
+    output$weekPathSelector <- renderUI({
+      chartDependency()
+      cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
+      noOfWeeks <- cData[1, "no_of_weeks"]
+      weeks <- seq.int(noOfWeeks)
+      print(selectInput("weekPathSelector", label = "Week of the course", choices = weeks, width = "550px"))
+    })
+    
+    #creating the button to create the sankey diagram
+    output$viewWeekPathButton <- renderUI({
+      chartDependency()
+      print(actionButton("viewWeekPathButton","View path"))
+    })
+    
+    #for dependencies about the button for creating the learning path
+    learnerPathButtonDependency <- eventReactive(input$viewWeekPathButton, {})
+    
+    
+    #creating the sankey diagram
+    #it shows how many learners go from one step to another (e.g. how many go from step 1.1 to 1.2, or how many jump to 1.3 etc)
+    output$sankeyLearnerPaths <- renderSankeyNetwork({
+    
+      withProgress(message = "Processing...",{ 
+      
+        #to re-create the diagram when pressing the button
+        learnerPathButtonDependency()
+        
+        #getting the course and step data for the selected course run
+        #using isolate to make sure the diagram updates only after pressing the button
+        isolate({
+          cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
+          sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
+          sData$week_step <- getWeekStep(sData)
+
+          #getting the step data for the selected week only
+          sData <- sData[sData$week_number == input$weekPathSelector, ]
+        })
+        
+        #getting the unique steps visited in the selected week
+        steps <- unique(sData$week_step)
+        steps <- sort(steps)
+        
+        #creating a first data frame to store values to be put in the sankey diagram
+        #for the case when learners jump ahead or backtrack within the same week
+        m1 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+        colnames(m1) <- steps
+        rownames(m1) <- steps
+        
+        #creating a second data frame to store values to be put in the sankey diagram
+        #for the case when learners jump to a diff week or end the course
+        m2 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+        colnames(m2) <- steps
+        rownames(m2) <- steps
+        
+        #populating the table
+        for(step in steps){
+          for(i in (1:(nrow(sData)-1))){
+            if(sData$week_step[i] == step){
+              if (sData$learner_id[i] == sData$learner_id[i+1]) {
+                m1[step, sData$week_step[i+1]] <- m1[step, sData$week_step[i+1]] + 1
+              } else {
+                m2[step, sData$week_step[i+1]] <- m2[step, sData$week_step[i+1]] + 1
+              }
+            }
+          }
+        }
+        
+        #naming the nodes in the sankey diagram and adding a new node 
+        #which signifies the situations when after a step a person jumped to a different week or ended the course 
+        nodes <- data.frame("name" = steps, stringsAsFactors = FALSE)
+        nodes <- rbind(nodes, data.frame("name" = "next week/ended course"))
+        
+        #creating the links data frame to create the links in the sankey diagram
+        links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
+        
+        #populating the links data frame with the sources, targets and values from the table
+        # I chose 5 as a threshold from when to start displaying the links
+        for(i in 1:(nrow(nodes)-1)){
+          for(j in 1:(nrow(nodes)-1)){
+            if(m1[i, j] > 5){
+              links <- rbind(links, data.frame("source" = i-1, "target" = j-1, "value" = m1[i, j], "type" = nodes[i, 1]))
+            }
+          }
+        }
+        
+        #calculating the values between a step node and the other node - how many persons went from a step to a different week or ended course
+        #again used 5 as threshold
+        for(i in 1:(nrow(nodes)-1)){
+          s <- 0
+          for(j in 1:(nrow(nodes)-1)){
+            s<-s+m2[i,j]
+          }
+          if(i == nrow(nodes)-1){
+            s <- s - m2[i, 1]
+          }
+          if(s>5){
+            links <- rbind(links, data.frame("source" = i-1, "target" = nrow(nodes)-1, "value" = s, "type" = nodes[i, 1]))
+          }
+        }
+        
+        #creating the sankey network
+        sankeyNetwork(Links = links, Nodes = nodes,
+                      Source = "source", Target = "target",
+                      Value = "value", NodeID = "name", LinkGroup = "type", units = 'learners', 
+                      fontSize= 15, nodeWidth = 10)
+        
+        
+      })
+    
+    })
+  
+  
+  #END LEARNER PATHS TAB
+  
+  
   
   # Debug tool print statements.
   # output$debug <- renderText({
