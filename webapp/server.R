@@ -3947,70 +3947,77 @@ function(input, output, session) {
         learnerPathButtonDependency()
         
         #getting the course and step data for the selected course run
-        cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
-        sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
-        sData$week_step <- getWeekStep(sData)
-        print(sData)
-        #getting the step data for the selected week only
-        sData <- sData[sData$week_number == input$weekPathSelector, ]
+        #using isolate to make sure the diagram updates only after pressing the button
+        isolate({
+          cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
+          sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
+          sData$week_step <- getWeekStep(sData)
+
+          #getting the step data for the selected week only
+          sData <- sData[sData$week_number == input$weekPathSelector, ]
+        })
         
         #getting the unique steps visited in the selected week
         steps <- unique(sData$week_step)
         steps <- sort(steps)
         
-        #creating a data frame to store values to be put in the sankey diagram
-        m <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
-        colnames(m) <- steps
-        rownames(m) <- steps
+        #creating a first data frame to store values to be put in the sankey diagram
+        #for the case when learners jump ahead or backtrack within the same week
+        m1 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+        colnames(m1) <- steps
+        rownames(m1) <- steps
+        
+        #creating a second data frame to store values to be put in the sankey diagram
+        #for the case when learners jump to a diff week or end the course
+        m2 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+        colnames(m2) <- steps
+        rownames(m2) <- steps
         
         #populating the table
         for(step in steps){
           for(i in (1:(nrow(sData)-1))){
             if(sData$week_step[i] == step){
-              if (1) {
-                m[step, sData$week_step[i+1]] <- m[step, sData$week_step[i+1]] + 1
-              } else if (0) {
-                
+              if (sData$learner_id[i] == sData$learner_id[i+1]) {
+                m1[step, sData$week_step[i+1]] <- m1[step, sData$week_step[i+1]] + 1
+              } else {
+                m2[step, sData$week_step[i+1]] <- m2[step, sData$week_step[i+1]] + 1
               }
-             
             }
           }
         }
-        
-        print(m)
         
         #naming the nodes in the sankey diagram and adding a new node 
         #which signifies the situations when after a step a person jumped to a different week or ended the course 
         nodes <- data.frame("name" = steps, stringsAsFactors = FALSE)
         nodes <- rbind(nodes, data.frame("name" = "next week/ended course"))
-        print(nodes)
         
         #creating the links data frame to create the links in the sankey diagram
         links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
         
         #populating the links data frame with the sources, targets and values from the table
-        for(i in 1:(nrow(nodes)-2)){
-          for(j in i:(nrow(nodes)-2)){
-            if(m[i, j+1] > 5){
-              links <- rbind(links, data.frame("source" = i-1, "target" = j, "value" = m[i, j+1], "type" = nodes[i, 1]))
+        # I chose 5 as a threshold from when to start displaying the links
+        for(i in 1:(nrow(nodes)-1)){
+          for(j in 1:(nrow(nodes)-1)){
+            if(m1[i, j] > 5){
+              links <- rbind(links, data.frame("source" = i-1, "target" = j-1, "value" = m1[i, j], "type" = nodes[i, 1]))
             }
           }
         }
         
-        #calculating the values between a step node and the other node - how many persons went from a step to a following week step or ended course
+        #calculating the values between a step node and the other node - how many persons went from a step to a different week or ended course
+        #again used 5 as threshold
         for(i in 1:(nrow(nodes)-1)){
           s <- 0
-          for(j in 1:i){
-            s<-s+m[i,j]
+          for(j in 1:(nrow(nodes)-1)){
+            s<-s+m2[i,j]
           }
           if(i == nrow(nodes)-1){
-            s <- s - m[i, 1]
+            s <- s - m2[i, 1]
           }
-          if(s>0){
+          if(s>5){
             links <- rbind(links, data.frame("source" = i-1, "target" = nrow(nodes)-1, "value" = s, "type" = nodes[i, 1]))
           }
         }
-        print(links)
         
         #creating the sankey network
         sankeyNetwork(Links = links, Nodes = nodes,
