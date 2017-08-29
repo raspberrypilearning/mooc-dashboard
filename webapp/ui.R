@@ -621,6 +621,7 @@ body <- dashboardBody(
             )), 
             fluidRow(
               box(
+                tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotes")), 
                 sankeyNetworkOutput("sankeyLearnerPaths", width = "100%", height = "500px"),
                 title = "Learner paths by course week", 
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE

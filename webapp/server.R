@@ -3936,6 +3936,10 @@ function(input, output, session) {
     #for dependencies about the button for creating the learning path
     learnerPathButtonDependency <- eventReactive(input$viewWeekPathButton, {})
     
+    output$sankeyNotes <- renderText({
+      "Note: The diagram shows the number of students that go from one step to another. For clarity, it only contains the links with value > 5. 
+      The last node shows the number of students that went from a step to a different week or ended the course."
+    })
     
     #creating the sankey diagram
     #it shows how many learners go from one step to another (e.g. how many go from step 1.1 to 1.2, or how many jump to 1.3 etc)
@@ -3951,11 +3955,15 @@ function(input, output, session) {
         isolate({
           cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
           sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
+          sData <- sData[!is.na(sData$last_completed_at), ]
           sData$week_step <- getWeekStep(sData)
 
           #getting the step data for the selected week only
           sData <- sData[sData$week_number == input$weekPathSelector, ]
         })
+        
+        stepsVisited <- count(sData$week_step)
+        print(stepsVisited)
         
         #getting the unique steps visited in the selected week
         steps <- unique(sData$week_step)
@@ -3989,7 +3997,7 @@ function(input, output, session) {
         #naming the nodes in the sankey diagram and adding a new node 
         #which signifies the situations when after a step a person jumped to a different week or ended the course 
         nodes <- data.frame("name" = steps, stringsAsFactors = FALSE)
-        nodes <- rbind(nodes, data.frame("name" = "next week/ended course"))
+        nodes <- rbind(nodes, data.frame("name" = "different week/ended course"))
         
         #creating the links data frame to create the links in the sankey diagram
         links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
