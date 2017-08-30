@@ -628,7 +628,7 @@ body <- dashboardBody(
             fluidRow(
               box(
                 tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesCourse")), 
-                sankeyNetworkOutput("sankeyLearnerPathsCourse", width = "100%", height = "500px"),
+                sankeyNetworkOutput("sankeyLearnerPathsCourse", width = "100%", height = "800px"),
                 title = "Learners paths for whole course by weeks", 
                 id = "pathBox1",
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
@@ -637,7 +637,7 @@ body <- dashboardBody(
             fluidRow(
               box(
                 tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesWeek")), 
-                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "800px"),
+                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "1000px"),
                 title = "Learners paths by course week", 
                 id = "pathBox2",
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE

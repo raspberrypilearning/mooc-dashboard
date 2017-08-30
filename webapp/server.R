@@ -3953,7 +3953,8 @@ function(input, output, session) {
         
         #rendering some helfpul text above the diagram
         output$sankeyNotesCourse <- renderText({
-          "Note: The diagram shows the number of students that go from one week to another."
+          "Note: The diagram shows the number of students that go from one week to another. The start node indicates the number of learners that started the course at each particular week.
+          The end node shows the number of learners that quit the course after each particular week."
         })
         
         #rendering the diagram
@@ -3973,6 +3974,8 @@ function(input, output, session) {
             #selecting the steps that are completed and ordering them by the date of completion (grouped by learner id)
             sData <- sData[!is.na(sData$last_completed_at), ]
             sData <- sData[order(sData$learner_id, sData$last_completed_at), ]
+            fst <- sData$week_number[1]
+            lst <- sData$week_number[nrow(sData)]
             
             #getting the number of weeks of the course run and creating the nodes' names
             noOfWeeks <- cData$no_of_weeks
@@ -4028,6 +4031,9 @@ function(input, output, session) {
               for(i in 1:nrow(m2)){
                 s <- s + m2[i,j]
               }
+              if(j==fst){
+                s <- s+1
+              }
               if(s > 0){
                 links <- rbind(links, data.frame("source" = 0, "target" = j, "value" = s, "type" = nodes[1, 1]))
               }
@@ -4047,6 +4053,9 @@ function(input, output, session) {
               s <- 0
               for(j in 1:ncol(m2)){
                 s <- s + m2[i,j]
+              }
+              if(i == lst){
+                s <- s+1
               }
               if(s > 0){
                 links <- rbind(links, data.frame("source" = i, "target" = nrow(nodes) - 1, "value" = s, "type" = nodes[i+1, 1]))
