@@ -637,7 +637,7 @@ body <- dashboardBody(
             fluidRow(
               box(
                 tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesWeek")), 
-                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "500px"),
+                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "800px"),
                 title = "Learners paths by course week", 
                 id = "pathBox2",
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
