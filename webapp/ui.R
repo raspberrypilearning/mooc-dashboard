@@ -41,6 +41,8 @@ commentsTypeAnalysisList <- list("Comments' Analysis Table" = "CommentsAnalysisT
                                  "Number And Type of Comments by Step" = "NumberAndTypeOfCommentsByStep",
                                  "Number and Type of Comments by Day" = "NumberAndTypeOfCommentsByDay",  
                                  "Comments by Category" = "CommentsByCategory")
+learnersPathDiagramsList <- list("Learners' paths for whole course by weeks" = "LearnersPathsForWholeCourseByWeeks",
+                                "Learners' paths by course week" = "LearnersPathsByCourseWeek")
 
 header <- dashboardHeader(title = "MOOC Dashboard", titleWidth = 250)
 
@@ -613,17 +615,32 @@ body <- dashboardBody(
                   tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runPathSelector", inline = TRUE))
                 ),
                 fluidRow(
+                  tags$div(style = "display:inline-block; margin-left:15px", selectInput("optionPathSelector", label = "Choose a diagram", 
+                              choices = learnersPathDiagramsList, selected = "LearnersPathsForWholeCourseByWeeks",width = 550))
+                ),
+                fluidRow(
                   tags$div(style = "display:inline-block; margin-left:15px", uiOutput("weekPathSelector", inline = TRUE)),
-                  tags$div(style = "margin-left:15px", uiOutput("viewWeekPathButton"))
+                  tags$div(style = "margin-left:15px", uiOutput("viewLearnersPathButton"))
                 ),
                   title = "Course run and week selector",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
             )), 
             fluidRow(
               box(
-                sankeyNetworkOutput("sankeyLearnerPaths", width = "100%", height = "500px"),
-                title = "Learner paths by course week", 
-                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE
+                tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesCourse")), 
+                sankeyNetworkOutput("sankeyLearnerPathsCourse", width = "100%", height = "800px"),
+                title = "Learners paths for whole course by weeks", 
+                id = "pathBox1",
+                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+              )
+            ),
+            fluidRow(
+              box(
+                tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesWeek")), 
+                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "1000px"),
+                title = "Learners paths by course week", 
+                id = "pathBox2",
+                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
               )
             )
 

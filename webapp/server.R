@@ -3918,117 +3918,271 @@ function(input, output, session) {
       print(selectInput("runPathSelector", label = "Run", choices = runs, width = "550px"))
     })
     
+    optionPathSelectorDependency <- eventReactive(input$optionPathSelector, {})
+    
     #populate the drop down of the week selector for the selected course run
     output$weekPathSelector <- renderUI({
       chartDependency()
-      cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
-      noOfWeeks <- cData[1, "no_of_weeks"]
-      weeks <- seq.int(noOfWeeks)
-      print(selectInput("weekPathSelector", label = "Week of the course", choices = weeks, width = "550px"))
+      optionPathSelectorDependency()
+      if(input$optionPathSelector == "LearnersPathsByCourseWeek"){
+        cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
+        noOfWeeks <- cData[1, "no_of_weeks"]
+        weeks <- seq.int(noOfWeeks)
+        print(selectInput("weekPathSelector", label = "Week of the course", choices = weeks, width = "550px"))
+      }
+
     })
     
     #creating the button to create the sankey diagram
-    output$viewWeekPathButton <- renderUI({
+    output$viewLearnersPathButton <- renderUI({
       chartDependency()
-      print(actionButton("viewWeekPathButton","View path"))
+      print(actionButton("viewLearnersPathButton","View path"))
     })
     
     #for dependencies about the button for creating the learning path
-    learnerPathButtonDependency <- eventReactive(input$viewWeekPathButton, {})
+    learnerPathButtonDependency <- eventReactive(input$viewLearnersPathButton, {})
     
-    
-    #creating the sankey diagram
-    #it shows how many learners go from one step to another (e.g. how many go from step 1.1 to 1.2, or how many jump to 1.3 etc)
-    output$sankeyLearnerPaths <- renderSankeyNetwork({
-    
-      withProgress(message = "Processing...",{ 
+    observeEvent(input$viewLearnersPathButton, {
       
-        #to re-create the diagram when pressing the button
-        learnerPathButtonDependency()
+      #creates a sankey diagram with start and end nodes, as well as nodes for each week of the course
+      #it shows the number of learners that go from a week to another, as well the number of students that finish each week
+      #and the number of students that begin the course each week
+      if (isolate(input$optionPathSelector) == "LearnersPathsForWholeCourseByWeeks") {
+        shinyjs::hide(id = "pathBox2")
+        shinyjs::show(id = "pathBox1")
         
-        #getting the course and step data for the selected course run
-        #using isolate to make sure the diagram updates only after pressing the button
-        isolate({
-          cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
-          sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
-          sData$week_step <- getWeekStep(sData)
-
-          #getting the step data for the selected week only
-          sData <- sData[sData$week_number == input$weekPathSelector, ]
+        #rendering some helfpul text above the diagram
+        output$sankeyNotesCourse <- renderText({
+          "Note: The diagram shows the number of students that go from one week to another. The start node indicates the number of learners that started the course at each particular week.
+          The end node shows the number of learners that quit the course after each particular week."
         })
         
-        #getting the unique steps visited in the selected week
-        steps <- unique(sData$week_step)
-        steps <- sort(steps)
-        
-        #creating a first data frame to store values to be put in the sankey diagram
-        #for the case when learners jump ahead or backtrack within the same week
-        m1 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
-        colnames(m1) <- steps
-        rownames(m1) <- steps
-        
-        #creating a second data frame to store values to be put in the sankey diagram
-        #for the case when learners jump to a diff week or end the course
-        m2 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
-        colnames(m2) <- steps
-        rownames(m2) <- steps
-        
-        #populating the table
-        for(step in steps){
-          for(i in (1:(nrow(sData)-1))){
-            if(sData$week_step[i] == step){
-              if (sData$learner_id[i] == sData$learner_id[i+1]) {
-                m1[step, sData$week_step[i+1]] <- m1[step, sData$week_step[i+1]] + 1
-              } else {
-                m2[step, sData$week_step[i+1]] <- m2[step, sData$week_step[i+1]] + 1
+        #rendering the diagram
+        output$sankeyLearnerPathsCourse <- renderSankeyNetwork({
+         
+          withProgress(message = "Processing...",{ 
+            #to re-create the diagram when pressing the button
+            learnerPathButtonDependency()
+            
+            #getting the course and step data for the selected course run
+            #using isolate to make sure the diagram updates only after pressing the button
+            isolate({
+              cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
+              sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
+            })
+            
+            #selecting the steps that are completed and ordering them by the date of completion (grouped by learner id)
+            sData <- sData[!is.na(sData$last_completed_at), ]
+            sData <- sData[order(sData$learner_id, sData$last_completed_at), ]
+            fst <- sData$week_number[1]
+            lst <- sData$week_number[nrow(sData)]
+            
+            #getting the number of weeks of the course run and creating the nodes' names
+            noOfWeeks <- cData$no_of_weeks
+            courseWeeks <- seq.int(from = 1, to = noOfWeeks, by = 1)
+            weeks <- paste("week", courseWeeks, sep = "")
+            
+            #creating a first data frame to store values to be put in the sankey diagram
+            #for the case when learners jump ahead or backtrack in the course
+            m1 <- as.data.frame(matrix(0, ncol = noOfWeeks, nrow = noOfWeeks))
+            colnames(m1) <- weeks
+            rownames(m1) <- weeks
+            
+            #creating a second data frame to store values to be put in the sankey diagram
+            #to compute the numbers of learners that start or end the course at a specific week 
+            m2 <- as.data.frame(matrix(0, ncol = noOfWeeks, nrow = noOfWeeks))
+            colnames(m2) <- weeks
+            rownames(m2) <- weeks
+            
+            #an auxiliary data frame to remember if I counted a transition for a specific learner
+            aux <- as.data.frame(matrix(0, ncol = noOfWeeks, nrow = noOfWeeks))
+            colnames(aux) <- weeks
+            rownames(aux) <- weeks
+            
+            #storing in 2 tables the number of students that go from a week to another 
+            for(i in 1:(nrow(sData)-1)){
+              
+              #counting the number of learners that transit between weeks
+              #using an auxiliary to make sure we don't count the same learner multiple times
+              if(sData$learner_id[i] == sData$learner_id[i+1] && sData$week_number[i]!=sData$week_number[i+1]){
+                if(aux[sData$week_number[i], sData$week_number[i+1]] == 0){
+                  m1[sData$week_number[i], sData$week_number[i+1]] <- m1[sData$week_number[i], sData$week_number[i+1]] + 1
+                  aux[sData$week_number[i], sData$week_number[i+1]] <- 1
+                }
+                
+                #used to count the number of students that start or finish in a particular week
+              } else if (sData$learner_id[i] != sData$learner_id[i+1]){
+                aux[,] <- 0
+                m2[sData$week_number[i], sData$week_number[i+1]] <- m2[sData$week_number[i], sData$week_number[i+1]] + 1
               }
             }
-          }
-        }
-        
-        #naming the nodes in the sankey diagram and adding a new node 
-        #which signifies the situations when after a step a person jumped to a different week or ended the course 
-        nodes <- data.frame("name" = steps, stringsAsFactors = FALSE)
-        nodes <- rbind(nodes, data.frame("name" = "next week/ended course"))
-        
-        #creating the links data frame to create the links in the sankey diagram
-        links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
-        
-        #populating the links data frame with the sources, targets and values from the table
-        # I chose 5 as a threshold from when to start displaying the links
-        for(i in 1:(nrow(nodes)-1)){
-          for(j in 1:(nrow(nodes)-1)){
-            if(m1[i, j] > 5){
-              links <- rbind(links, data.frame("source" = i-1, "target" = j-1, "value" = m1[i, j], "type" = nodes[i, 1]))
+            
+            #naming the nodes in the sankey diagram
+            nodes <- data.frame("name" = "start", stringsAsFactors = FALSE)
+            nodes <- rbind(nodes, data.frame("name" = weeks))
+            nodes <- rbind(nodes, data.frame("name" = "end"))
+            
+            #creating the links data frame to create the links in the sankey diagram
+            links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
+            
+            #counting the number of students that start the course at each specific week (e.g. most of students start with week 1, but others start with weeks 2 or 3)
+            for(j in 1:ncol(m2)){
+              s <- 0
+              for(i in 1:nrow(m2)){
+                s <- s + m2[i,j]
+              }
+              if(j==fst){
+                s <- s+1
+              }
+              if(s > 0){
+                links <- rbind(links, data.frame("source" = 0, "target" = j, "value" = s, "type" = nodes[1, 1]))
+              }
             }
-          }
+            
+            #populating the links data frame with the sources, targets and values from the table
+            for(i in 1:(nrow(m1))){
+              for(j in 1:(ncol(m1))){
+                if(m1[i, j] > 0){
+                  links <- rbind(links, data.frame("source" = i, "target" = j, "value" = m1[i, j], "type" = nodes[i+1, 1]))
+                }
+              }
+            }
+            
+            #counting the number of students that end the course at each specific week (e.g. some students quit after week 1, other remain till last week)
+            for(i in 1:nrow(m2)){
+              s <- 0
+              for(j in 1:ncol(m2)){
+                s <- s + m2[i,j]
+              }
+              if(i == lst){
+                s <- s+1
+              }
+              if(s > 0){
+                links <- rbind(links, data.frame("source" = i, "target" = nrow(nodes) - 1, "value" = s, "type" = nodes[i+1, 1]))
+              }
+            }
+            
+            #computing the network using the values above
+            sankeyNetwork(Links = links, Nodes = nodes,
+                          Source = "source", Target = "target",
+                          Value = "value", NodeID = "name", LinkGroup = "type", units = 'learners', 
+                          fontSize= 15, nodeWidth = 10)
+            
+            #if needed in the future, these 2 lines can be used for counting the number of unique learners that complete at least
+            # a step in a specific week(1st) or by seeing for each learner what weeks they completed steps in
+            #res <- aggregate(data = sData, learner_id ~ week_number, function(x) length(unique(x)))
+            #res <- tapply(sData$week_number, sData$learner_id, count)
+          })
+        })
+        
+      } else if (isolate(input$optionPathSelector) == "LearnersPathsByCourseWeek"){
+          shinyjs::hide(id = "pathBox1")
+          shinyjs::show(id = "pathBox2")
+          
+          output$sankeyNotesWeek <- renderText({
+            "Note: The diagram shows the number of students that go from one step to another (judging by the dates when the steps were last marked as completed). For clarity, it only contains the links with value > 10. 
+            The last node shows the number of students that went from a step to a different week or ended the course."
+          })
+          
+          #creating the sankey diagram
+          #it shows how many learners go from one step to another (e.g. how many go from step 1.1 to 1.2, or how many jump to 1.3 etc)
+          output$sankeyLearnerPathsWeek <- renderSankeyNetwork({
+            
+            #to re-create the diagram when pressing the button
+            learnerPathButtonDependency()
+            
+            withProgress(message = "Processing...",{ 
+              #getting the course and step data for the selected course run
+              #using isolate to make sure the diagram updates only after pressing the button
+              isolate({
+                cData <- course_data[[which(names(course_data) == input$runPathSelector)]]
+                sData <- step_data[[which(names(step_data) == input$runPathSelector)]]
+                
+                #getting the step data for the selected week only
+                sData <- sData[sData$week_number == input$weekPathSelector, ]
+                sData$week_step <- getWeekStep(sData)
+                sData <- sData[!is.na(sData$last_completed_at), ]
+               
+                sData <- sData[order(sData$learner_id, sData$last_completed_at), ]
+              })
+              
+              #getting the unique steps visited in the selected week
+              steps <- unique(sData$week_step)
+              steps <- sort(steps)
+              
+              #creating a first data frame to store values to be put in the sankey diagram
+              #for the case when learners jump ahead or backtrack within the same week
+              m1 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+              colnames(m1) <- steps
+              rownames(m1) <- steps
+              
+              #creating a second data frame to store values to be put in the sankey diagram
+              #for the case when learners jump to a diff week or end the course
+              m2 <- as.data.frame(matrix(0, ncol = length(steps), nrow = length(steps)))
+              colnames(m2) <- steps
+              rownames(m2) <- steps
+              
+              #populating the table
+              for(i in (1:(nrow(sData)-1))){
+                if (sData$learner_id[i] == sData$learner_id[i+1]) {
+                  m1[sData$week_step[i], sData$week_step[i+1]] <- m1[sData$week_step[i], sData$week_step[i+1]] + 1
+                } else {
+                  m2[sData$week_step[i], sData$week_step[i+1]] <- m2[sData$week_step[i], sData$week_step[i+1]] + 1
+                }
+              }
+
+              #naming the nodes in the sankey diagram and adding a new node 
+              #which signifies the situations when after a step a person jumped to a different week or ended the course 
+              nodes <- data.frame("name" = steps, stringsAsFactors = FALSE)
+              nodes <- rbind(nodes, data.frame("name" = "different week/ended course"))
+              
+              #creating the links data frame to create the links in the sankey diagram
+              links <- data.frame("source" = numeric(), "target" = numeric(), "value" = numeric(), "type" = character())
+              
+              #populating the links data frame with the sources, targets and values from the table
+              # I chose 10 as a threshold from when to start displaying the links
+              for(i in 1:(nrow(nodes)-1)){
+                for(j in 1:(nrow(nodes)-1)){
+                  if(m1[i, j] > 10){
+                    links <- rbind(links, data.frame("source" = i-1, "target" = j-1, "value" = m1[i, j], "type" = nodes[i, 1]))
+                  }
+                }
+              }
+              
+              #calculating the values between a step node and the other node - how many persons went from a step to a different week or ended course
+              #again used 5 as threshold
+              for(i in 1:(nrow(nodes)-1)){
+                s <- 0
+                for(j in 1:(nrow(nodes)-1)){
+                  s<-s+m2[i,j]
+                }
+                if(i == nrow(nodes)-1){
+                  s <- s - m2[i, 1]
+                }
+                if(s>10){
+                  links <- rbind(links, data.frame("source" = i-1, "target" = nrow(nodes)-1, "value" = s, "type" = nodes[i, 1]))
+                }
+              }
+              
+              #creating the sankey network
+              sankeyNetwork(Links = links, Nodes = nodes,
+                            Source = "source", Target = "target",
+                            Value = "value", NodeID = "name", LinkGroup = "type", units = 'learners', 
+                            fontSize= 15, nodeWidth = 10)
+              
+              
+            })
+          })
         }
-        
-        #calculating the values between a step node and the other node - how many persons went from a step to a different week or ended course
-        #again used 5 as threshold
-        for(i in 1:(nrow(nodes)-1)){
-          s <- 0
-          for(j in 1:(nrow(nodes)-1)){
-            s<-s+m2[i,j]
-          }
-          if(i == nrow(nodes)-1){
-            s <- s - m2[i, 1]
-          }
-          if(s>5){
-            links <- rbind(links, data.frame("source" = i-1, "target" = nrow(nodes)-1, "value" = s, "type" = nodes[i, 1]))
-          }
-        }
-        
-        #creating the sankey network
-        sankeyNetwork(Links = links, Nodes = nodes,
-                      Source = "source", Target = "target",
-                      Value = "value", NodeID = "name", LinkGroup = "type", units = 'learners', 
-                      fontSize= 15, nodeWidth = 10)
-        
-        
-      })
     
+      
     })
+    
+    
+    
+    
+    
+   
   
   
   #END LEARNER PATHS TAB
