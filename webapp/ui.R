@@ -94,7 +94,7 @@ body <- dashboardBody(
                     fixedRow(
                       column(
                         width = 12,
-                        selectInput("palette", " Heatmap Palette", c("Blues", "Reds", "Purples", "Oranges", "Greys", "Greens")),
+                        #selectInput("palette", " Heatmap Palette", c("Blues", "Reds", "Purples", "Oranges", "Greys", "Greens")),
                         fixedRow(
                           column(
                             width = 2,
@@ -615,7 +615,7 @@ body <- dashboardBody(
                   tags$div(style = "display:inline-block; margin-left:15px", uiOutput("runPathSelector", inline = TRUE))
                 ),
                 fluidRow(
-                  tags$div(style = "display:inline-block; margin-left:15px", selectInput("optionPathSelector", label = "Choose a diagram", 
+                  tags$div(style = "display:inline-block; margin-left:15px", selectInput("optionPathSelector", label = "Choose a diagram",
                               choices = learnersPathDiagramsList, selected = "LearnersPathsForWholeCourseByWeeks",width = 550))
                 ),
                 fluidRow(
@@ -624,21 +624,21 @@ body <- dashboardBody(
                 ),
                   title = "Course run and week selector",
                   status = "primary", solidHeader = TRUE, width = 12, collapsible = TRUE
-            )), 
+            )),
+             fluidRow(
+               box(
+                 tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesCourse")),
+                 sankeyNetworkOutput("sankeyLearnerPathsCourse", width = "100%", height = "700px"),
+                 title = "Learners paths for whole course by weeks",
+                 id = "pathBox1",
+                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
+               )
+             ),
             fluidRow(
               box(
-                tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesCourse")), 
-                sankeyNetworkOutput("sankeyLearnerPathsCourse", width = "100%", height = "800px"),
-                title = "Learners paths for whole course by weeks", 
-                id = "pathBox1",
-                status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
-              )
-            ),
-            fluidRow(
-              box(
-                tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesWeek")), 
-                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "1000px"),
-                title = "Learners paths by course week", 
+                tags$div(style = "margin-left:15px; font-size:15px ", textOutput("sankeyNotesWeek")),
+                sankeyNetworkOutput("sankeyLearnerPathsWeek", width = "100%", height = "800px"),
+                title = "Learners paths by course week",
                 id = "pathBox2",
                 status = "primary", solidHeader = TRUE, width = 12 ,collapsible = TRUE, collapsed = TRUE
               )

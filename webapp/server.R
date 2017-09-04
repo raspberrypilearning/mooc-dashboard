@@ -2576,7 +2576,7 @@ function(input, output, session) {
       shinyjs::show(id = "box3")
       output$firstVisitedHeat <- renderD3heatmap({
         
-        withProgress(message = "Processing",{
+       withProgress(message = "Processing",{
           
           #gets the start date of the course run which is selected
           startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
@@ -2587,11 +2587,12 @@ function(input, output, session) {
           if(nrow(sData)!=0){
             #gets the data for the heat map, passing the step data for the course run and the start date
             map <- getFirstVisitedHeatMap(sData, startDate)
-            return(d3heatmap(map[,2:ncol(map)],
+            
+            d3heatmap(map[,2:ncol(map)],
                              dendrogram = "none",
                              scale = "column",
-                             color = scales::col_quantile(input$palette, NULL,100),
-                             labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01")))
+                             color = "Blues",
+                             labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01"))
           } else {
             shiny::validate(
               need(nrow(sData)>0,
@@ -2711,7 +2712,8 @@ function(input, output, session) {
             return((d3heatmap(map[,2:ncol(map)],
                               dendrogram = "none",
                               scale = "column",
-                              color = scales::col_quantile(input$palette, NULL,100),
+                              #color = scales::col_quantile(input$palette, NULL,100),
+                              color = "Blues",
                               labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01"))))
           } else {
             shiny::validate(
@@ -2836,7 +2838,7 @@ function(input, output, session) {
             comments <- getCommentsHeatMap(cData, startDate)
             
             d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
-                      color = scales::col_quantile(input$palette, NULL,100),
+                      color = "Blues",
                       scale = "column",
                       labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
                       labCol = colnames(comments)[-1])
