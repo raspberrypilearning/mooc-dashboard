@@ -1,7 +1,7 @@
 library(reshape2)
 library(RMySQL)
 library(xts)
-library(networkD3)
+#library(networkD3)
 library(plyr)
 
 # Unused function that used to take a csv filename and return the data.
