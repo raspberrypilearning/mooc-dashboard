@@ -2254,24 +2254,30 @@ function(input, output, session) {
   
   
   StepButtonDependency <- eventReactive(input$runSelectorStepsButton, {})
+  
+  output$runSelectorSteps <- renderUI({
+  #  StepButtonDependency()
+    chartDependency()
+    #stepDependancy()
+    
+    isolate({runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    if(input$run2 != "None"){
+      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    }
+    if(input$run3 != "None"){
+      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+    }
+    if(input$run4 != "None"){
+      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+    }})
+    print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
+  })
+  
+  avgRegLineSMC <- NULL
+  avgRegLineSFV <- NULL
+  
   observeEvent(input$runSelectorStepsButton, {
-    output$runSelectorSteps <- renderUI({
-      StepButtonDependency()
-      chartDependency()
-      #stepDependancy()
-      
-      isolate({runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-      if(input$run2 != "None"){
-        runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-      }
-      if(input$run3 != "None"){
-        runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-      }
-      if(input$run4 != "None"){
-        runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-      }})
-      print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
-    })
+   
     if (isolate(input$graphName) == "StepsMarkedAsComplete") {
       # Step completed column chart
       # output$StepsFirstVisited <- renderChart2({})
@@ -2288,13 +2294,15 @@ function(input, output, session) {
       
       #two variables to store information about the regression lines
       regLineSMC <- NULL
-      avgRegLineSMC <- NULL
       
       output$stepsCompleted <- renderChart2({
         
         withProgress(message = "Processing",{
           
-          sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
+          isolate({runChooserSteps <- input$runChooserSteps})
+          
+          sData <- step_data[[which(names(step_data) == runChooserSteps)]]
+          
           
           if(nrow(sData)>0){
             
@@ -2318,7 +2326,7 @@ function(input, output, session) {
             #computing the graphs
             a <- rCharts:::Highcharts$new()
             a$chart(type = "column", width = 1200)
-            a$series(name = input$runChooserSteps,
+            a$series(name = runChooserSteps,
                      type = "column",
                      data = stepsCount$freq
             )
@@ -2433,15 +2441,15 @@ function(input, output, session) {
       shinyjs::show(id = "box2")
       
       regLineSFV <- NULL
-      avgRegLineSFV <- NULL
-      
       
       output$StepsFirstVisited <- renderChart2({
         
         withProgress(message = "Processing",{
           
           #gets the step data for the selected course run
-          sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
+          isolate({runChooserSteps <- input$runChooserSteps})
+          
+          sData <- step_data[[which(names(step_data) == runChooserSteps)]]
           
           #checks if the data is empty or not
           if(nrow(sData)>0){
@@ -2451,7 +2459,6 @@ function(input, output, session) {
             #rceating an id column needed for the regression model
             stepsCount$id <- seq.int(nrow(stepsCount))
             
-            
             if(is.null(avgRegLineSFV)){
               #gets a data frame with step data for each course and run
               s <- getAllStepsFirstVisitedData(getAllTableData("Activity"))
@@ -2460,12 +2467,11 @@ function(input, output, session) {
             
             stepsCount$totalAvg <- avgRegLineSFV[2] * stepsCount$id + avgRegLineSFV[1]
             
-            
             #creating the chart
             a <- rCharts:::Highcharts$new()
             a$chart(type = "column", width = 1200)
             a$series(
-              name = input$runChooserSteps,
+              name = runChooserSteps,
               type = column,
               data = stepsCount$freq
             )
@@ -2480,16 +2486,19 @@ function(input, output, session) {
             )
             
             #creating the regression model and data
+            print(stepsCount)
             model <- lm(freq ~ id, stepsCount)
             fit <- fortify(model)
-            
+
             #storing information about the regression line in a single variable
-            regLineSFV <<- c(coef(model)[1], coef(model)[2], summary(model)$coefficients[2,2], model$df.residual + 2)
-            names(regLineSFV) <<- c("Const", "Slope", "StdError", "SampleSize")
-            
+            if(!is.na(coef(model)[1]) && !is.na(coef(model)[2]) && !is.na(summary(model)$coefficients[2,2]) && !is.na(model$df.residual + 2)){
+              regLineSFV <<- c(coef(model)[1], coef(model)[2], summary(model)$coefficients[2,2], model$df.residual + 2)
+              names(regLineSFV) <<- c("Const", "Slope", "StdError", "SampleSize")
+            }
+
             #making sure the average regression line values do not go below 0
             stepsCount <- stepsCount[which(stepsCount$totalAvg > 0), ]
-            
+
             #displaying the regression line
             a$series(name = "Regression line",
                      type = "line",
@@ -2511,7 +2520,6 @@ function(input, output, session) {
                    "No data available")
             )
           }
-          
           
         })
         
@@ -2536,28 +2544,37 @@ function(input, output, session) {
       #performing the statistical test when pressing the button
       observeEvent(input$runTestButtonSFV, {
         
-        #the chosen alpha value
-        alpha <- as.numeric(input$alphaValueSelectorSFV)
-        
-        db <- regLineSFV[2] - avgRegLineSFV[2]
-        
-        #one of these 2 formulas should be the right one
-        #sd <- sqrt(regLineSFV[3]^2 + avgRegLineSFV[3]^2)
-        sd <- regLineSFV[3]
-        
-        t_value <- db/sd
-        
-        df <- regLineSFV[4] - 2
-        
-        #calculating the p-value
-        p_value <- 2*pt(-abs(t_value), df)
+        fail = FALSE
+        if(is.null(regLineSFV)){
+          fail = TRUE
+        } else {
+          #the chosen alpha value
+          alpha <- as.numeric(input$alphaValueSelectorSFV)
+          
+          db <- regLineSFV[2] - avgRegLineSFV[2]
+          
+          #one of these 2 formulas should be the right one
+          #sd <- sqrt(regLineSFV[3]^2 + avgRegLineSFV[3]^2)
+          sd <- regLineSFV[3]
+          
+          t_value <- db/sd
+          
+          df <- regLineSFV[4] - 2
+          
+          #calculating the p-value
+          p_value <- 2*pt(-abs(t_value), df)
+        }
         
         #printing the result of the test
         output$testResultSFV <- renderText({
-          if(p_value <= alpha){
-            return (paste("Test result: there is a statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+          if(fail){
+            return("Not enough data")
           } else {
-            return (paste("Test result: there is NO statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+            if(p_value <= alpha){
+              return (paste("Test result: there is a statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+            } else {
+              return (paste("Test result: there is NO statistically significant difference between the two slope values, at p = ", p_value, "and alpha = ", alpha))
+            }
           }
         })
       })
@@ -2579,19 +2596,29 @@ function(input, output, session) {
         
        withProgress(message = "Processing",{
           
-          #gets the start date of the course run which is selected
-          startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
+         isolate({
+            #gets the start date of the course run which is selected
+            startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
           
-          #gets the step data for the selected course run
-          sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
-          
+            #gets the step data for the selected course run
+            sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
+         })
+         
           if(nrow(sData)!=0){
             #gets the data for the heat map, passing the step data for the course run and the start date
             map <- getFirstVisitedHeatMap(sData, startDate)
             
+            #There are 2 possibilities to color the heatmap:
+            #1 (implemented now) with shades of blue starting from white to dark blue
+            #2 - where only 0s are white and the rest start from blue to dark blue
+            #replacing all 0s with null to make them white in the heatmap for #2, and scale should be column in the code below 
+            #replacing all 0s with null to make them white in the heatmap
+            #map[map == 0]<-NA
+            
             d3heatmap(map[,2:ncol(map)],
                              dendrogram = "none",
-                             scale = "column",
+                             scale = "none",  
+                             #scale = "column",
                              color = "Blues",
                              labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01"))
           } else {
@@ -2700,20 +2727,28 @@ function(input, output, session) {
         
         withProgress(message = "Processing",{
           
-          #gets the start date of the selected course run
-          startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
-          
-          #gets the step data of the selected course run
-          sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
-          
+          isolate({
+            #gets the start date of the selected course run
+            startDate <- course_data[[which(names(course_data) == input$runChooserSteps)]]$start_date
+            
+            #gets the step data of the selected course run
+            sData <- step_data[[which(names(step_data) == input$runChooserSteps)]]
+          })
           #if the table contains data it computes the necessary data and renders the heatmap
           #otherwise shows an error message
           if(nrow(sData)>0){
             map <- getStepCompletionHeatMap(sData, startDate)
+            
+            #There are 2 possibilities to color the heatmap:
+            #1 (implemented now) with shades of blue starting from white to dark blue
+            #2 - where only 0s are white and the rest start from blue to dark blue
+            #replacing all 0s with null to make them white in the heatmap for #2, and scale should be column in the code below 
+            #map[map == 0]<-NA
+            
             return((d3heatmap(map[,2:ncol(map)],
                               dendrogram = "none",
-                              scale = "column",
-                              #color = scales::col_quantile(input$palette, NULL,100),
+                              #scale = "column",
+                              scale = "none",
                               color = "Blues",
                               labRow = as.character(as.POSIXct(map[,1]), origin = "1970-01-01"))))
           } else {
@@ -2733,23 +2768,25 @@ function(input, output, session) {
   #START: CHARTS - COMMENTS ORIENTATED
   
   # Selector for which run to display comment related things
-  CommentButtonDependency <- eventReactive(input$runSelectorCommentsButton, {})
+ # CommentButtonDependency <- eventReactive(input$runSelectorCommentsButton, {})
+  
+  output$runSelectorComments <- renderUI({
+    chartDependency()
+    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    if(input$run2 != "None"){
+      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    }
+    if(input$run3 != "None"){
+      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+    }
+    if(input$run4 != "None"){
+      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+    }
+    print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
+  })
+  
   observeEvent(input$runSelectorCommentsButton, {
-    output$runSelectorComments <- renderUI({
-      CommentButtonDependency()
-      chartDependency()
-      runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-      if(input$run2 != "None"){
-        runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-      }
-      if(input$run3 != "None"){
-        runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-      }
-      if(input$run4 != "None"){
-        runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-      }
-      print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
-    })
+    
     if (isolate(input$commentovervewGraph) == "NumberofCommentsbyStep") {
       shinyjs::hide(id = "commentBox2")
       shinyjs::hide(id = "commentBox3")
@@ -2758,15 +2795,16 @@ function(input, output, session) {
       shinyjs::show(id = "commentBox1")
       output$commentsBarChart <- renderChart2({
         
-        #to update if the go button is pressed or the comment selector is changed
+        #to update if the go button is pressed 
         chartDependency()
-        commentDependancy()
         
         withProgress(message = "Processing",{
           
           #step and comment data for the selected course run
-          sData <- step_data[[which(names(step_data) == input$runChooserComments)]]
-          cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+          isolate({runChooserComments <- input$runChooserComments})
+          
+          sData <- step_data[[which(names(step_data) == runChooserComments)]]
+          cData <- comments_data[[which(names(comments_data) == runChooserComments)]]
           
           #checking to see if the data needed to compute the chart is empty or not
           #if empty it displays an error message, if not it renders the chart
@@ -2777,6 +2815,7 @@ function(input, output, session) {
             histogram$data(plotData[,c("reply","post")])
             histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
             histogram$yAxis(title = list(text = "Frequency"))
+            histogram$title(text = runChooserComments)
             histogram$plotOptions (
               column = list(
                 stacking = "normal"
@@ -2800,7 +2839,6 @@ function(input, output, session) {
       shinyjs::show(id = "commentBox2")
       output$commentsPerDayBarChart <- renderChart2({
         chartDependency()
-        commentDependancy()
         
         withProgress(message = "Processing",{
           
@@ -2826,21 +2864,30 @@ function(input, output, session) {
         
         # Draw the chart when the "chooseCourseButton" is pressed by the user
         chartDependency()
-        commentDependancy()
         
         withProgress(message = "Processing",{
           
           learners <- unlist(strsplit(input$filteredLearners, "[,]"))
-          startDate <- course_data[[which(names(course_data) == input$runChooserComments)]]$start_date
-          cData <- comments_data[[which(names(comments_data) == input$runChooserComments)]]
+          
+          isolate({runChooserComments <- input$runChooserComments})
+          
+          startDate <- course_data[[which(names(course_data) == runChooserComments)]]$start_date
+          cData <- comments_data[[which(names(comments_data) == runChooserComments)]]
           
           #renders the heatmap if there is existing data and shows an error message if not
           if(nrow(cData)>0){
             comments <- getCommentsHeatMap(cData, startDate)
             
+            #There are 2 possibilities to color the heatmap:
+            #1 (implemented now) with shades of blue starting from white to dark blue
+            #2 - where only 0s are white and the rest start from blue to dark blue
+            #replacing all 0s with null to make them white in the heatmap for #2, and scale should be column in the code below 
+            #comments[comments == 0]<-NA
+            
             d3heatmap(comments[,2:ncol(comments)], dendrogram = "none", 
                       color = "Blues",
-                      scale = "column",
+                      #scale = "column",
+                      scale = "none", 
                       labRow = as.character(as.POSIXct(comments[,1], origin = "1970-01-01")),
                       labCol = colnames(comments)[-1])
           } else {
@@ -2860,12 +2907,12 @@ function(input, output, session) {
       # Histogram of the comment and replies made per week
       output$commentsRepliesWeekBar <- renderChart2({
         chartDependency()
-        commentDependancy()
         
         withProgress(message = "Processing",{
           
           #comment data for the selected course
-          cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+          isolate({runChooserComments <- input$runChooserComments})
+          cData <- comments_data[[which(names(comments_data) == runChooserComments)]]
           
           
           #checks to see if the table data used to compute the data for the chart is empty or not
@@ -2878,6 +2925,7 @@ function(input, output, session) {
             histogram$data(plotData[,c("reply","post")])
             histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
             histogram$yAxis(title = list(text = "Frequency"))
+            histogram$title(text = runChooserComments)
             histogram$plotOptions (
               column = list(
                 stacking = "normal"
@@ -2902,12 +2950,12 @@ function(input, output, session) {
       # Histogram of the number of authors per week
       output$authorsWeekBar <- renderChart2({
         chartDependency()
-        commentDependancy()
-        
+
         withProgress(message = "Processing",{
           
           #get comment data for the selected course run
-          cData <- comments_data[[which(names(comments_data)==input$runChooserComments)]]
+          isolate({runChooserComments <- input$runChooserComments})
+          cData <- comments_data[[which(names(comments_data)==runChooserComments)]]
           
           #checks if the table needed for getting chart data is empty or not
           #if not empty, it computes the chart, else it throws an error message
@@ -2918,6 +2966,7 @@ function(input, output, session) {
             histogram$data(plotData[,c("authors")])
             histogram$xAxis (categories = plotData$week_number, title = list(text = "Week"))
             histogram$yAxis(title = list(text = "Frequency"))
+            histogram$title(text = runChooserComments)
             histogram$plotOptions (
               column = list(
                 stacking = "normal"
@@ -3012,29 +3061,28 @@ function(input, output, session) {
   
   # START COMMENTS TYPE ANALYSIS
   
-  CommentTypeButtonDependency <- eventReactive(input$runSelectorCommentsTypeButton, {})
+  #to populate the drop down with the selected course runs
+  output$runSelectorCommentsType <- renderUI({
+    chartDependency()
+    
+    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    if(input$run2 != "None"){
+      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+    }
+    
+    if(input$run3 != "None"){
+      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+    }
+    
+    if(input$run4 != "None"){
+      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+    }
+    print(selectInput("runChooserCommentsType", label = "Run", choices = runs, width = "550px"))
+  })
   
+  #events to happen if the button is pressed
   observeEvent(input$runSelectorCommentsTypeButton, {
-    
-    output$runSelectorCommentsType <- renderUI({
-      CommentTypeButtonDependency()
-      chartDependency()
-      
-      runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
-      if(input$run2 != "None"){
-        runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
-      }
-      
-      if(input$run3 != "None"){
-        runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
-      }
-      
-      if(input$run4 != "None"){
-        runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
-      }
-      print(selectInput("runChooserCommentsType", label = "Run", choices = runs, width = "550px"))
-    })
-    
+ 
     if (isolate(input$commentTypeOutput) == "NumberAndTypeOfCommentsByStep") {
       
       shinyjs::show(id = "commentTypeBox2")
@@ -3046,23 +3094,29 @@ function(input, output, session) {
         
         #to update if the go button is pressed or the comment selector is changed
         chartDependency()
-        commentTypeDependancy()
         
         withProgress(message = "Processing comments", {
+          
           #step and comment data for the selected course run
-          sData <- step_data[[which(names(step_data) == input$runChooserCommentsType)]]
-          cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
+          isolate({runChooserCommentsType <- input$runChooserCommentsType})
+          sData <- step_data[[which(names(step_data) == runChooserCommentsType)]]
+          cData <- comments_data[[which(names(comments_data)== runChooserCommentsType)]]
           
           
           #checking to see if the data needed to compute the chart is empty or not
           #if empty it displays an error message, if not it renders the chart
           if(nrow(sData)>0 && nrow(cData)>0){
+            
+            #the data to be used in the chart
             plotData <- getCommentsTypeBarChart(sData,cData)
+            
+            #plotting the chart
             histogram <- Highcharts$new()
             histogram$chart(type = "column" , width = 1200)
             histogram$data(plotData[,c("lone post","initiating post", "first reply", "further reply", "initiator's reply")])
             histogram$xAxis (categories = plotData$week_step, title = list(text = "Activity step"))
             histogram$yAxis(title = list(text = "Frequency"))
+            histogram$title(text = runChooserCommentsType)
             histogram$plotOptions (
               column = list(
                 stacking = "normal"
@@ -3084,27 +3138,29 @@ function(input, output, session) {
       shinyjs::hide(id = "commentTypeBox4")
       
       output$commentsTypeLineChart <- renderChart2({ 
-        #to update if the go button is pressed or the comment selector is changed
+        #to update if the go button is pressed 
         chartDependency()
-        commentTypeDependancy()
         
         withProgress(message = "Processing comments", {
           
           #step and comment data for the selected course run
-          cData <- comments_data[[which(names(comments_data)==input$runChooserCommentsType)]]
-          
+          isolate({runChooserCommentsType <- input$runChooserCommentsType})
+          cData <- comments_data[[which(names(comments_data)==runChooserCommentsType)]]
           
           #checking to see if the data needed to compute the chart is empty or not
           #if empty it displays an error message, if not it renders the chart
           if(nrow(cData)>0){
             
+            #getting the data for the plot
             plotData <- getCommentsTypeNumberByDate(cData)
             
+            #plotting the chart
             histogram <- Highcharts$new()
             histogram$chart(type = "line" , width = 1200)
             histogram$data(plotData[,c("lone post","initiating post", "first reply", "further reply", "initiator's reply")])
             histogram$xAxis (categories = as.character(plotData$date), title = list(text = "Date"))
             histogram$yAxis(title = list(text = "Frequency"))
+            histogram$title(text = runChooserCommentsType)
             histogram$plotOptions (
               column = list(
                 stacking = "normal"
@@ -3130,11 +3186,16 @@ function(input, output, session) {
         
         #to update if the go button is pressed or the comment selector is changed
         chartDependency()
-        commentTypeDependancy()
         
         withProgress(message = "Processing Comments",{
-          dataf <- getCommentTypeAnalysisData(comments_data, input$runChooserCommentsType, courseMetaData)
+          #using isolate not to update the table when changing the value in the drop down
+          isolate({runChooserCommentsType <- input$runChooserCommentsType})
+          
+          #data frame to be used in the tables
+          dataf <- getCommentTypeAnalysisData(comments_data, runChooserCommentsType, courseMetaData)
+          
           DT::datatable(
+            caption = runChooserCommentsType,
             dataf[,c("timestamp","week_step","text","nature", "thread","mentor", "type", "likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
             colnames = c(
               "Date" = 1,
@@ -3182,14 +3243,19 @@ function(input, output, session) {
       
       output$commentsByCategory <- renderPlotly({
         
-        #to update if the go button is pressed or the comment selector is changed
+        #to update if the go button is pressed 
         chartDependency()
-        commentTypeDependancy()
         
         withProgress(message = "Processing",{
+          isolate({runChooserCommentsType <- input$runChooserCommentsType})
           
-          data <- getCommentTypeAnalysisData(comments_data, input$runChooserCommentsType, courseMetaData)
+          #getting the data used in the plot
+          data <- getCommentTypeAnalysisData(comments_data, runChooserCommentsType, courseMetaData)
+          
+          #counting the number of elements in each category
           categorisation <- count(data$nature)
+          
+          #defining the colors and plotting the graph
           colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)','rgb(0,102,204)',  'rgb(1114, 147, 203)', 'rgb(0, 153, 76)')
           plot_ly(categorisation, labels = ~x, values = ~freq, type = 'pie',
                   textposition = 'inside',
@@ -3201,7 +3267,7 @@ function(input, output, session) {
                                 line = list(color = '#FFFFFF', width = 1)),
                   #The 'pull' attribute can also be used to create space between the sectors
                   showlegend = FALSE) %>%
-            layout(title = 'Comments by Category',
+            layout(title = runChooserCommentsType,
                    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))%>%
             config(displayModeBar = F)
@@ -3211,8 +3277,6 @@ function(input, output, session) {
       })
     }
   })
-  
-  
   
   # END COMMENTS TYPE ANALYSIS
   
@@ -3259,7 +3323,6 @@ function(input, output, session) {
   })
   
   
-  
   # Produces a data table for the comments
   output$commentViewer <- renderDataTable({
     chartDependency()
@@ -3269,7 +3332,9 @@ function(input, output, session) {
     }
     withProgress(message = "Processing Comments",{
       data <- c_data
+      isolate({runChooser <- input$runChooser})
       DT::datatable(
+        caption = runChooser,
         data[,c("timestamp","week_step","text","thread","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Date" = 1,
@@ -3339,8 +3404,9 @@ function(input, output, session) {
       }
       
       rows <- rows[order(rows$timestamp),]
-      
+      isolate({runChooser <- input$runChooser})
       DT::datatable(
+       caption = runChooser,
         rows[,c("timestamp","week_step","text","likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Date" = 1,
@@ -3399,50 +3465,6 @@ function(input, output, session) {
   #Makes the wordcloud code repeatable.
   wordcloud_rep <- repeatable(wordcloud)
   
-  # output$commentsByCategory <- renderPlotly({
-  #   chartDependency()
-  #   viewPressed()
-  #   
-  #   data <- c_data
-  #   categorisation <- count(data$nature)
-  #   
-  #   
-  #   # pie <- Highcharts$new()
-  #   # pie$chart(type = "pie")
-  #   # pie$title(text = "Comment categories")
-  #   # pie$series(name = "Category", colorByPoint = TRUE, data = list(list(name = "initiating post", y = categorisation$percentage[categorisation$x == "initiating post"][1]), 
-  #   #                                                                list(name = "lone post", y = categorisation$percentage[categorisation$x == "lone post"][1]),
-  #   #                                                                list(name = "first reply", y = categorisation$percentage[categorisation$x == "first reply"][1]),
-  #   #                                                                list(name = "further reply", y = categorisation$percentage[categorisation$x == "further reply"][1]),
-  #   #                                                                list(name = "initiator's reply", y = categorisation$percentage[categorisation$x == "initiator's reply"][1])))
-  #   # pie$tooltip(pointFormat = "{series.name}: <b>{point.percentage:.1f}%</b>")
-  #   # pie$plotOptions(pie = list(allowPointSelected = TRUE, cursor = "pointer", dataLabels = list(enabled = TRUE, format = "<b>{point.name}</b>: {point.percentage:.1f} %")))
-  #   # 
-  #   #  s <-sum(categorisation$freq)
-  #   # categorisation$percentage <- categorisation$freq/s * 100
-  #   # categorisation$percentage <- round(categorisation$percentage, 2)
-  #   # 
-  #   # 
-  #   # print(categorisation)
-  #   colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)','rgb(0,102,204)',  'rgb(1114, 147, 203)', 'rgb(0, 153, 76)')
-  #   plot_ly(categorisation, labels = ~x, values = ~freq, type = 'pie',
-  #           textposition = 'inside',
-  #           textinfo = 'label+percent',
-  #           insidetextfont = list(color = '#FFFFFF'),
-  #           hoverinfo = 'text',
-  #           text = ~paste('', freq, 'comments'),
-  #           marker = list(colors = colors,
-  #                         line = list(color = '#FFFFFF', width = 1)),
-  #           #The 'pull' attribute can also be used to create space between the sectors
-  #           showlegend = FALSE) %>%
-  #     layout(title = 'Comments by Category',
-  #            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-  #            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))%>%
-  #     config(displayModeBar = F)
-  #   
-  #   
-  # })
-  
   #Generates the terms for the word cloud
   terms <- reactive({
     isolate({
@@ -3485,6 +3507,8 @@ function(input, output, session) {
   # END COMMENT VIEWER TAB
   
   
+  
+  
   # START LEARNERS ANALYSIS TAB
   
   #Selector to choose which run to view learners of
@@ -3503,18 +3527,6 @@ function(input, output, session) {
     print(selectInput("runChooserLearners", label = "Run", choices = runs, width = "550px"))
   })
   
-  # #Selector to choose which type of learner to view activity of
-  # output$learnersTypeSelector <- renderUI({
-  #   chartDependency()
-  #   
-  #   comments <- comments_data[[which(names(comments_data) == input$runChooserLearners)]]
-  #   data <- getCommentsForClassification(comments)
-  #   df <- getLearnerClassificationData(data)
-  #   
-  #   types <- unique(df$type, incomparables = FALSE)
-  #   
-  #   print(selectInput("runChooserLearners", label = "Type", choices = types, width = "550px"))
-  # })
   
   # View learners button
   output$viewLearnersButton <- renderUI({
@@ -3547,6 +3559,8 @@ function(input, output, session) {
     
     category <- count(df$type)
     
+    isolate({runChooserLearners = input$runChooserLearners})
+    
     colors <- c('rgb(211,94,96)','rgb(128,133,133)', 'rgb(144, 103, 167)', 'rgb(171, 104, 87)','rgb(0,102,204)',  'rgb(1114, 147, 203)', 'rgb(0, 153, 76)')
     plot_ly(category, labels = ~x, values = ~freq, type = 'pie',
             textposition = 'inside',
@@ -3557,7 +3571,7 @@ function(input, output, session) {
             marker = list(colors = colors,
                           line = list(color = '#FFFFFF', width = 1)),
             showlegend = FALSE) %>%
-      layout(title = 'Learners by Category',
+      layout(title = runChooserLearners,
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))%>%
       config(displayModeBar = F)
@@ -3571,11 +3585,15 @@ function(input, output, session) {
     if(input$viewLearnersButton == 0){
       return()
     }
+    
+    isolate({runChooserLearners = input$runChooserLearners})
+    
     withProgress(message = "Processing Learners' List",{
       
       df <- s_data
       
       DT::datatable(
+        caption = runChooserLearners,
         df[, c("learner_id", "initiating.post", "lone.post", "first.reply", "initiator.reply", "further.reply", "sumofcommentsmade", "replies.received", "likes", "type")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Learner ID" = 1,
@@ -3626,15 +3644,19 @@ function(input, output, session) {
     chartDependency()
     viewPressedLearners()
     commentsLearnerSelected()
+    
     withProgress(message = "Retrieving comments",{
+      isolate({runChooserLearners = input$runChooserLearners})
       
       df <- s_data
       
+      #getting the data for the table - the comments of the selected learner
       comments <- getCommentLearnersAnalysisViewerData(comments_data, input$runChooserLearners, courseMetaData)
       selectedRow <- df[input$learnerActivityViewer_rows_selected,]
       comments <- comments[comments$learner_id ==  selectedRow$learner_id, ]
       
       DT::datatable(
+        caption = runChooserLearners,
         comments[,c("timestamp", "step", "week_number", "text", "nature", "likes","url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Date" = 1,
@@ -3676,8 +3698,8 @@ function(input, output, session) {
     }
   )
   
-  
   # END LEARNERS ANALYSIS TAB
+  
   
   
   # START TEAM MEMBERS TAB
@@ -3717,8 +3739,10 @@ function(input, output, session) {
       return()
     }
     withProgress(message = "Processing",{
+      isolate({runChooserTeam = input$runChooserTeam})
       data <- getTeamMembersData(team_data, comments_data, viewTeamPressed(), courseMetaData)
       DT::datatable(
+        caption = runChooserTeam,
         data[,c("name","timestamp","week_step","text", "url")], class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         colnames = c(
           "Name" = 1,
@@ -3794,6 +3818,7 @@ function(input, output, session) {
     return(input$runChooserSurvey)
   })
   
+  #reactive to return the uploaded file
   preCourseSurveyChosen <- eventReactive(input$fileChooserSurveyPre, {
     return(input$fileChooserSurveyPre)
   })
@@ -3822,7 +3847,8 @@ function(input, output, session) {
     withProgress(message = "Processing...",{
       
       #data frame with comment data for the selected course run
-      comments <- comments_data[[which(names(comments_data) == input$runChooserSurvey)]]
+      isolate({runChooserSurvey = input$runChooserSurvey})
+      comments <- comments_data[[which(names(comments_data) == runChooserSurvey)]]
       
       #reading in the data and the header details (double header) for the csv or xls files
       if(file_ext(preCourseSurveyFile)=="csv"){
@@ -3845,6 +3871,7 @@ function(input, output, session) {
       data <- getBasicSurveyData(dfPreCourse, comments)
       
       DT::datatable(
+        caption = runChooserSurvey,
         data, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
         options = list(
           autoWidth = TRUE,
