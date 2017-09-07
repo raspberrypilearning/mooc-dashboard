@@ -2404,12 +2404,15 @@ function(input, output, session) {
         
         db <- regLineSMC[2] - avgRegLineSMC[2]
         
-        #one of these 2 formulas should be the correct one
+        #one of these 2 formulas of sd and df should be the correct ones
+        #the first one is for comparing the slopes of 2 different regression lines
+        #the second one is for comparing the slope of a regression line with a value
         #sd <- sqrt(regLine1[3]^2 + avgRegLine1[3]^2)
         sd <- regLineSMC[3]
         
         t_value <- db/sd
         
+        #df <- avgRegLineSMC[4] + regLineSMC[4] - 4
         df <- regLineSMC[4] - 2
         
         #calculating the p-value
