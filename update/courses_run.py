@@ -111,16 +111,17 @@ class FLCourses:
 		
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
-			while soup.find_all('ul')[3] == None:
+			while soup.find_all('ul')[4] == None:
 				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 			
-			datasets = soup.find_all('ul')[3]
+			datasets = soup.find_all('ul')[4]
 
 			if(datasets):	
 				links = datasets.find_all('li')
 
 				for li in links:
 					link = li.find('a')['href']
+					# print "Link: %s" % link
 					split = str.split(str(link),'/')
 					link = self.__mainsite + link
 					filename = split[7].replace('_', '-')+'.csv'
@@ -162,13 +163,13 @@ class FLCourses:
 
 		if(self.__isAdmin):
 			soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
-			while soup.find("ul", class_ = 'm-breadcrumb-old-list breadcrumb') is None:
+			while soup.find("ul", class_ = 'm-breadcrumb') is None:
 				print("Soup failed")
 				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 
 			table = soup.find('table', class_ = "m-table m-table--condensed")
 			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-4], stats_dashboard_url.split("/")[-3]]).encode('ascii','ignore')
-			startDate = soup.find("ul", class_ = 'm-breadcrumb-old-list breadcrumb').find_all('li', class_ = 'm-breadcrumb-old-item')[1].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
+			startDate = soup.find("ul", class_ = 'm-breadcrumb m-breadcrumb--with-icon').find_all('li', class_ = 'm-breadcrumb__item')[0].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
 			enrolmentData["course"] = courseName
 			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-3].encode('ascii','ignore')
 			if len(startDate[1]) == 1:

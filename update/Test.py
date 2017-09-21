@@ -16,8 +16,8 @@ def Test():
 
 
 def printCsv():
-    # print "Chaning the csv hex to unix style"
-    # output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
+    print "Chaning the csv hex to unix style"
+    output = subprocess.call(['../data/removeCarrigeReturn.sh', '../data'])
     filesDictionary = {}
     p = re.compile('([0-9]+) - [0-9]{4}-[0-9]{2}-[0-9]{2}')
     for root, dirs, files in os.walk('../data/'):
