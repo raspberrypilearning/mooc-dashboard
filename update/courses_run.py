@@ -169,7 +169,7 @@ class FLCourses:
 
 			table = soup.find('table', class_ = "m-table m-table--condensed")
 			enrolmentData["run_id"] = " - ".join([stats_dashboard_url.split("/")[-4], stats_dashboard_url.split("/")[-3]]).encode('ascii','ignore')
-			startDate = soup.find("ul", class_ = 'm-breadcrumb m-breadcrumb--with-icon').find_all('li', class_ = 'm-breadcrumb__item')[0].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
+			startDate = soup.find("ul", class_ = 'm-breadcrumb').find_all('li', class_ = 'm-breadcrumb__item')[0].find('a').get_text().split('-')[-1].encode('ascii','ignore').split(' ')
 			enrolmentData["course"] = courseName
 			enrolmentData["course_run"] = stats_dashboard_url.split("/")[-3].encode('ascii','ignore')
 			if len(startDate[1]) == 1:
