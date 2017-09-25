@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*- 
 """
 This script fetches (meta)data about Massive Open Online Courses (MOOCs) from FutureLearn.com for further processing
 and presentation by the R/Shiny based web application.
@@ -73,19 +73,23 @@ def update(email,password):
 		# In this step, the scrapped info are written in the csv file "Courses-Data.csv"
 		with open(courses_path + courses_filename, 'w') as f:
 			writer = csv.writer(f, lineterminator='\n')
-			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,course_run".split(','))
+			writer.writerow("run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,certificates_sold,upgrades_sold,learners_with_at_least_50_percent_step_completion,learners_with_at_least_90_percent_step_completion,run_retention_index,course,course_run,run".split(','))
 			for row in enrolmentData:
 				print(row)
-				if 'joiners' not in row:
-					line = '{0},{1},{2},N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,{3},{4}'.format(row['run_id'],row['start_date'], row['no_of_weeks'], row['course'],row['course_run']) 
-				elif 'learners' not in row:
-					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5},{6},{7}'.format(row['run_id'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold'], row['course'],row['course_run']) 
-				elif 'certificates_sold' in row:
-					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['certificates_sold'], row['course'],row['course_run'])
+				if 'upgrades_sold' in row:
+					line = '{0},{1},{2},{3},{4},{5},{6},N/A,{7},N/A,0,0,{8},{9},{10},{11},{12},{13},{14}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['social_learners'],row['upgrades_sold'],row['learners_with_at_least_50_percent_step_completion'],row['learners_with_at_least_90_percent_step_completion'],row['run_retention_index'], row['course'],row['course_run'],row['course_run'])
+				elif 'joiners' not in row:
+					line = '{0},{1},{2},N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,{3},{4},{5}'.format(row['run_id'],row['start_date'], row['no_of_weeks'], row['course'],row['course_run'],row['course_run']) 
+				elif 'learners' not in row and 'fully_participating_learners' in row:
+					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,{5},{6},{7},N/A,{8},{9},{10},{11},{12},{13}'.format(row['run_id'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['fully_participating_learners'], row['statements_sold'], row['certificates_sold'],row['learners_with_at_least_50_percent_step_completion'],row['learners_with_at_least_90_percent_step_completion'],row['run_retention_index'], row['course'],row['course_run'],row['course_run']) 
+				elif 'learners' not in row and 'fully_participating_learners' not in row:
+					line = '{0},{1},{2},{3},{4},N/A,N/A,N/A,N/A,N/A,{5},{6},{7},{8}'.format(row['run_id'],row['start_date'], row['no_of_weeks'],row['joiners'], row['leavers'], row['statements_sold'], row['course'],row['course_run'],row['course_run']) 
+				# elif 'certificates_sold' in row:
+				# 	line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['certificates_sold'], row['course'],row['course_run'])
 				elif 'returning_learners' not in row:
-					line = '{0},{1},{2},{3},{4},{5},{6},N/A,{7},N/A,N/A,{8},{9}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['social_learners'], row['course'],row['course_run'])
+					line = '{0},{1},{2},{3},{4},{5},{6},N/A,{7},N/A,N/A,{8},{9},{10}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['social_learners'], row['course'],row['course_run'],row['course_run'])
 				else:
-					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['statements_sold'], row['course'],row['course_run'])
+					line = '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},N/A,{12},{13},{14},{15},{16},{17}'.format(row['run_id'],row['start_date'],row['no_of_weeks'],row['joiners'],row['leavers'],row['learners'],row['active_learners'],row['returning_learners'],row['social_learners'],row['fully_participating_learners'],row['statements_sold'],row['certificates_sold'],row['learners_with_at_least_50_percent_step_completion'],row['learners_with_at_least_90_percent_step_completion'],row['run_retention_index'], row['course'],row['course_run'],row['course_run'])
 				writer.writerow(line.split(','))
 			f.close()
 

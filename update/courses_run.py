@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 import requests,os,datetime,unicodedata,sys,traceback
 from bs4 import BeautifulSoup
 
@@ -184,7 +186,8 @@ class FLCourses:
 			if(table):
 				trs = table.find_all('tr')
 				for tr in trs:
-					rowName = tr.find('th').get_text().strip().encode('ascii','ignore').lower().replace(" ", "_")
+					rowName = tr.find('th').get_text().strip().encode('utf-8','ignore').lower().replace(" ", "_").replace("≥","at_least_").replace("%","_percent")
+					# print "rowName: %s" % rowName
 					tds = tr.find_all('td')
 					numeric = tds[0].get_text().strip().replace("," , "").encode('ascii','ignore')
 					percent = tds[1].get_text().strip().encode('ascii','ignore')

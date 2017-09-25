@@ -2187,21 +2187,25 @@ function(input, output, session) {
     
     DT::datatable(
       courseMetaData, class = 'cell-border stripe', filter = 'top', extensions = 'Buttons',
-      colnames = c('Course' = 1,
-                   'Start Date' = 2,
-                   'Weeks' = 3,
-                   'Joiners' = 4,
-                   'Leavers (Joiners who leave the course)' = 5,
-                   'Learners (Joiners who view a step)' = 6,
-                   'Active Learners (Learners who mark as complete)' = 7,
-                   'Returning Learners (Learners who mark as complete in two weeks)' = 8,
-                   'Social Learners (Learners who make comments)' = 9,
-                   'Fully Participating Learners (Learners who complete 50% of steps + assements)' = 10,
-                   'Statements Sold' = 11),
+      colnames = c('Leavers (Joiners who leave the course)' = 6,
+                   'Learners (Joiners who view a step)' = 7,
+                   'Active Learners (Learners who mark as complete)' = 8,
+                   'Returning Learners (Learners who mark as complete in two weeks)' = 9,
+                   'Social Learners (Learners who make comments)' = 10,
+                   'Fully Participating Learners (Learners who complete 50% of steps + assements)' = 11,
+                   'Statements Sold' = 12,
+                   'Certificates Sold' = 13,
+                   'upgrades Sold' = 14,
+                   'Learners with ≥50% step completion)' = 15,
+                   'Learners with ≥90% step completion)' = 16,
+                   'Run Retention Index' = 17),
+
       options = list(
         lengthMenu = list(c(10,20,30,-1),c('10','20','30','All')),
         pageLength = 20,
+        scrollX = TRUE,
         dom = 'lfrtBip',
+        columnDefs = list(list(visible=FALSE, targets=c(1))),
         buttons = list(
           "print",
           list(

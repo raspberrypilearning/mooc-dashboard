@@ -121,6 +121,7 @@ createActivity = "CREATE TABLE Activity (" \
 		  ");"
 
 createCourses = "CREATE TABLE Courses (" \
+		"run_id varchar(40) NOT NULL," \
 		"course_run varchar(70) NOT NULL," \
 		"course varchar(200) NOT NULL DEFAULT ''," \
 		"run int(11) NOT NULL," \
@@ -134,9 +135,14 @@ createCourses = "CREATE TABLE Courses (" \
 		"social_learners varchar(20) NOT NULL," \
 		"fully_participating_learners varchar(20) NOT NULL," \
 		"statements_sold int(11) NOT NULL," \
+		"certificates_sold int(11) NOT NULL," \
+		"upgrades_sold varchar(20) NOT NULL," \
+		"learners_with_at_least_50_percent_step_completion varchar(20) NOT NULL," \
+		"learners_with_at_least_90_percent_step_completion varchar(20) NOT NULL," \
+		"run_retention_index varchar(20) NOT NULL," \
 		"university varchar(40) NOT NULL," \
-		"PRIMARY KEY (university,course_run)," \
-		"KEY course (course)" \
+		"PRIMARY KEY (university,course,course_run)," \
+		"KEY course (course,course_run)" \
 		");"
 
 createTeamMembers= "CREATE TABLE TeamMembers (" \

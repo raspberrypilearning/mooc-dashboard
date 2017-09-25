@@ -127,7 +127,7 @@ class CSV_TO_SQL:
 
         elif 'Courses' in datatype:
 
-            col = '(course_run,start_date,no_of_weeks,joiners,leavers,learners,active_Learners,returning_learners,social_learners,fully_participating_learners,statements_sold,course,run)'
+            col = '(run_id,start_date,no_of_weeks,joiners,leavers,learners,active_learners,returning_learners,social_learners,fully_participating_learners,statements_sold,certificates_sold,upgrades_sold,learners_with_at_least_50_percent_step_completion,learners_with_at_least_90_percent_step_completion,run_retention_index,course,course_run,run)'
             load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' IGNORE INTO TABLE Courses ' \
             "FIELDS TERMINATED BY ',' " \
             "IGNORE 1 LINES " + col + \
