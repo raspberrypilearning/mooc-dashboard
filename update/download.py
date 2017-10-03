@@ -95,10 +95,10 @@ def scrapeStepLinks(s, url, dir_path):
 	for row in rows:
 		step_numberSec = row.find('span', class_ = 'm-overview__step-number')
 		step_number = step_numberSec.getText().strip()
-		# print('step_number: ' + step_number)
+		print('step_number: ' + step_number)
 		step_titleSec = row.find('span', class_ = 'm-overview__step-title')
 		step_title = re.match("(.*)\n", step_titleSec.getText().strip().encode('ascii','ignore')).group(1)
-		# print('step_title: ' + step_title)
+		print('step_title: ' + step_title)
 		step_typeSec = row.find('span', class_ = 'm-overview__step-type')
 		step_type = step_typeSec.getText().strip()
 		# print('step_type: ' + step_type)
@@ -108,7 +108,7 @@ def scrapeStepLinks(s, url, dir_path):
 		web = s.get("https://www.futurelearn.com" + step_edit_url)
 		html2 = web.content
 		soup2 = BeautifulSoup(html2,'html.parser')
-		step_url = soup2.find('div', class_ = 'offset2 span8').find_all('section')[0].find_all('a')[1]['href']
+		step_url = soup2.find_all('section')[0].find_all('a')[1]['href']
 		# print('step_url: ' + step_url)
 		f_metadata_csv.write(step_number+","+ "\"" + step_title+ "\"" + ","+step_type+","+step_edit_url+","+step_url+'\n')
 	f_metadata_csv.close()
