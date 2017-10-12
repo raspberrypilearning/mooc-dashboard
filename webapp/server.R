@@ -84,10 +84,10 @@ function(input, output, session) {
     withProgress(message = "Loading Data", value = 0, {
       
       #Updates the page title to contain the courses and runs selected
-      output$pageTitle <- renderText(paste(input$course1, "- [", substr(input$run1,1,1), "]",
-                                           ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", substr(input$run2,1,1), "]"),""),
-                                           ifelse(input$run3 != "None",paste0(" vs ",input$course3,"- [", substr(input$run3,1,1), "]"),""),
-                                           ifelse(input$run4 != "None",paste0(" vs ",input$course4,"- [", substr(input$run4,1,1), "]"),"")))
+      output$pageTitle <- renderText(paste(input$course1, "- [", strsplit(input$run1," - ")[[1]][1], "]",
+                                           ifelse(input$run2 != "None",paste0(" vs ",input$course2,"- [", strsplit(input$run2," - ")[[1]][1], "]"),""),
+                                           ifelse(input$run3 != "None",paste0(" vs ",input$course3,"- [", strsplit(input$run3," - ")[[1]][1], "]"),""),
+                                           ifelse(input$run4 != "None",paste0(" vs ",input$course4,"- [", strsplit(input$run4," - ")[[1]][1], "]"),"")))
       
       #Updates the app to show the demographics page after loading a course
       updateTabsetPanel(session, "tabs", selected = "demographics")
@@ -150,27 +150,27 @@ function(input, output, session) {
   # and returns the data as a list of dataframes
   getData <- function(table){
     data1 <- getTable(table, input$course1,input$run1)
-    name <- paste(c(input$course1,substr(input$run1,1,1)), collapse = " - ")
+    name <- paste(c(input$course1,strsplit(input$run1," - ")[[1]][1]), collapse = " - ")
     datasets <- list("1"= data1)
     names(datasets)[which(names(datasets) == "1")] <- name
     if(input$run2 != "None"){
       data2 <- getTable(table, input$course2,input$run2)
-      datasets[[paste(c(input$course2,substr(input$run2,1,1)), collapse = " - ")]] <- data2
+      datasets[[paste(c(input$course2,strsplit(input$run2," - ")[[1]][1]), collapse = " - ")]] <- data2
     }
     if(input$run3 != "None"){
       data3 <- getTable(table, input$course3,input$run3)
-      datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
+      datasets[[paste(c(input$course3,strsplit(input$run3," - ")[[1]][1]), collapse = " - ")]] <- data3
     }
     if(input$run4 != "None"){
       data4 <- getTable(table, input$course4,input$run4)
-      datasets[[paste(c(input$course4,substr(input$run4,1,1)), collapse = " - ")]] <- data4
+      datasets[[paste(c(input$course4,strsplit(input$run4," - ")[[1]][1]), collapse = " - ")]] <- data4
     }
     return(datasets)
   }
   
   # Queries the course meta data table
   getCourseData <- function(){
-    run1 <- substr(input$run1,1,1)
+    run1 <- strsplit(input$run1," - ")[[1]][1]
     if(run1 != "A"){
       data1 <- getCourseMetaDataSpecific(input$course1,run1)
       name <- paste(c(input$course1,run1), collapse = " - ")
@@ -179,17 +179,17 @@ function(input, output, session) {
     } else {
       datasets <- list()
     }
-    run2 <- substr(input$run2,1,1)
+    run2 <- strsplit(input$run2," - ")[[1]][1]
     if(input$run2 != "None" &  run2 != "A"){
       data2 <- getCourseMetaDataSpecific(input$course2, run2)
       datasets[[paste(c(input$course2,run2), collapse = " - ")]] <- data2
     }
-    run3 <- substr(input$run3,1,1)
+    run3 <- strsplit(input$run3," - ")[[1]][1]
     if(input$run3 != "None" & run3 != "A"){
       data3 <- getCourseMetaDataSpecific(input$course3, run3)
-      datasets[[paste(c(input$course3,substr(input$run3,1,1)), collapse = " - ")]] <- data3
+      datasets[[paste(c(input$course3,strsplit(input$run3," - ")[[1]][1]), collapse = " - ")]] <- data3
     }
-    run4 <- substr(input$run4,1,1)
+    run4 <- strsplit(input$run4," - ")[[1]][1]
     if(input$run4 != "None" & run4 != "A"){
       data4 <- getCourseMetaDataSpecific(input$course4, run4)
       datasets[[paste(c(input$course4,run4), collapse = " - ")]] <- data4
@@ -1797,15 +1797,15 @@ function(input, output, session) {
   
   output$correlationsRunSelector <-renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("correlationsRunChooser", label = "Run",
                       choices = runs, width = "550px"))
@@ -2264,15 +2264,15 @@ function(input, output, session) {
     chartDependency()
     #stepDependancy()
     
-    isolate({runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    isolate({runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }})
     print(selectInput("runChooserSteps", label = "Run", choices = runs, width = "550px"))
   })
@@ -2779,15 +2779,15 @@ function(input, output, session) {
   
   output$runSelectorComments <- renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("runChooserComments", label = "Run", choices = runs, width = "550px"))
   })
@@ -2994,15 +2994,15 @@ function(input, output, session) {
   
   output$totalMeasuresRunSelector <- renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("totalMeasuresRunChooser", label = "Run",
                       choices = runs, width = "550px"))
@@ -3072,17 +3072,17 @@ function(input, output, session) {
   output$runSelectorCommentsType <- renderUI({
     chartDependency()
     
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("runChooserCommentsType", label = "Run", choices = runs, width = "550px"))
   })
@@ -3295,15 +3295,15 @@ function(input, output, session) {
   #Selector to choose which run to view comments of
   output$commentRunSelector <- renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("runChooser", label = "Run", choices = runs, width = "550px"))
   })
@@ -3521,15 +3521,15 @@ function(input, output, session) {
   #Selector to choose which run to view learners of
   output$learnersRunSelector <- renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("runChooserLearners", label = "Run", choices = runs, width = "550px"))
   })
@@ -3714,15 +3714,15 @@ function(input, output, session) {
   #Selector to choose which run to be displayed
   output$memberSelector <- renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("runChooserTeam", label = "Run", choices = runs, width = "550px"))
   })
@@ -3801,15 +3801,15 @@ function(input, output, session) {
   #Selector to choose which run to be displayed
   output$surveyRunSelector <- renderUI({
     chartDependency()
-    runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+    runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
     if(input$run2 != "None"){
-      runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
     }
     if(input$run3 != "None"){
-      runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
     }
     if(input$run4 != "None"){
-      runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+      runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
     }
     print(selectInput("runChooserSurvey", label = "Run", choices = runs, width = "550px"))
   })
@@ -3941,15 +3941,15 @@ function(input, output, session) {
     output$runPathSelector <- renderUI({
       chartDependency()
       
-      isolate({runs <- paste(input$course1,substr(input$run1,1,1), sep = " - ")
+      isolate({runs <- paste(input$course1,strsplit(input$run1," - ")[[1]][1], sep = " - ")
       if(input$run2 != "None"){
-        runs <- c(runs, paste(input$course2,substr(input$run2,1,1), sep = " - "))
+        runs <- c(runs, paste(input$course2,strsplit(input$run2," - ")[[1]][1], sep = " - "))
       }
       if(input$run3 != "None"){
-        runs <- c(runs, paste(input$course3,substr(input$run3,1,1), sep = " - "))
+        runs <- c(runs, paste(input$course3,strsplit(input$run3," - ")[[1]][1], sep = " - "))
       }
       if(input$run4 != "None"){
-        runs <- c(runs, paste(input$course4,substr(input$run4,1,1), sep = " - "))
+        runs <- c(runs, paste(input$course4,strsplit(input$run4," - ")[[1]][1], sep = " - "))
       }})
       
       print(selectInput("runPathSelector", label = "Run", choices = runs, width = "550px"))
