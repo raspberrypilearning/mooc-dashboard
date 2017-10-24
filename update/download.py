@@ -68,19 +68,23 @@ def download(s, uni_name, course_name, run, info):
 
 
 def importData(files,uni):
-
+	
 	credential_data = open('config.json').read()
 	credentials = json.loads(credential_data)
 	
 	sql = mysql.connector.connect(host = 'localhost',user= 'root',password = credentials['mysqlpassword'],database = 'moocs')
 	convert = CSV_TO_SQL(sql)
-	
 	for f,course_run in files.items():
-		print("Inserting " + f + " into database.")
-		# Insert each csv file into mysql 
-		convert.insertIntoTable(f,course_run,uni)
-		# os.remove(f)
-		# Lets not delete the csv files until the sql conversion is finished.d
+		try:
+			print("Inserting " + f + " into database.")
+			# Insert each csv file into mysql 
+			convert.insertIntoTable(f,course_run,uni)
+			# os.remove(f)
+			# Lets not delete the csv files until the sql conversion is finished.d
+		except:
+			print "Error in inserting: %s." % f
+			traceback.print_exc(file = sys.stdout)
+
 
 def scrapeStepLinks(s, url, dir_path):
 	web = s.get(url)
@@ -95,10 +99,10 @@ def scrapeStepLinks(s, url, dir_path):
 	for row in rows:
 		step_numberSec = row.find('span', class_ = 'm-overview__step-number')
 		step_number = step_numberSec.getText().strip()
-		print('step_number: ' + step_number)
+		# print('step_number: ' + step_number)
 		step_titleSec = row.find('span', class_ = 'm-overview__step-title')
 		step_title = re.match("(.*)\n", step_titleSec.getText().strip().encode('ascii','ignore')).group(1)
-		print('step_title: ' + step_title)
+		# print('step_title: ' + step_title)
 		step_typeSec = row.find('span', class_ = 'm-overview__step-type')
 		step_type = step_typeSec.getText().strip()
 		# print('step_type: ' + step_type)
