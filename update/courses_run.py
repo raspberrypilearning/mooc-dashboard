@@ -190,7 +190,7 @@ class FLCourses:
 					# print "rowName: %s" % rowName
 					tds = tr.find_all('td')
 					numeric = tds[0].get_text().strip().replace("," , "").encode('ascii','ignore')
-					percent = tds[1].get_text().strip().encode('ascii','ignore')
+					percent = tds[1].get_text().strip().encode('ascii','ignore').replace("%", "")
 					if rowName in ['statements_sold', 'joiners','certificates_sold']:
 						enrolmentData[rowName] = numeric
 					else:

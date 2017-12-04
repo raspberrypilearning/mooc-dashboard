@@ -129,17 +129,27 @@ createCourses = "CREATE TABLE Courses (" \
 		"no_of_weeks int(11) NOT NULL," \
 		"joiners int(11) NOT NULL," \
 		"leavers varchar(20) NOT NULL," \
+		"leavers_percent varchar(20) NOT NULL," \
 		"learners varchar(20) NOT NULL," \
+		"learners_percent varchar(20) NOT NULL," \
 		"active_learners varchar(20) NOT NULL," \
+		"active_learners_percent varchar(20) NOT NULL," \
 		"returning_learners varchar(20) NOT NULL," \
+		"returning_learners_percent varchar(20) NOT NULL," \
 		"social_learners varchar(20) NOT NULL," \
+		"social_learners_percent varchar(20) NOT NULL," \
 		"fully_participating_learners varchar(20) NOT NULL," \
+		"fully_participating_learners_percent varchar(20) NOT NULL," \
 		"statements_sold int(11) NOT NULL," \
 		"certificates_sold int(11) NOT NULL," \
 		"upgrades_sold varchar(20) NOT NULL," \
+		"upgrades_sold_percent varchar(20) NOT NULL," \
 		"learners_with_at_least_50_percent_step_completion varchar(20) NOT NULL," \
+		"learners_with_at_least_50_percent_step_completion_percent varchar(20) NOT NULL," \
 		"learners_with_at_least_90_percent_step_completion varchar(20) NOT NULL," \
+		"learners_with_at_least_90_percent_step_completion_percent varchar(20) NOT NULL," \
 		"run_retention_index varchar(20) NOT NULL," \
+		"run_retention_index_percent varchar(20) NOT NULL," \
 		"university varchar(40) NOT NULL," \
 		"PRIMARY KEY (university,course,course_run)," \
 		"KEY course (course,course_run)" \
