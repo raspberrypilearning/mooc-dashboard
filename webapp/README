@@ -13,31 +13,47 @@ Based on the [Shiny Dashboard](https://rstudio.github.io/shinydashboard/) Framew
 Prerequisites / Installation
 -----------------------------
 
-(Developed / tested on Ubuntu Linux 14.04 LTS.)
-
 These instructions assume that you will run the Dashboard as user 'mooc' on a host called 'dashboard.vm' , and that the mooc-dashboard repository has been cloned into /home/mooc/mooc-dashboard
-
 
 1. Install OS package prerequisites:
 
-$ sudo apt-get install -y libcurl4-gnutls-dev libxml2-dev gfortran libblas-dev liblapack-dev libmariadbclient-dev libssl-dev
+### Ubuntu Linux 14.04 LTS
 
+`$ sudo apt-get install -y libcurl4-gnutls-dev libxml2-dev gfortran libblas-dev liblapack-dev libmariadbclient-dev libssl-dev`
 
-2. Configure R-Studio repository and install latest R packages:
+### Redhat Linux 7.4
 
+```
+$ sudo yum install -y epel-release
+$ sudo yum update -y
+$ sudo yum install -y openssl-devel libcurl-devel libssh2-devel libpng-devel libxml2-devel mariadb-devel
+```
+
+2. Install R
+
+### Ubuntu Linux 14.04 LTS
+
+```
 $ sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list'
 $ gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
 $ gpg -a --export E084DAB9 | sudo apt-key add -
 $ sudo apt-get update
 $ sudo apt-get -y install r-base
+```
 
+### Redhat Linux 7.4
 
-3. Install R packages:
+`$ sudo yum install -y R`
+
+3. Install required R packages:
+
+### Common
 
 As the user who will own / run the dashboard, open the R prompt:
 
-$ R
+`$ R`
 
+```r
 install.packages("reshape2")
 install.packages("devtools")
 devtools::install_github("rCharts", "ramnathv")
@@ -54,25 +70,43 @@ install.packages("tm")
 install.packages("wordcloud")
 install.packages("R.utils")
 install.packages("plotly")
+```
 
+$ sudo su - -c "R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
 
 4. Install Shiny Server Open Source (system wide):
 
-$ sudo su - -c "R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
+### Ubuntu Linux 14.04 LTS
+
+```
 $ sudo apt-get install gdebi-core
 $ wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.2.786-amd64.deb
 $ sudo gdebi shiny-server-1.4.2.786-amd64.deb
+```
 
+### Redhat Linux 7.4
 
-5. Install mysql
+`$ sudo yum install --nogpgcheck shiny-server-1.5.6.875-rh5-x86_64.rpm`
 
-$ sudo apt-get update
-$ sudo apt-get install mysql-server
+5. Install and configure MySQL / MariaDB
 
-Set a mysql root password.
+### Ubuntu Linux 14.04 LTS
+
+`$ sudo apt-get install mysql-server`
+
+### Redhat Linux 7.4
+
+`$ sudo yum install mariadb-server`
+
+### Common
+
+Set a mysql root password
+
+`$ sudo mysql_secure_installation`
 
 You may need to configure mysql to handle utf-8 through my.cnf
 
+```
 ##########START edit /etc/mysql/my.cnf #################
 [client]
 default-character-set = utf8
@@ -85,10 +119,13 @@ collation_server = utf8_general_ci
 default-character-set = utf8
 
 ##########END edit /etc/mysql/my.cnf #################
-
+```
 
 6. Configure Shiny Server (edit /etc/shiny-server/shiny-server.conf as follows, assuming your username is 'mooc'):
 
+### Common
+
+```
 ########## START /etc/shiny-server/shiny-server.conf #################
 
 # Instruct Shiny Server to run applications (NOT the server) as the user "mooc"
@@ -113,19 +150,32 @@ server {
   }
 }
 ########## END /etc/shiny-server/shiny-server.conf #################
+```
 
 7. Configure the Dashboard:
+
+### Common
 
 Copy / rename /home/mooc/mooc-dashboard/webpapp/config.R.template to config.R 
 Set variables therein as indicated.
 
-
 Usage
 -----
-
 (re)start the Shiny server to access the webapplication:
+
+### Ubuntu Linux 14.04 LTS
+
+```
 $ sudo stop shiny-server
 $ sudo start shiny-server
+```
+
+### Redhat Linux 7.4
+
+```
+$ sudo service shiny-server stop
+$ sudo service shiny-server start
+````
 
 The Dashboard web application should be accessible at http://dashboard.vm:3838 or http://localhost:3838
 
