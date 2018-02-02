@@ -15,7 +15,7 @@ class FLCourses:
 		self.__mainsite = 'https://www.futurelearn.com'
 		self.__isAdmin = False
 		self.__uni = ''
-		admin_url = self.__mainsite + '/admin/courses'
+		admin_url = self.__mainsite + '/admin/organisations/university-of-southampton/courses'
 		self.__rep = self.__session.get(admin_url, allow_redirects=True)
 		
 
