@@ -171,7 +171,7 @@ function(input, output, session) {
   # Queries the course meta data table
   getCourseData <- function(){
     run1 <- strsplit(input$run1," - ")[[1]][1]
-    if(run1 != "A"){
+    if(run1 != "All"){
       data1 <- getCourseMetaDataSpecific(input$course1,run1)
       name <- paste(c(input$course1,run1), collapse = " - ")
       datasets <- list("1"= data1)
@@ -180,17 +180,17 @@ function(input, output, session) {
       datasets <- list()
     }
     run2 <- strsplit(input$run2," - ")[[1]][1]
-    if(input$run2 != "None" &  run2 != "A"){
+    if(input$run2 != "None" &  run2 != "All"){
       data2 <- getCourseMetaDataSpecific(input$course2, run2)
       datasets[[paste(c(input$course2,run2), collapse = " - ")]] <- data2
     }
     run3 <- strsplit(input$run3," - ")[[1]][1]
-    if(input$run3 != "None" & run3 != "A"){
+    if(input$run3 != "None" & run3 != "All"){
       data3 <- getCourseMetaDataSpecific(input$course3, run3)
       datasets[[paste(c(input$course3,strsplit(input$run3," - ")[[1]][1]), collapse = " - ")]] <- data3
     }
     run4 <- strsplit(input$run4," - ")[[1]][1]
-    if(input$run4 != "None" & run4 != "A"){
+    if(input$run4 != "None" & run4 != "All"){
       data4 <- getCourseMetaDataSpecific(input$course4, run4)
       datasets[[paste(c(input$course4,run4), collapse = " - ")]] <- data4
     }
