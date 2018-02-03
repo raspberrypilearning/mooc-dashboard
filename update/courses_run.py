@@ -15,7 +15,7 @@ class FLCourses:
 		self.__mainsite = 'https://www.futurelearn.com'
 		self.__isAdmin = False
 		self.__uni = ''
-		admin_url = self.__mainsite + '/admin/organisations/university-of-southampton/courses'
+		admin_url = self.__mainsite + '/admin/organisations/university-of-southampton/courses#active'
 		self.__rep = self.__session.get(admin_url, allow_redirects=True)
 		
 
@@ -71,7 +71,7 @@ class FLCourses:
 
 
 							# Fetch data of finished and in progress courses only.
-							if( _status == 'finished' or _status == 'in progress' or _status == 'upcoming' ):
+							if( (_status == 'finished' or _status == 'in progress' or _status == 'upcoming') and  _start_date != 'Not set'):
 								run_duration_weeks = self.getRunDuration(self.__mainsite + _run_details_path)
 
 								# Convert to Date type and compute end date
