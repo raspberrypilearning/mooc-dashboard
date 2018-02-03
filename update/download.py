@@ -1,4 +1,4 @@
-import requests,datetime,mysql.connector,os,errno,json,re
+import requests,datetime,mysql.connector,os,errno,json,re,traceback
 from login import login
 from csvToSQL import CSV_TO_SQL
 from bs4 import BeautifulSoup
@@ -30,41 +30,41 @@ def download(s, uni_name, course_name, run, info):
 
 	print "Considering: %s (%s, %s - %s) status: [%s] ..." % (course_name, run, start_date, end_date,  info['status'])
 
-	if info['status'] == 'in progress' or not os.path.isdir(dir_path):
+	# if info['status'] == 'in progress' or not os.path.isdir(dir_path):
 		#We only fetch data for course runs that are currently in progress, or about which we know nothing.
-		print "Creating output directory: %s" % dir_path
-		try:
-			os.makedirs(dir_path)
-		except OSError as exc:
-			if exc.errno == errno.EEXIST:
-				pass
-			else:
-				raise
+	print "Creating output directory: %s" % dir_path
+	try:
+		os.makedirs(dir_path)
+	except OSError as exc:
+		if exc.errno == errno.EEXIST:
+			pass
+		else:
+			raise
 
-		#Create course metadata file "metadata.csv" for each run
-		f_metadata_csv = open(dir_path+"/metadata.csv",'w')
-		f_metadata_csv.write("uni_name,course_name,run,start_date,end_date,duration_weeks"+'\n')
-		f_metadata_csv.write(uni_name+","+course_name+","+run+","+start_date+","+end_date+","+info['duration_weeks']+'\n')
-		f_metadata_csv.close()
+	#Create course metadata file "metadata.csv" for each run
+	f_metadata_csv = open(dir_path+"/metadata.csv",'wb')
+	f_metadata_csv.write("uni_name,course_name,run,start_date,end_date,duration_weeks"+'\n')
+	f_metadata_csv.write(uni_name+","+course_name+","+run+","+start_date+","+end_date+","+info['duration_weeks']+'\n')
+	f_metadata_csv.close()
 
-		#Download the CSVs
-		myList = []
-		for url,filename in info['datasets'].items():
-			print filename
-			print "Downloading %s to %s ..." % (url, dir_path)
-			# scrap links
-			if (url.endswith("overview")):
-				scrapeStepLinks(s, url, dir_path)
-				continue
-			dow = s.get(url)
-			f = open(dir_path+"/"+filename,'wb')
-			f.write(dow.content)
-			print "...done"
-			f.close()
-			s.close()
+	#Download the CSVs
+	myList = []
+	for url,filename in info['datasets'].items():
+		print filename
+		print "Downloading %s to %s ..." % (url, dir_path)
+		# scrap links
+		if (url.endswith("overview")):
+			scrapeStepLinks(s, url, dir_path)
+			continue
+		dow = s.get(url)
+		f = open(dir_path+"/"+filename,'wb')
+		f.write(dow.content)
+		print "...done"
+		f.close()
+		s.close()
 			
-	else:
-			print "output directory: %s exists and course is finished - skipping download " % dir_path
+	# else:
+	# 		print "output directory: %s exists and course is finished - skipping download " % dir_path
 
 
 def importData(files,uni):
@@ -92,7 +92,7 @@ def scrapeStepLinks(s, url, dir_path):
 	soup = BeautifulSoup(html,'html.parser')
 	rows = soup.find_all('div', class_ = 'm-overview__step-row')
 	#Create course metadata file "metadata.csv" for each run
-	f_metadata_csv = open(dir_path+"/scraped-links.csv",'w')
+	f_metadata_csv = open(dir_path+"/scraped-links.csv",'wb')
 	f_metadata_csv.write("step_number,step_title,step_type,step_edit_url,step_url"+'\n')
 	
 	
