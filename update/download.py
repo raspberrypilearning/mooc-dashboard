@@ -112,7 +112,7 @@ def scrapeStepLinks(s, url, dir_path):
 		web = s.get("https://www.futurelearn.com" + step_edit_url)
 		html2 = web.content
 		soup2 = BeautifulSoup(html2,'html.parser')
-		step_url = soup2.find_all('section')[0].find_all('a')[1]['href']
+		step_url = soup2.find_all('section')[1].find_all('a')[1]['href']
 		# print('step_url: ' + step_url)
 		f_metadata_csv.write(step_number+","+ "\"" + step_title+ "\"" + ","+step_type+","+step_edit_url+","+step_url+'\n')
 	f_metadata_csv.close()
