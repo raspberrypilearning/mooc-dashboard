@@ -10,7 +10,7 @@ FutureLearn make an API available, this script should be replaced.
 
 """
 
-import datetime, json, csv, os
+import datetime, json, csv, os, time
 from download import download, importData
 from login import login
 from courses_run import FLCourses
@@ -27,6 +27,8 @@ def update(email,password):
 
 	"""
 	# logging in to futureLearn website with the credentials taken from config.json 
+	now = time.strftime("%c")
+	print ("Current time %s"  % now )
 	loginInfo, rep = login(email,password,'https://www.futurelearn.com/sign-in')
 
 	if rep.status_code == 200:
@@ -102,6 +104,7 @@ def update(email,password):
 		importData(files,cos.getUniName())
 		f_update_time = open("../data/"+cos.getUniName()+"/updated.txt",'w')
 		f_update_time.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
+		print ("Finished Time %s"  % datetime.datetime.now().strftime("%Y-%m-%d %H:%M") )
 		f_update_time.close()
 
 	else:
