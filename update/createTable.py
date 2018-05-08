@@ -150,6 +150,7 @@ createCourses = "CREATE TABLE Courses (" \
 		"learners_with_at_least_90_percent_step_completion_percent varchar(20) NOT NULL," \
 		"run_retention_index varchar(20) NOT NULL," \
 		"run_retention_index_percent varchar(20) NOT NULL," \
+		"gross_revenue_in_gbp varchar(20) NOT NULL," \
 		"university varchar(40) NOT NULL," \
 		"PRIMARY KEY (university,course,course_run)," \
 		"KEY course (course,course_run)" \

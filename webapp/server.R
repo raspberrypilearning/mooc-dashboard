@@ -2207,7 +2207,9 @@ function(input, output, session) {
                    '≥50% step completion %'  = 23,
                    'Learners with ≥90% step completion)' = 24,
                    '≥90% step completion %'  = 25,
-                   'Run Retention Index' = 26),
+                   'Run Retention Index' = 26,
+                   'Run Retention Index %' = 27,
+                   'Gross Revenue Index GBP' = 28),
 
       options = list(
         lengthMenu = list(c(10,20,30,-1),c('10','20','30','All')),

@@ -127,7 +127,7 @@ class CSV_TO_SQL:
 
         elif 'Courses' in datatype:
 
-            col = '(run_id,start_date,no_of_weeks,joiners,leavers,leavers_percent,learners,learners_percent,active_learners,active_learners_percent,returning_learners,returning_learners_percent,social_learners,social_learners_percent,fully_participating_learners,fully_participating_learners_percent,statements_sold,certificates_sold,upgrades_sold,upgrades_sold_percent,learners_with_at_least_50_percent_step_completion,learners_with_at_least_50_percent_step_completion_percent,learners_with_at_least_90_percent_step_completion,learners_with_at_least_90_percent_step_completion_percent,run_retention_index,run_retention_index_percent,course,course_run,run)'
+            col = '(run_id,start_date,no_of_weeks,joiners,leavers,leavers_percent,learners,learners_percent,active_learners,active_learners_percent,returning_learners,returning_learners_percent,social_learners,social_learners_percent,fully_participating_learners,fully_participating_learners_percent,statements_sold,certificates_sold,upgrades_sold,upgrades_sold_percent,learners_with_at_least_50_percent_step_completion,learners_with_at_least_50_percent_step_completion_percent,learners_with_at_least_90_percent_step_completion,learners_with_at_least_90_percent_step_completion_percent,run_retention_index,run_retention_index_percent,gross_revenue_in_gbp,course,course_run,run)'
             load = 'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Courses ' \
             "FIELDS TERMINATED BY ',' " \
             "IGNORE 1 LINES " + col + \

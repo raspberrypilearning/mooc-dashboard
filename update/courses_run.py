@@ -85,15 +85,15 @@ class FLCourses:
 
 								run_data = {'start_date': start_date , 'end_date': end_date, 'duration_weeks' : run_duration_weeks, 'status' : _status, 'datasets' : self.getDatasets(self.__mainsite + _stats_path), 'enrolmentData' : self.getEnrolmentData(self.__mainsite + _stats_path + "/overview",course_name)}
 								course_info[str(run_count)] = run_data
-							# break
+							#break
 							run_count-=1
 
 						courses[course_name] = course_info
-						# break
+						break
 					except:
 						print "Course was in an invalid format."
 						traceback.print_exc(file = sys.stdout)
-				# break
+				break
 			return courses
 		
 		else:
@@ -116,11 +116,10 @@ class FLCourses:
 			while soup.find_all('ul')[4] == None:
 				soup = BeautifulSoup(self.__session.get(stats_dashboard_url).content, 'html.parser')
 			
-			datasets = soup.find_all('ul')[4]
+			datasets = soup.find_all('ul')[5]
 
 			if(datasets):	
 				links = datasets.find_all('li')
-
 				for li in links:
 					link = li.find('a')['href']
 					# print "Link: %s" % link
@@ -189,7 +188,7 @@ class FLCourses:
 					rowName = tr.find('th').get_text().strip().encode('utf-8','ignore').lower().replace(" ", "_").replace("≥","at_least_").replace("%","_percent")
 					# print "rowName: %s" % rowName
 					tds = tr.find_all('td')
-					numeric = tds[0].get_text().strip().replace("," , "").encode('ascii','ignore')
+					numeric = tds[0].get_text().strip().replace("," , "").encode('ascii','ignore').replace("£" , "")
 					percent = tds[1].get_text().strip().encode('ascii','ignore').replace("%", "")
 					if rowName in ['statements_sold', 'joiners','certificates_sold']:
 						enrolmentData[rowName] = numeric
