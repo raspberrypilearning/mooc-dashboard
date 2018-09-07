@@ -23,6 +23,7 @@ def download(s, uni_name, course_name, run, info):
 	
 	start_date = info['start_date'].strftime('%Y-%m-%d')
 	end_date = info['end_date'].strftime('%Y-%m-%d')
+	print(end_date)
 
 	dir_path = "../data/" + uni_name + "/" + course_name + "/" + run +" - "+ start_date + " - "+end_date
 

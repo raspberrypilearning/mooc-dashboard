@@ -54,6 +54,7 @@ def update(email,password):
 				start_date = info['start_date'].strftime('%Y-%m-%d')
 				end_date = info['end_date'].strftime('%Y-%m-%d')
 				dir_path = "../data/" + cos.getUniName() + "/" + course_name + "/" + run +" - "+ start_date + " - "+end_date
+				print(dir_path)
 				run_enrol_data = info['enrolmentData']
 				run_enrol_data['no_of_weeks'] = info['duration_weeks']
 				enrolmentData.append(run_enrol_data)

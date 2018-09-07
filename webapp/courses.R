@@ -107,7 +107,7 @@ getNoOfWeeks <- function (course) {
   
   num_of_weeks <- character()
   for(no_of_weeks in data$no_of_weeks){
-    num_of_weeks <- c(num_of_weeks, no_of_weeks)
+    num_of_weeks <- no_of_weeks
   }
 
   dbDisconnect(con)
