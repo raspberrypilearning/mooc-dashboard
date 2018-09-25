@@ -133,10 +133,6 @@ class FLCourses:
 				scraped_link = stats_dashboard_url.replace("stats-dashboard","overview")
 				filename = 'scraped-links.csv'
 				data[scraped_link] = filename
-				region_link = stats_dashboard_url.replace("stats-dashboard","demographics/countries/country-subdivisions-dataset")
-				filename = 'country-subdivisions.csv'
-				data[region_link] = filename
-
 			return data
 
 	def getEnrolmentData(self, stats_dashboard_url,courseName):

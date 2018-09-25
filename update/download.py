@@ -47,6 +47,18 @@ def download(s, uni_name, course_name, run, info):
 	f_metadata_csv.write("uni_name,course_name,run,start_date,end_date,duration_weeks"+'\n')
 	f_metadata_csv.write(uni_name+","+course_name+","+run+","+start_date+","+end_date+","+info['duration_weeks']+'\n')
 	f_metadata_csv.close()
+	
+
+	#Get CSV containing region data
+	print "Downloading region data"
+	url, filename = info['datasets'].items()[0]
+	url = url.split("stats")[0] + "demographics/countries/country-subdivisions-dataset.csv"
+	dow = s.get(url)
+	f=open(dir_path +"/regions.csv",'wb')
+	f.write(dow.content)
+	print "...done"
+	f.close()
+	s.close()	
 
 	#Download the CSVs
 	myList = []

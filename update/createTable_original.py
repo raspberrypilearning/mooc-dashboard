@@ -13,22 +13,6 @@ credentials = json.loads(credential_data)
 sql = mysql.connector.connect (host = 'localhost',user= 'root',password = credentials['mysqlpassword'],database = 'moocs')
 cursor = sql.cursor()
 
-
-createRegions = "CREATE TABLE Regions(" \
-		"subdivision_first varchar(100) NOT NULL,"\
-		"subdivision_first_code varchar(5) NOT NULL,"\
-		"country_name varchar(100) NOT NULL,"\
-		"country_code varchar(5) NOT NULL,"\
-		"country_continent varchar(25) NOT NULL,"\
-		"joiner_count int(11) NOT NULL,"\
-		"active_learner_count int(11) NOT NULL,"\
-		"university varchar(40) NOT NULL," \
-		"course varchar(200) NOT NULL DEFAULT ''," \
-		"course_run int(11) NOT NULL," \
-		"PRIMARY KEY (university,course,course_run,country_code,subdivision_first_code)," \
-		"KEY course (course,course_run)" \
-");"
-
 createComment = "CREATE TABLE Comments (" \
 		"id int(11) NOT NULL," \
 		"author_id varchar(50) CHARACTER SET utf8 NOT NULL," \
@@ -247,9 +231,9 @@ createScrapedLinks= "CREATE TABLE ScrapedLinks (" \
 #create all tables, if tables exist, will be deleted
 drops = ['DROP TABLE IF EXISTS Comments','DROP TABLE IF EXISTS Enrolments','DROP TABLE IF EXISTS Assignments', \
 		'DROP TABLE IF EXISTS Reviews','DROP TABLE IF EXISTS Quiz','DROP TABLE IF EXISTS Activity', 'DROP TABLE IF EXISTS Courses', \
-		'DROP TABLE IF EXISTS TeamMembers', 'DROP TABLE IF EXISTS VideoStats', 'DROP TABLE IF EXISTS ExtractLinks', 'DROP TABLE IF EXISTS ScrapedLinks', 'DROP TABLE IF EXISTS Regions']
+		'DROP TABLE IF EXISTS TeamMembers', 'DROP TABLE IF EXISTS VideoStats', 'DROP TABLE IF EXISTS ExtractLinks', 'DROP TABLE IF EXISTS ScrapedLinks']
 
-creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers,createVideoStats, createExtractlinks, createScrapedLinks, createRegions]
+creates = [createComment,createEnroll,createAssignments,createReviews,createQuiz,createActivity, createCourses, createTeamMembers,createVideoStats, createExtractlinks, createScrapedLinks]
 
 for d in drops:
 	cursor.execute(d)

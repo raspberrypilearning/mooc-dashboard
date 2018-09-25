@@ -164,15 +164,6 @@ class CSV_TO_SQL:
             "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
             + str(course_run) + ";"
 
-
-	elif 'country-subdivisions' in datatype:
-	    col = '(subdivision_first, subdivision_first_code, country_name, country_code, country_continent, joiner_count, active_learner_count)'
-	    load =  'LOAD DATA LOCAL INFILE '"'" + f + "'"' REPLACE INTO TABLE Regions ' \
-            "FIELDS TERMINATED BY ',' ENCLOSED BY "+  '\'"\''  \
-            'IGNORE 1 LINES '  + col +\
-            "Set university = " + "'" + uni + "'," + "course = " + "'" + course + "'," + "course_run = " \
-            + str(course_run) + ";" 
-
         cursor.execute(load)
         self.__database.commit()
         cursor.close()
